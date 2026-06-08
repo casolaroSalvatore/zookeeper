@@ -194,6 +194,25 @@
       <groupId>dnsjava</groupId>
       <artifactId>dnsjava</artifactId>
     </dependency>
+	<!-- Aggiunta delle dipendenze per JUnit e Mockito -->
+	<dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-api</artifactId>
+        <version>5.9.2</version>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter-engine</artifactId>
+        <version>5.9.2</version>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-core</artifactId>
+        <version>5.3.1</version>
+        <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -276,21 +295,25 @@
         </executions>
       </plugin>
 
-      <plugin>
+	  <!-- Modifica di Surefire per JUnit5 e i test -->
+	  <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
+        <dependencies>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-engine</artifactId>
+                <version>5.9.2</version>
+            </dependency>
+        </dependencies>
         <configuration>
           <includes>
-            <include>**/*Test.java</include>
+              <include>**/SnapshotComparerTest.java</include>
+              <include>**/SessionTrackerImplTest.java</include>
           </includes>
-          <forkCount>${surefire-forkcount}</forkCount>
+          <forkCount>1</forkCount>
           <reuseForks>false</reuseForks>
-          <argLine>-Xmx512m -Dtest.junit.threads=${surefire-forkcount} -Dzookeeper.junit.threadid=${surefire.forkNumber} -javaagent:${org.jmockit:jmockit:jar}</argLine>
-          <basedir>${project.basedir}</basedir>
-          <systemPropertyVariables>
-            <build.test.dir>${project.build.directory}/surefire</build.test.dir>
-            <zookeeper.DigestAuthenticationProvider.superDigest>super:D/InIHSb7yEEbrWz8b9l71RjZJU=</zookeeper.DigestAuthenticationProvider.superDigest>
-          </systemPropertyVariables>
+          <argLine>-Xmx512m</argLine>
         </configuration>
       </plugin>
 
@@ -349,6 +372,53 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+	  
+	  <!-- Aggiunta di Jacoco e PITest -->
+	  <plugin>
+          <groupId>org.jacoco</groupId>
+          <artifactId>jacoco-maven-plugin</artifactId>
+          <version>0.8.8</version>
+          <executions>
+              <execution>
+                  <goals>
+                      <goal>prepare-agent</goal>
+                  </goals>
+              </execution>
+              <execution>
+                  <id>report</id>
+                  <phase>test</phase>
+                  <goals>
+                      <goal>report</goal>
+                  </goals>
+              </execution>
+          </executions>
+      </plugin>
+
+      <plugin>
+          <groupId>org.pitest</groupId>
+          <artifactId>pitest-maven</artifactId>
+          <version>1.14.0</version>
+          <dependencies>
+              <dependency>
+                  <groupId>org.pitest</groupId>
+                  <artifactId>pitest-junit5-plugin</artifactId>
+                  <version>1.2.0</version>
+              </dependency>
+          </dependencies>
+          <configuration>
+              <targetClasses>
+                  <param>org.apache.zookeeper.server.SnapshotComparer</param>
+                  <param>org.apache.zookeeper.server.SessionTrackerImpl</param>
+              </targetClasses>
+              <targetTests>
+                  <param>org.apache.zookeeper.server.SnapshotComparerTest</param>
+                  <param>org.apache.zookeeper.server.SessionTrackerImplTest</param>
+              </targetTests>
+              <mutators>
+                  <mutator>DEFAULTS</mutator>
+              </mutators>
+          </configuration>
       </plugin>
      </plugins>
   </build>
