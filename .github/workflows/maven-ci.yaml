@@ -18,9 +18,13 @@ jobs:
         distribution: 'temurin'
         cache: maven
 
-    - name: Build and Test SUT Classes (JUnit & JaCoCo)
+    # Compila tutti i sottomoduli (come jute) prima dei test 
+    - name: Install dependencies and build project (Skip tests)
+      run: mvn clean install -DskipTests -Dcheckstyle.skip=true -Dspotbugs.skip=true -Dmaven.javadoc.skip=true -Drat.skip=true
 
-      run: mvn clean test jacoco:report -pl zookeeper-server -DskipTests=false -Dcheckstyle.skip=true -Dspotbugs.skip=true -Dmaven.javadoc.skip=true
+    # Esegue solo i test del SUT
+    - name: Build and Test SUT Classes (JUnit & JaCoCo)
+      run: mvn test jacoco:report -pl zookeeper-server -Dtest=SnapshotComparerTest,SessionTrackerImplTest -Dcheckstyle.skip=true -Dspotbugs.skip=true -Dmaven.javadoc.skip=true -Drat.skip=true -DfailIfNoTests=false
 
     - name: Run Mutation Testing (PITest)
-      run: mvn org.pitest:pitest-maven:mutationCoverage -pl zookeeper-server
+      run: mvn org.pitest:pitest-maven:mutationCoverage -pl zookeeper-server -Dcheckstyle.skip=true -Dspotbugs.skip=true -Dmaven.javadoc.skip=true -Drat.skip=true
