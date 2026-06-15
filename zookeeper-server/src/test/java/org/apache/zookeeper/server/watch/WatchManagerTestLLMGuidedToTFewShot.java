@@ -23,7 +23,7 @@ import org.mockito.ArgumentCaptor;
  * Guided JUnit4 tests for WatchManager focused exclusively watchers are not processed * Guided JUnit4 tests for WatchManager focused exclusively on:
  * - triggering a path with no watchers returns null
  */
-public class WatchManagerLLMGuidedToTFewShot {
+public class WatchManagerTestLLMGuidedToTFewShot {
 
     private WatchManager watchManager;
 
