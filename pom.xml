@@ -780,6 +780,18 @@
         <artifactId>dnsjava</artifactId>
         <version>${dnsjava.version}</version>
       </dependency>
+	  <!-- Aggiunta dipendenza a JUnit4 e Evosuite -->
+	  <dependency>
+        <groupId>org.evosuite</groupId>
+        <artifactId>evosuite-standalone-runtime</artifactId>
+        <version>1.0.6</version>
+      </dependency>
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.13.2</version> 
+	  </dependency>
+		
     </dependencies>
   </dependencyManagement>
 
@@ -939,6 +951,22 @@
           <artifactId>cyclonedx-maven-plugin</artifactId>
           <version>2.7.9</version>
        </plugin>
+	   <!-- Inserimento plugin Jacoco, PITest e Evosuite -->
+	   <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>0.8.10</version>
+        </plugin>
+        <plugin>
+            <groupId>org.pitest</groupId>
+            <artifactId>pitest-maven</artifactId>
+            <version>1.15.0</version>
+        </plugin>
+        <plugin>
+            <groupId>org.evosuite.plugins</groupId>
+            <artifactId>evosuite-maven-plugin</artifactId>
+            <version>1.0.6</version>
+        </plugin>
       </plugins>
     </pluginManagement>
 

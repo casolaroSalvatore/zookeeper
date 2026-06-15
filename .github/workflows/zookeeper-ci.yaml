@@ -1,0 +1,30 @@
+name: ZooKeeper CI 
+
+on:
+  push:
+    branches: [ "testing" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: maven
+
+    # Compila tutti i sottomoduli (come jute) prima dei test 
+    - name: Install dependencies and build project (Skip tests)
+      run: mvn clean install -DskipTests -Dcheckstyle.skip=true -Dspotbugs.skip=true -Dmaven.javadoc.skip=true -Drat.skip=true
+
+    # Esegue solo i test del SUT
+    - name: Build and Test SUT Classes (JUnit & JaCoCo)
+      run: mvn test jacoco:report -pl zookeeper-server -Dtest=WatchManagerTest -Dcheckstyle.skip=true -Dspotbugs.skip=true -Dmaven.javadoc.skip=true -Drat.skip=true -DfailIfNoTests=false
+
+    - name: Run Mutation Testing (PITest)
+      run: mvn org.pitest:pitest-maven:mutationCoverage -pl zookeeper-server -Dcheckstyle.skip=true -Dspotbugs.skip=true -Dmaven.javadoc.skip=true -Drat.skip=true
