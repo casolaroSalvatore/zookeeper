@@ -212,6 +212,17 @@
         <artifactId>mockito-core</artifactId>
         <version>5.3.1</version>
         <scope>test</scope>
+	</dependency>	
+	<!-- Inserimento dipendenza JUnit e Evosuite -->
+	<dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.evosuite</groupId>
+      <artifactId>evosuite-standalone-runtime</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 
@@ -309,7 +320,8 @@
         <configuration>
           <includes>
               <include>**/SnapshotComparerTest.java</include>
-              <include>**/SessionTrackerImplTest.java</include>
+              <include>**/WatchManagerTest*.java</include>
+			  <include>**/RegressionTest*.java</include>
           </includes>
           <forkCount>1</forkCount>
           <reuseForks>false</reuseForks>
@@ -374,7 +386,7 @@
         </executions>
       </plugin>
 	  
-	  <!-- Aggiunta di Jacoco e PITest -->
+
 	  <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
@@ -408,10 +420,13 @@
           </dependencies>
           <configuration>
               <targetClasses>
+                  <param>org.apache.zookeeper.server.watch.WatchManager</param>
                   <param>org.apache.zookeeper.server.SnapshotComparer</param>
                   <param>org.apache.zookeeper.server.SessionTrackerImpl</param>
               </targetClasses>
               <targetTests>
+                  <param>org.apache.zookeeper.server.watch.WatchManagerTest*</param>
+                  <param>org.apache.zookeeper.server.watch.RegressionTest*</param>
                   <param>org.apache.zookeeper.server.SnapshotComparerTest</param>
                   <param>org.apache.zookeeper.server.SessionTrackerImplTest</param>
               </targetTests>
@@ -420,7 +435,7 @@
               </mutators>
           </configuration>
       </plugin>
-     </plugins>
-  </build>
 
+    </plugins>
+  </build>
 </project>
