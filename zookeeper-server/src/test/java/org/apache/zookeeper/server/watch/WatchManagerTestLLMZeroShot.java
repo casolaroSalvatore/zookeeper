@@ -8,8 +8,11 @@ import org.apache.zookeeper.server.watch.WatchManager;
 import org.apache.zookeeper.server.watch.WatcherMode;
 import org.apache.zookeeper.server.watch.WatcherOrBitSet;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.Assert.*;
@@ -164,11 +167,36 @@ public class WatchManagerTestLLMZeroShot {
         assertNull(result);
     }
 
+    /*
+    @Test
+    public void testTriggerWatch_SuppressWatcher_BeforeCorrection() {
+        watchManager.addWatch("/test", watcher, WatcherMode.STANDARD);
+
+        WatcherOrBitSet suppress = new WatcherOrBitSet(watcher);
+
+        WatcherOrBitSet result = watchManager.triggerWatch(
+                "/test",
+                EventType.NodeDeleted,
+                2L,
+                new ArrayList<ACL>(),
+                suppress
+        );
+
+        assertNotNull(result);
+        // watcher should not be triggered due to suppression
+        assertEquals(0, watcher.getEventCount());
+    } */
+
     @Test
     public void testTriggerWatch_SuppressWatcher() {
         watchManager.addWatch("/test", watcher, WatcherMode.STANDARD);
 
-        WatcherOrBitSet suppress = new WatcherOrBitSet(watcher);
+        // Correction: create a Set of Watcher in order to contain the watcher
+        Set<Watcher> suppressedWatchers = new java.util.HashSet<>();
+        suppressedWatchers.add(watcher);
+
+        // Now pass the Set to the constructor
+        WatcherOrBitSet suppress = new WatcherOrBitSet(suppressedWatchers);
 
         WatcherOrBitSet result = watchManager.triggerWatch(
                 "/test",
