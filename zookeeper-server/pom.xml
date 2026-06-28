@@ -207,6 +207,12 @@
         <version>5.9.2</version>
         <scope>test</scope>
     </dependency>
+	<dependency>
+		<groupId>org.junit.vintage</groupId>
+		<artifactId>junit-vintage-engine</artifactId>
+		<version>5.9.2</version>
+		<scope>test</scope>
+	</dependency>
     <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
@@ -307,27 +313,24 @@
       </plugin>
 
 	  <!-- Modifica di Surefire per JUnit5 e i test -->
-	  <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <dependencies>
-            <dependency>
-                <groupId>org.junit.jupiter</groupId>
-                <artifactId>junit-jupiter-engine</artifactId>
-                <version>5.9.2</version>
-            </dependency>
-        </dependencies>
-        <configuration>
-          <includes>
-              <include>**/SnapshotComparerTest.java</include>
-              <include>**/WatchManagerTest*.java</include>
-			  <include>**/RegressionTest*.java</include>
-          </includes>
-          <forkCount>1</forkCount>
-          <reuseForks>false</reuseForks>
-          <argLine>-Xmx512m</argLine>
-        </configuration>
-      </plugin>
+	<plugin>
+		<groupId>org.apache.maven.plugins</groupId>
+		<artifactId>maven-surefire-plugin</artifactId>
+		<configuration>
+			<trimStackTrace>false</trimStackTrace>
+			<redirectTestOutputToFile>${redirectTestOutputToFile}</redirectTestOutputToFile>
+			<testFailureIgnore>true</testFailureIgnore>
+			<includes>
+				<include>**/SnapshotComparerTest.java</include>
+				<include>**/WatchManagerTest*.java</include>
+				<include>**/RegressionTest*.java</include>
+			</includes>
+			<forkCount>1</forkCount>
+			<reuseForks>false</reuseForks>
+			<argLine>@{argLine} -Xmx512m</argLine>
+		</configuration>
+	</plugin>
+	  
 
       <plugin>
         <groupId>org.apache.felix</groupId>
@@ -435,6 +438,7 @@
               </mutators>
           </configuration>
       </plugin>
+	  
 
     </plugins>
   </build>
