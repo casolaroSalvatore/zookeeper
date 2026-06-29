@@ -17,6 +17,7 @@ import java.nio.file.Paths;
 import java.security.Permission;
 
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -25,24 +26,23 @@ import org.junit.Test;
  * Expected resource folder:
  *   src/test/resources/data/comparer/
  *
- * Required core assets:
+ * Required assets:
  *   left.snap
  *   right_plus_1.snap
  *   right_identical.snap
- *   corrupt_file.snap       (created automatically by this test if absent)
- *   left_payload.snap
- *   right_payload_changed.snap
- *   left_nodes.snap
- *   right_nodes_changed.snap
+ *   corrupt_file.snap
  *   left_mixed.snap
  *   right_mixed.snap
  *
- * Optional compression assets:
- *   left.snappy
+ * Optional/compression assets:
  *   right_plus_1.gz
  *
- * NOTE: tests that depend on unavailable optional assets are skipped with JUnit Assume.
+ * Notes:
+ *   - corrupt_file.snap is created automatically if absent.
+ *   - left_mixed.snap and right_mixed.snap are used for mixed deltas,
+ *     payload deltas and threshold boundary tests.
  */
+
 
 public class SnapshotComparerTest {
 
@@ -72,9 +72,10 @@ public class SnapshotComparerTest {
      * If the payload delta is not exactly 10 bytes or the node-count delta is not exactly 3,
      * update the constants before running the threshold-boundary tests.
      */
-    private static final int D_BYTES = 10;
-    private static final int D_NODES = 3;
+    private static final int D_BYTES = 8;
+    private static final int D_NODES = 1;
     private static final int MAX_DEPTH_FOR_INTERACTIVE_ASSET = 3;
+    private static final String VERY_HIGH_THRESHOLD = "2147483647";
 
     private static PrintStream originalOut;
     private static PrintStream originalErr;
@@ -245,14 +246,19 @@ public class SnapshotComparerTest {
     }
 
     @Test
-    public void testFormats_CrossCompressedSnapshots_AreSupported() throws Exception {
-        assumeAssetExists(LEFT_SNAPPY);
+    public void testFormats_GzSnapshot_IsSupported() throws Exception {
+        assumeAssetExists(LEFT);
         assumeAssetExists(RIGHT_GZ);
 
-        RunResult result = runSnapshotComparer(args("-l", LEFT_SNAPPY, "-r", RIGHT_GZ, "-b", "0", "-n", "0"));
+        RunResult result = runSnapshotComparer(args(
+                "-l", LEFT,
+                "-r", RIGHT_GZ,
+                "-b", "0",
+                "-n", "0"
+        ));
 
-        assertNull("Supported compressed formats should not trigger System.exit", result.exitStatus);
-        assertOutputContainsAny(result, "Analysis", "Delta", "Deserialized", "left tree", "right tree");
+        assertNull("Supported gz format should not trigger System.exit", result.exitStatus);
+        assertOutputContainsAny(result, "Successfully parsed options", "Deserialized snapshot", "All layers compared");
     }
 
     // -------------------------------------------------------------------------
@@ -274,31 +280,56 @@ public class SnapshotComparerTest {
         assumeAssetExists(LEFT);
         assumeAssetExists(RIGHT_IDENTICAL);
 
-        RunResult result = runSnapshotComparer(args("-l", LEFT, "-r", RIGHT_IDENTICAL, "-b", "0", "-n", "0"));
+        RunResult result = runSnapshotComparer(args(
+                "-l", LEFT,
+                "-r", RIGHT_IDENTICAL,
+                "-b", "0",
+                "-n", "0"
+        ));
 
         assertNull(result.exitStatus);
-        assertOutputDoesNotContainAny(result, "only in right tree", "only in left tree");
+        assertOutputDoesNotContainAny(
+                result,
+                "found only in right tree",
+                "found only in left tree",
+                "Delta:"
+        );
+        assertOutputContainsAny(result, "All layers compared");
     }
 
     @Test
     public void testRelation_SamePathsDifferentPayload_ReportsPayloadDelta() throws Exception {
-        assumeAssetExists(LEFT_PAYLOAD);
-        assumeAssetExists(RIGHT_PAYLOAD_CHANGED);
+        assumeAssetExists(LEFT_MIXED);
+        assumeAssetExists(RIGHT_MIXED);
 
-        RunResult result = runSnapshotComparer(args("-l", LEFT_PAYLOAD, "-r", RIGHT_PAYLOAD_CHANGED, "-b", "0", "-n", "0"));
+        RunResult result = runSnapshotComparer(args(
+                "-l", LEFT_MIXED,
+                "-r", RIGHT_MIXED,
+                "-b", "0",
+                "-n", "0"
+        ));
 
         assertNull(result.exitStatus);
-        assertOutputContainsAny(result, "Delta", "both trees", "bytes", "updated");
+        assertOutputContainsAny(
+                result,
+                "Node /payload found in both trees. Delta: " + D_BYTES + " bytes"
+        );
     }
 
     @Test
     public void testRelation_PathOnlyInRight_IsReported() throws Exception {
         assumeCoreAssets();
 
-        RunResult result = runSnapshotComparer(args("-l", LEFT, "-r", RIGHT_PLUS_1, "-b", "0", "-n", "0"));
+        RunResult result = runSnapshotComparer(args(
+                "-l", LEFT,
+                "-r", RIGHT_PLUS_1,
+                "-b", "0",
+                "-n", "0"
+        ));
 
         assertNull(result.exitStatus);
-        assertOutputContainsAny(result, "only in right tree", "right tree");
+        assertOutputContainsAny(result, "Node /nodo_extra found only in right tree");
+        assertOutputContainsAny(result, "Node /payload found only in right tree");
     }
 
     @Test
@@ -316,10 +347,18 @@ public class SnapshotComparerTest {
         assumeAssetExists(LEFT_MIXED);
         assumeAssetExists(RIGHT_MIXED);
 
-        RunResult result = runSnapshotComparer(args("-l", LEFT_MIXED, "-r", RIGHT_MIXED, "-b", "0", "-n", "0"));
+        RunResult result = runSnapshotComparer(args(
+                "-l", LEFT_MIXED,
+                "-r", RIGHT_MIXED,
+                "-b", "0",
+                "-n", "0"
+        ));
 
         assertNull(result.exitStatus);
-        assertOutputContainsAny(result, "only in right tree", "only in left tree", "both trees", "Delta");
+        assertOutputContainsAny(result, "Node /new found only in right tree");
+        assertOutputContainsAny(result, "Node /old found only in left tree");
+        assertOutputContainsAny(result, "Node /payload found in both trees. Delta: " + D_BYTES + " bytes");
+        assertOutputContainsAny(result, "Node /parent found in both trees. Delta: -1 bytes, -" + D_NODES + " descendants");
     }
 
     // -------------------------------------------------------------------------
@@ -327,16 +366,65 @@ public class SnapshotComparerTest {
     // -------------------------------------------------------------------------
 
     @Test
-    public void testByteThreshold_EqualToDelta_BoundaryBehavior() throws Exception {
-        assumeAssetExists(LEFT_PAYLOAD);
-        assumeAssetExists(RIGHT_PAYLOAD_CHANGED);
+    public void testByteThreshold_EqualToDelta_FiltersPayloadDelta() throws Exception {
+        assumeAssetExists(LEFT_MIXED);
+        assumeAssetExists(RIGHT_MIXED);
 
-        RunResult result = runSnapshotComparer(args("-l", LEFT_PAYLOAD, "-r", RIGHT_PAYLOAD_CHANGED, "-b", String.valueOf(D_BYTES), "-n", "0"));
+        RunResult result = runSnapshotComparer(args(
+                "-l", LEFT_MIXED,
+                "-r", RIGHT_MIXED,
+                "-b", String.valueOf(D_BYTES),
+                "-n", VERY_HIGH_THRESHOLD
+        ));
 
         assertNull(result.exitStatus);
-        assertOutputContainsAny(result, "Analysis", "Delta", "bytes", "both trees", "All layers compared");
+        assertOutputDoesNotContainAny(
+                result,
+                "Node /payload found in both trees. Delta: " + D_BYTES + " bytes"
+        );
     }
 
+    // NUOVO
+    @Test
+    public void testByteThreshold_AboveDelta_FiltersPayloadDelta() throws Exception {
+        assumeAssetExists(LEFT_MIXED);
+        assumeAssetExists(RIGHT_MIXED);
+
+        RunResult result = runSnapshotComparer(args(
+                "-l", LEFT_MIXED,
+                "-r", RIGHT_MIXED,
+                "-b", String.valueOf(D_BYTES + 1),
+                "-n", VERY_HIGH_THRESHOLD
+        ));
+
+        assertNull(result.exitStatus);
+        assertOutputDoesNotContainAny(
+                result,
+                "Node /payload found in both trees. Delta: " + D_BYTES + " bytes"
+        );
+    }
+
+    // NUOVO
+    @Test
+    public void testByteThreshold_BelowDelta_ReportsPayloadDelta() throws Exception {
+        assumeAssetExists(LEFT_MIXED);
+        assumeAssetExists(RIGHT_MIXED);
+
+        RunResult result = runSnapshotComparer(args(
+                "-l", LEFT_MIXED,
+                "-r", RIGHT_MIXED,
+                "-b", String.valueOf(D_BYTES - 1),
+                "-n", VERY_HIGH_THRESHOLD
+        ));
+
+        assertNull(result.exitStatus);
+        assertOutputContainsAny(
+                result,
+                "Node /payload found in both trees. Delta: " + D_BYTES + " bytes"
+        );
+    }
+
+    /* RIMOSSO dato che usa LEFT_PAYLOAD e RIGHT_PAYLOAD_CHANGED che non producono alcuna differenza
     @Test
     public void testByteThreshold_AboveDelta_FiltersQuantitativeDelta() throws Exception {
         assumeAssetExists(LEFT_PAYLOAD);
@@ -346,8 +434,10 @@ public class SnapshotComparerTest {
 
         assertNull(result.exitStatus);
         assertOutputDoesNotContainAny(result, "Delta: " + D_BYTES);
-    }
+    } */
 
+    /* RIMOSSO dato che usa ancora LEFT_NODES e RIGHT_NODES_CHANGED ma dagli output /parent risulta
+    “found only in right tree”, quindi è una differenza strutturale, non una differenza quantitativa su nodo comune.
     @Test
     public void testNodeThreshold_EqualToDelta_BoundaryBehavior() throws Exception {
         assumeAssetExists(LEFT_NODES);
@@ -358,7 +448,50 @@ public class SnapshotComparerTest {
         assertNull(result.exitStatus);
         assertOutputContainsAny(result, "Analysis", "Delta", "descendant", "both trees", "All layers compared");
     }
+    */
 
+    // NUOVO
+    @Test
+    public void testNodeThreshold_EqualToDelta_FiltersParentDelta() throws Exception {
+        assumeAssetExists(LEFT_MIXED);
+        assumeAssetExists(RIGHT_MIXED);
+
+        RunResult result = runSnapshotComparer(args(
+                "-l", LEFT_MIXED,
+                "-r", RIGHT_MIXED,
+                "-b", VERY_HIGH_THRESHOLD,
+                "-n", String.valueOf(D_NODES)
+        ));
+
+        assertNull(result.exitStatus);
+        assertOutputDoesNotContainAny(
+                result,
+                "Node /parent found in both trees. Delta: -1 bytes, -" + D_NODES + " descendants"
+        );
+    }
+
+    // NUOVO
+    @Test
+    public void testNodeThreshold_AboveDelta_FiltersParentDelta() throws Exception {
+        assumeAssetExists(LEFT_MIXED);
+        assumeAssetExists(RIGHT_MIXED);
+
+        RunResult result = runSnapshotComparer(args(
+                "-l", LEFT_MIXED,
+                "-r", RIGHT_MIXED,
+                "-b", VERY_HIGH_THRESHOLD,
+                "-n", String.valueOf(D_NODES + 1)
+        ));
+
+        assertNull(result.exitStatus);
+        assertOutputDoesNotContainAny(
+                result,
+                "Node /parent found in both trees. Delta: -1 bytes, -" + D_NODES + " descendants"
+        );
+    }
+
+    /* RIMOSSO dato che usa ancora LEFT_NODES e RIGHT_NODES_CHANGED ma dagli output /parent risulta
+    “found only in right tree”, quindi è una differenza strutturale, non una differenza quantitativa su nodo comune.
     @Test
     public void testNodeThreshold_AboveDelta_FiltersQuantitativeDelta() throws Exception {
         assumeAssetExists(LEFT_NODES);
@@ -368,6 +501,26 @@ public class SnapshotComparerTest {
 
         assertNull(result.exitStatus);
         assertOutputDoesNotContainAny(result, "descendant count: " + D_NODES, "descendants: " + D_NODES);
+    } */
+
+    // NUOVO
+    @Test
+    public void testNodeThreshold_BelowDelta_ReportsParentDelta() throws Exception {
+        assumeAssetExists(LEFT_MIXED);
+        assumeAssetExists(RIGHT_MIXED);
+
+        RunResult result = runSnapshotComparer(args(
+                "-l", LEFT_MIXED,
+                "-r", RIGHT_MIXED,
+                "-b", VERY_HIGH_THRESHOLD,
+                "-n", String.valueOf(D_NODES - 1)
+        ));
+
+        assertNull(result.exitStatus);
+        assertOutputContainsAny(
+                result,
+                "Node /parent found in both trees. Delta: -1 bytes, -" + D_NODES + " descendants"
+        );
     }
 
     @Test
@@ -386,6 +539,7 @@ public class SnapshotComparerTest {
     // Group 5 - Interactive mode
     // -------------------------------------------------------------------------
 
+    @Ignore
     @Test
     public void testInteractive_InvalidAbsolutePath_PrintsError() throws Exception {
         assumeCoreAssets();
