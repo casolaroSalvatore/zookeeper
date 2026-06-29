@@ -4,7 +4,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
-@Suite.SuiteClasses({ RegressionTest0.class })
-public class RegressionTest {
+@Suite.SuiteClasses({ RegressionTest0AfterFacade.class })
+public class RegressionTestAfterFacade {
 }
 
