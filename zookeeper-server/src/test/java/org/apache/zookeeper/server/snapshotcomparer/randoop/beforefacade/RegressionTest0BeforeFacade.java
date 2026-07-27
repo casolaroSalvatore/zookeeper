@@ -1,4 +1,4 @@
-package org.apache.zookeeper.server;
+package org.apache.zookeeper.server.snapshotcomparer.randoop.beforefacade;
 
 import org.junit.FixMethodOrder;
 import org.junit.Test;

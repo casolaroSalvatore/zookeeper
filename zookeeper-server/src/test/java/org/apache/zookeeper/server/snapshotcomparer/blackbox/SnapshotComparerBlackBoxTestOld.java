@@ -1,4 +1,3 @@
-
 package org.apache.zookeeper.server;
 
 import static org.junit.Assert.*;
@@ -43,8 +42,8 @@ import org.junit.Test;
  *     payload deltas and threshold boundary tests.
  */
 
-
-public class SnapshotComparerTest {
+// E' VECCHIA, DA ELIMINARE IN SEGUITO
+public class SnapshotComparerBlackBoxTestOld {
 
     private static final String BASE = "src/test/resources/data/comparer/";
 
@@ -53,30 +52,22 @@ public class SnapshotComparerTest {
     private static final String RIGHT_IDENTICAL = BASE + "right_identical.snap";
     private static final String CORRUPT = BASE + "corrupt_file.snap";
 
-    private static final String LEFT_SNAPPY = BASE + "left.snappy";
     private static final String RIGHT_GZ = BASE + "right_plus_1.gz";
-
-    private static final String LEFT_PAYLOAD = BASE + "left_payload.snap";
-    private static final String RIGHT_PAYLOAD_CHANGED = BASE + "right_payload_changed.snap";
-
-    private static final String LEFT_NODES = BASE + "left_nodes.snap";
-    private static final String RIGHT_NODES_CHANGED = BASE + "right_nodes_changed.snap";
 
     private static final String LEFT_MIXED = BASE + "left_mixed.snap";
     private static final String RIGHT_MIXED = BASE + "right_mixed.snap";
 
     private static final String GHOST_RIGHT = BASE + "ghost_right.snap";
 
-    /*
-     * These values must be aligned with the actual assets.
-     * If the payload delta is not exactly 10 bytes or the node-count delta is not exactly 3,
-     * update the constants before running the threshold-boundary tests.
-     */
+    // These calibrated values must match LEFT_MIXED and RIGHT_MIXED.
+    // D_BYTES = 8 is observed on /payload and D_NODES = 1 is observed on /parent.
+
     private static final int D_BYTES = 8;
     private static final int D_NODES = 1;
-    private static final int MAX_DEPTH_FOR_INTERACTIVE_ASSET = 3;
+
     private static final String VERY_HIGH_THRESHOLD = "2147483647";
 
+    private static final int INTERACTIVE_COMPLETION_NEWLINES = 10;
     private static PrintStream originalOut;
     private static PrintStream originalErr;
     private static InputStream originalIn;
@@ -225,23 +216,28 @@ public class SnapshotComparerTest {
         assumeAssetExists(CORRUPT);
 
         try {
-            RunResult result = runSnapshotComparer(args("-l", CORRUPT, "-r", RIGHT_PLUS_1, "-b", "0", "-n", "0"));
-            assertOutputContainsAny(result, "error", "exception", "invalid", "corrupt", "magic", "snapshot");
+            RunResult result = runSnapshotComparer(
+                    args("-l", CORRUPT, "-r", RIGHT_PLUS_1, "-b", "0", "-n", "0"));
+
+            assertOutputContainsAny(result, "error", "exception", "invalid",
+                    "corrupt", "magic", "snapshot", "checksum", "deserialize");
         } catch (Exception expected) {
-            assertTrue("Exception is acceptable for corrupted snapshot", expected.getMessage() == null || expected.getMessage().length() >= 0);
+            assertExpectedFileOrSnapshotException("corrupted snapshot", expected);
         }
     }
 
     @Test
     public void testFileRight_MissingSnapshot_FailsLoading() throws Exception {
         assumeAssetExists(LEFT);
+
         assertFalse("Ghost file must not exist for this test", new File(GHOST_RIGHT).exists());
 
         try {
             RunResult result = runSnapshotComparer(args("-l", LEFT, "-r", GHOST_RIGHT, "-b", "0", "-n", "0"));
+
             assertOutputContainsAny(result, "no such", "not found", "filenotfound", "error", "exception");
         } catch (Exception expected) {
-            assertTrue("Exception is acceptable for missing snapshot", expected.getMessage() == null || expected.getMessage().length() >= 0);
+            assertExpectedFileOrSnapshotException("missing snapshot", expected);
         }
     }
 
@@ -271,8 +267,11 @@ public class SnapshotComparerTest {
 
         RunResult result = runSnapshotComparer(args("-l", LEFT, "-r", LEFT, "-b", "0", "-n", "0"));
 
-        assertNull(result.exitStatus);
-        assertOutputDoesNotContainAny(result, "only in right tree", "only in left tree");
+        assertNull("Comparison of the same physical file must not call System.exit", result.exitStatus);
+
+        assertOutputDoesNotContainAny(result, "found only in right tree", "found only in left tree", "Delta:");
+
+        assertOutputContainsAny(result, "All layers compared");
     }
 
     @Test
@@ -298,7 +297,7 @@ public class SnapshotComparerTest {
     }
 
     @Test
-    public void testRelation_SamePathsDifferentPayload_ReportsPayloadDelta() throws Exception {
+    public void testRelation_CommonPathByteDelta_IsReported() throws Exception {
         assumeAssetExists(LEFT_MIXED);
         assumeAssetExists(RIGHT_MIXED);
 
@@ -338,8 +337,11 @@ public class SnapshotComparerTest {
 
         RunResult result = runSnapshotComparer(args("-l", RIGHT_PLUS_1, "-r", LEFT, "-b", "0", "-n", "0"));
 
-        assertNull(result.exitStatus);
-        assertOutputContainsAny(result, "only in left tree", "left tree");
+        assertNull("Inverse comparison must not call System.exit", result.exitStatus);
+
+        assertOutputContainsAny(result, "Node /nodo_extra found only in left tree");
+
+        assertOutputContainsAny(result, "Node /payload found only in left tree");
     }
 
     @Test
@@ -539,15 +541,32 @@ public class SnapshotComparerTest {
     // Group 5 - Interactive mode
     // -------------------------------------------------------------------------
 
+
     @Ignore
     @Test
-    public void testInteractive_InvalidAbsolutePath_PrintsError() throws Exception {
+    public void testInteractive_InvalidAbsolutePath_PrintsErrorOld() throws Exception {
         assumeCoreAssets();
 
         RunResult result = runSnapshotComparer(args("-l", LEFT, "-r", RIGHT_PLUS_1, "-b", "0", "-n", "0", "-i"), "/nodo_inesistente\n");
 
         // Some versions keep reading after the first command and can throw EOF-related exceptions.
         assertOutputContainsAny(result, "not", "found", "left tree", "right tree", "non-exist", "nodo_inesistente");
+    }
+
+    @Test
+    public void testInteractive_InvalidAbsolutePath_PrintsError() throws Exception {
+        assumeCoreAssets();
+
+        String stdin = interactiveInput("/nodo_inesistente", INTERACTIVE_COMPLETION_NEWLINES);
+
+        RunResult result = runSnapshotComparer(args("-l", LEFT, "-r", RIGHT_PLUS_1, "-b", "0", "-n", "0", "-i"), stdin);
+
+        assertNull("Interactive execution must complete without System.exit", result.exitStatus);
+
+        assertOutputContainsAny(result, "Path /nodo_inesistente is neither found in left tree nor right tree",
+                "Analysis for node /nodo_inesistente");
+
+        assertOutputContainsAny(result, "All layers compared");
     }
 
     // -------------------------------------------------------------------------
@@ -602,5 +621,36 @@ public class SnapshotComparerTest {
         public void checkExit(int status) {
             throw new ExitException(status);
         }
+    }
+
+    // Helper
+    private static String interactiveInput(String command, int trailingNewlines) {
+        StringBuilder input = new StringBuilder();
+
+        input.append(command).append('\n');
+
+        for (int i = 0; i < trailingNewlines; i++) {
+            input.append('\n');
+        }
+
+        return input.toString();
+    }
+
+    private static void assertExpectedFileOrSnapshotException(String scenario, Exception exception) {
+        if (exception instanceof IOException) {
+            return;
+        }
+
+        String message = exception.getMessage();
+        String normalizedMessage = message == null ? "" : message.toLowerCase();
+
+        assertTrue("Unexpected exception for " + scenario + ": " + exception,
+                normalizedMessage.contains("snapshot")
+                        || normalizedMessage.contains("file")
+                        || normalizedMessage.contains("corrupt")
+                        || normalizedMessage.contains("magic")
+                        || normalizedMessage.contains("checksum")
+                        || normalizedMessage.contains("deserialize")
+        );
     }
 }
