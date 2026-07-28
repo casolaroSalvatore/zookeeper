@@ -219,17 +219,18 @@
         <version>5.3.1</version>
         <scope>test</scope>
 	</dependency>	
-	<!-- Inserimento dipendenza JUnit e Evosuite -->
+	<!-- Inserimento dipendenza JUnit e EvoSuite -->
 	<dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.evosuite</groupId>
-      <artifactId>evosuite-standalone-runtime</artifactId>
-      <scope>test</scope>
-    </dependency>
+		<groupId>junit</groupId>
+		<artifactId>junit</artifactId>
+		<scope>test</scope>
+	</dependency>
+	<dependency>
+		<groupId>org.evosuite</groupId>
+		<artifactId>evosuite-standalone-runtime</artifactId>
+		<version>1.2.0</version>
+		<scope>test</scope>
+	</dependency>
   </dependencies>
 
   <build>
@@ -410,36 +411,73 @@
           </executions>
       </plugin>
 
-      <plugin>
-          <groupId>org.pitest</groupId>
-          <artifactId>pitest-maven</artifactId>
-          <version>1.14.0</version>
-          <dependencies>
-              <dependency>
-                  <groupId>org.pitest</groupId>
-                  <artifactId>pitest-junit5-plugin</artifactId>
-                  <version>1.2.0</version>
-              </dependency>
-          </dependencies>
-          <configuration>
-              <targetClasses>
-                  <param>org.apache.zookeeper.server.watch.WatchManager</param>
-                  <param>org.apache.zookeeper.server.SnapshotComparer</param>
-                  <param>org.apache.zookeeper.server.SessionTrackerImpl</param>
-              </targetClasses>
-              <targetTests>
-                  <param>org.apache.zookeeper.server.watch.WatchManagerTest*</param>
-                  <param>org.apache.zookeeper.server.watch.RegressionTest*</param>
-                  <param>org.apache.zookeeper.server.SnapshotComparerTest</param>
-                  <param>org.apache.zookeeper.server.SessionTrackerImplTest</param>
-              </targetTests>
-              <mutators>
-                  <mutator>DEFAULTS</mutator>
-              </mutators>
-          </configuration>
-      </plugin>
-	  
-
+	  <plugin>
+			<groupId>org.pitest</groupId>
+			<artifactId>pitest-maven</artifactId>
+			<version>1.15.0</version>
+			<configuration>
+				<targetClasses>
+                    <param>org.apache.zookeeper.server.watch.WatchManager</param>
+                </targetClasses>
+                <targetTests>
+                    <param>org.apache.zookeeper.server.watch.watchmanager.blackbox.WatchManagerBlackBoxCFMutationTest</param>
+                </targetTests>
+				<mutators>
+					<mutator>DEFAULTS</mutator>
+				</mutators>
+				<outputFormats>
+					<outputFormat>HTML</outputFormat>
+				</outputFormats>
+			</configuration>
+        </plugin>
     </plugins>
   </build>
+  
+<!-- Necessario per l'esecuzione e la misurazione dei test generati tramite EvoSuite -->
+<profiles>
+    <profile>
+        <id>evosuite-coverage</id>
+
+        <build>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+
+                    <configuration>
+                        <trimStackTrace>false</trimStackTrace>
+                        <testFailureIgnore>false</testFailureIgnore>
+
+                        <forkCount>1</forkCount>
+                        <reuseForks>false</reuseForks>
+
+                        <properties>
+                            <property>
+                                <name>listener</name>
+                                <value>
+                                    org.evosuite.runtime.InitializingListener
+                                </value>
+                            </property>
+                        </properties>
+
+                        <systemPropertyVariables>
+                            <snapshotComparer.fixtureDir>
+                                ${project.basedir}/src/test/resources/data/comparer
+                            </snapshotComparer.fixtureDir>
+                        </systemPropertyVariables>
+
+                        <argLine>
+                            @{argLine}
+                            -Xmx512m
+                            -Djava.security.manager=allow
+                            --add-opens=java.desktop/java.awt=ALL-UNNAMED
+                            --add-opens=java.base/java.net=ALL-UNNAMED
+                            --add-exports=java.base/sun.net.util=ALL-UNNAMED
+                        </argLine>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </build>
+    </profile>
+</profiles>
 </project>

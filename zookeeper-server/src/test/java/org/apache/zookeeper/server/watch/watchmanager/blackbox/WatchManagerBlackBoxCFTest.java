@@ -1,34 +1,37 @@
 package org.apache.zookeeper.server.watch.watchmanager.blackbox;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.doThrow;
-
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.Watcher.Event.EventType;
+import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.server.watch.WatchManager;
 import org.apache.zookeeper.server.watch.WatcherMode;
 import org.apache.zookeeper.server.watch.WatcherOrBitSet;
+import org.apache.zookeeper.server.ServerCnxn;
+import org.apache.zookeeper.server.ServerWatcher;
+import org.apache.zookeeper.server.watch.WatchesPathReport;
+import org.apache.zookeeper.server.watch.WatchesReport;
+import org.apache.zookeeper.server.watch.WatchesSummary;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
+import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 // Black-box tests derived from the CP, BVA and final selection for the class WatchManager
 // Each test creates or receives a Mockito mock of the Watcher interface,
 // matching the formal parameter type exposed by WatchManager
 
-public class WatchManagerBlackBoxTest {
+public class WatchManagerBlackBoxCFTest {
 
     private static final String P = "/a";
     private static final String P_CHILD = "/a/b";
@@ -465,4 +468,325 @@ public class WatchManagerBlackBoxTest {
 
         assertTrue("PERSISTENT must remain registered after the second trigger", watchManager.containsWatcher(P, watcher, WatcherMode.PERSISTENT));
     }
+
+    // ADDED IN ORDER TO IMPROVE METRICS
+
+    // TEST size()
+    @Test
+    public void testSize_EmptyManagerReturnsZero() {
+        assertEquals("A new manager must contain no watches", 0, watchManager.size());
+    }
+
+    @Test
+    public void testSize_CountsWatcherRegistrationsAcrossPaths() {
+        Watcher watcher1 = createMockWatcher("W1");
+        Watcher watcher2 = createMockWatcher("W2");
+
+        assertTrue(watchManager.addWatch(P, watcher1, WatcherMode.STANDARD));
+        assertTrue(watchManager.addWatch(P, watcher2, WatcherMode.STANDARD));
+        assertTrue(watchManager.addWatch(P_OTHER, watcher1, WatcherMode.STANDARD));
+
+        assertEquals("Size must count watcher registrations stored in the path table", 3, watchManager.size());
+    }
+
+    // TEST addWatch(String, Watcher)
+
+    @Test
+    public void testAddWatch_DefaultOverloadRegistersStandardWatch() {
+        Watcher watcher = createMockWatcher("W1");
+
+        boolean added = watchManager.addWatch(P, watcher);
+
+        assertTrue(added);
+        assertTrue(watchManager.containsWatcher(P, watcher, WatcherMode.DEFAULT_WATCHER_MODE));
+    }
+
+    // TEST containsWatcher(String, Watcher)
+
+    @Test
+    public void testContainsWatcherOverload_DefaultOverloadMatchesRegisteredWatcher() {
+        Watcher watcher = createMockWatcher("W1");
+
+        assertTrue(watchManager.addWatch(P, watcher, WatcherMode.PERSISTENT));
+
+        assertTrue("The overload without mode must match any registered mode", watchManager.containsWatcher(P, watcher));
+    }
+
+    // TEST removeWatcher(String, Watcher)
+
+    @Test
+    public void testRemoveWatcher_DefaultOverloadRemovesAllModesForPath() {
+        Watcher watcher = createMockWatcher("W1");
+
+        assertTrue(watchManager.addWatch(P, watcher, WatcherMode.STANDARD));
+        assertTrue(watchManager.addWatch(P, watcher, WatcherMode.PERSISTENT));
+        assertTrue(watchManager.removeWatcher(P, watcher));
+        assertFalse(watchManager.containsWatcher(P, watcher, null));
+    }
+
+    // TEST triggerWatch without suppres
+
+    @Test
+    public void testTriggerWatch_DefaultOverloadNotifiesWatcher() {
+        Watcher watcher = createMockWatcher("W1");
+        assertTrue(watchManager.addWatch(P, watcher, WatcherMode.STANDARD));
+        WatcherOrBitSet triggered = watchManager.triggerWatch(P, EventType.NodeDataChanged, 1L, Collections.emptyList());
+
+        assertNotNull(triggered);
+        assertTrue(triggered.contains(watcher));
+        verify(watcher, times(1)).process(any(WatchedEvent.class));
+    }
+
+    // TEST removeWatcher(Watcher)
+
+    @Test
+    public void testRemoveWatcherGlobally_UnregisteredWatcherDoesNothing() {
+        Watcher watcher = createMockWatcher("W1");
+
+        watchManager.removeWatcher(watcher);
+
+        assertEquals(0, watchManager.size());
+        assertFalse(watchManager.containsWatcher(P, watcher, null));
+    }
+
+    @Test
+    public void testRemoveWatcherGlobally_RemovesAllPathsAndPreservesOtherWatcher() {
+        Watcher watcher1 = createMockWatcher("W1");
+        Watcher watcher2 = createMockWatcher("W2");
+
+        assertTrue(watchManager.addWatch(P, watcher1, WatcherMode.STANDARD));
+        assertTrue(watchManager.addWatch(P_OTHER, watcher1, WatcherMode.PERSISTENT));
+        assertTrue(watchManager.addWatch(P, watcher2, WatcherMode.STANDARD));
+        assertEquals("The initial state must contain three path-watcher registrations", 3, watchManager.size());
+
+        watchManager.removeWatcher(watcher1);
+
+        assertFalse("W1 must be removed from P", watchManager.containsWatcher(P, watcher1, null));
+        assertFalse("W1 must be removed from P_OTHER", watchManager.containsWatcher(P_OTHER, watcher1, null));
+
+        assertTrue("W2 must remain registered on P",
+                watchManager.containsWatcher(P, watcher2, WatcherMode.STANDARD));
+
+        assertEquals("Only the W2 registration must remain", 1, watchManager.size());
+    }
+
+    @Test
+    public void testRemoveWatcherGlobally_RemovesRecursiveRegistration() {
+        Watcher watcher = createMockWatcher("W1");
+
+        assertTrue(watchManager.addWatch(P, watcher, WatcherMode.PERSISTENT_RECURSIVE));
+        watchManager.removeWatcher(watcher);
+
+        assertFalse(watchManager.containsWatcher(P, watcher, WatcherMode.PERSISTENT_RECURSIVE));
+
+        WatcherOrBitSet triggered = watchManager.triggerWatch(P_CHILD, EventType.NodeDataChanged,
+                1L, Collections.emptyList(), null);
+
+        assertNull(triggered);
+        verify(watcher, never()).process(any(WatchedEvent.class));
+    }
+
+
+    // Covers stale Watcher
+    @Test
+    public void testAddWatch_StaleServerConnectionIsRejected() {
+        ServerCnxn staleConnection = mock(ServerCnxn.class, "STALE_CONNECTION");
+        when(staleConnection.isStale()).thenReturn(true);
+        boolean added = watchManager.addWatch(P, staleConnection, WatcherMode.STANDARD);
+
+        assertFalse("A stale ServerCnxn must not be registered", added);
+        assertFalse(watchManager.containsWatcher(P, staleConnection, WatcherMode.STANDARD));
+        assertEquals(0, watchManager.size());
+    }
+
+    // Covers non stale Watcher
+    @Test
+    public void testAddWatch_ActiveServerConnectionIsRegistered() {
+        ServerCnxn activeConnection = createMockServerCnxn("ACTIVE_CONNECTION", 0x40L);
+        boolean added = watchManager.addWatch(P, activeConnection, WatcherMode.STANDARD);
+
+        assertTrue(added);
+        assertTrue(watchManager.containsWatcher(P, activeConnection, WatcherMode.STANDARD));
+    }
+
+    // Cover the switch on the events
+    @Test
+    public void testTriggerWatch_NodeCreatedUpdatesEventPath() {
+        assertStandardWatcherTriggeredBy(EventType.NodeCreated);
+    }
+
+    @Test
+    public void testTriggerWatch_NodeDeletedUpdatesEventPath() {
+        assertStandardWatcherTriggeredBy(EventType.NodeDeleted);
+    }
+
+    @Test
+    public void testTriggerWatch_NodeChildrenChangedUpdatesEventPath() {
+        assertStandardWatcherTriggeredBy(EventType.NodeChildrenChanged);
+    }
+
+    @Test
+    public void testTriggerWatch_UnloggedEventTypeStillNotifiesWatcher() {
+        assertStandardWatcherTriggeredBy(EventType.DataWatchRemoved);
+    }
+
+    // Covers serverWatcher
+    @Test
+    public void testTriggerWatch_ServerWatcherReceivesEventAndAcl() {
+        ServerWatcher serverWatcher = mock(ServerWatcher.class, "SERVER_WATCHER");
+        List<ACL> acl = Collections.emptyList();
+        assertTrue(watchManager.addWatch(P, serverWatcher, WatcherMode.PERSISTENT));
+        WatcherOrBitSet triggered = watchManager.triggerWatch(P, EventType.NodeDataChanged, 1L, acl, null);
+        assertNotNull(triggered);
+
+        assertTrue(triggered.contains(serverWatcher));
+        verify(serverWatcher, times(1)).process(any(WatchedEvent.class), same(acl));
+    }
+
+    // Covers getWatchesSummary()
+    @Test
+    public void testGetWatchesSummary_ReportsConnectionsPathsAndWatches() {
+        Watcher watcher1 = createMockWatcher("W1");
+        Watcher watcher2 = createMockWatcher("W2");
+
+        assertTrue(watchManager.addWatch(P, watcher1, WatcherMode.STANDARD));
+        assertTrue(watchManager.addWatch(P_OTHER, watcher1, WatcherMode.PERSISTENT));
+        assertTrue(watchManager.addWatch(P, watcher2, WatcherMode.STANDARD));
+
+        WatchesSummary summary = watchManager.getWatchesSummary();
+        assertEquals(2, summary.getNumConnections());
+        assertEquals(2, summary.getNumPaths());
+        assertEquals(3, summary.getTotalWatches());
+    }
+
+    // Covers toString()
+    @Test
+    public void testToString_ReportsConnectionsPathsAndTotalWatches() {
+        Watcher watcher1 = createMockWatcher("W1");
+        Watcher watcher2 = createMockWatcher("W2");
+
+        assertTrue(watchManager.addWatch(P, watcher1, WatcherMode.STANDARD));
+        assertTrue(watchManager.addWatch(P_OTHER, watcher1, WatcherMode.STANDARD));
+        assertTrue(watchManager.addWatch(P, watcher2, WatcherMode.STANDARD));
+        String description = watchManager.toString();
+
+        assertTrue(description.contains("2 connections watching 2 paths"));
+        assertTrue(description.contains("Total watches:3")
+        );
+    }
+
+    // Covers getWatches()
+    @Test
+    public void testGetWatches_ReportsPathsGroupedBySession() {
+        ServerCnxn connection1 = createMockServerCnxn("C1", 0x40L);
+        ServerCnxn connection2 = createMockServerCnxn("C2", 0x41L);
+
+        assertTrue(watchManager.addWatch(P, connection1, WatcherMode.STANDARD));
+        assertTrue(watchManager.addWatch(P_OTHER, connection1, WatcherMode.PERSISTENT));
+        assertTrue(watchManager.addWatch(P, connection2, WatcherMode.STANDARD));
+
+        WatchesReport report = watchManager.getWatches();
+        assertNotNull(report);
+    }
+
+    // Covers getWatcherByPath
+    @Test
+    public void testGetWatchesByPath_ReportsSessionsGroupedByPath() {
+        ServerCnxn connection1 = createMockServerCnxn("C1", 0x40L);
+        ServerCnxn connection2 = createMockServerCnxn("C2", 0x41L);
+
+        assertTrue(watchManager.addWatch(P, connection1, WatcherMode.STANDARD));
+        assertTrue(watchManager.addWatch(P, connection2, WatcherMode.STANDARD));
+        assertTrue(watchManager.addWatch(P_OTHER, connection1, WatcherMode.PERSISTENT));
+
+        WatchesPathReport report = watchManager.getWatchesByPath();
+        assertNotNull(report);
+    }
+
+    // Covers dumpWatches()
+    @Test
+    public void testDumpWatches_ByPathReportsPathAndSession() {
+        ServerCnxn connection = createMockServerCnxn("C1", 0x40L);
+        assertTrue(watchManager.addWatch(P, connection, WatcherMode.STANDARD));
+
+        StringWriter output = new StringWriter();
+        PrintWriter writer = new PrintWriter(output);
+
+        watchManager.dumpWatches(writer, true);
+        writer.flush();
+
+        String dump = output.toString();
+
+        assertTrue(dump.contains(P));
+        assertTrue(dump.contains("0x40"));
+    }
+
+    @Test
+    public void testDumpWatches() {
+        ServerCnxn connection = createMockServerCnxn("C1", 0x40L);
+
+        assertTrue(watchManager.addWatch(P, connection, WatcherMode.STANDARD));
+        assertTrue(watchManager.addWatch(P_OTHER, connection, WatcherMode.PERSISTENT));
+
+        StringWriter output = new StringWriter();
+        PrintWriter writer = new PrintWriter(output);
+
+        watchManager.dumpWatches(writer, false);
+        writer.flush();
+
+        String dump = output.toString();
+
+        assertTrue(dump.contains("0x40"));
+        assertTrue(dump.contains(P));
+        assertTrue(dump.contains(P_OTHER));
+    }
+
+    // Covers shutdown()
+    @Test
+    public void testShutdown_CompletesWithoutChangingRegistrations() {
+        Watcher watcher = createMockWatcher("W1");
+
+        assertTrue(watchManager.addWatch(P, watcher, WatcherMode.PERSISTENT));
+        watchManager.shutdown();
+
+        assertTrue("The no-op shutdown must not alter current registrations",
+                watchManager.containsWatcher(P, watcher, WatcherMode.PERSISTENT)
+        );
+    }
+
+    // Complete removeWatcher(path, watcher, mode) by recoursive decrement
+    @Test
+    public void testRemoveWatcher_RecursiveModeDisablesAncestorNotification() {
+        Watcher watcher = createMockWatcher("W1");
+        assertTrue(watchManager.addWatch(P, watcher, WatcherMode.PERSISTENT_RECURSIVE));
+        assertTrue(watchManager.removeWatcher(P, watcher, WatcherMode.PERSISTENT_RECURSIVE));
+        assertFalse(watchManager.containsWatcher(P, watcher, WatcherMode.PERSISTENT_RECURSIVE));
+
+        WatcherOrBitSet triggered = watchManager.triggerWatch(P_CHILD, EventType.NodeDataChanged,
+                1L, Collections.emptyList(), null);
+
+        assertNull(triggered);
+        verify(watcher, never()).process(any(WatchedEvent.class));
+    }
+
+
+
+    // HELPER & UTILITY METHODS
+    private ServerCnxn createMockServerCnxn(String name, long sessionId) {
+        ServerCnxn connection = mock(ServerCnxn.class, name);
+        when(connection.getSessionId()).thenReturn(sessionId);
+        when(connection.isStale()).thenReturn(false);
+        return connection;
+    }
+
+    private void assertStandardWatcherTriggeredBy(EventType eventType) {
+        Watcher watcher = createMockWatcher("W_" + eventType);
+        assertTrue(watchManager.addWatch(P, watcher, WatcherMode.STANDARD));
+        WatcherOrBitSet triggered = watchManager.triggerWatch(P, eventType, 1L, Collections.emptyList(), null);
+
+        assertNotNull(triggered);
+        assertTrue(triggered.contains(watcher));
+        verify(watcher, times(1)).process(any(WatchedEvent.class));
+    }
+
 }

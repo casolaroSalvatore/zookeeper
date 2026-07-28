@@ -1,4 +1,4 @@
-package org.apache.zookeeper.server.watch;
+package org.apache.zookeeper.server.watch.watchmanager.llm;
 
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -15,6 +15,9 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.Watcher.Event.EventType;
 import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.server.ServerCnxn;
+import org.apache.zookeeper.server.watch.WatchManager;
+import org.apache.zookeeper.server.watch.WatcherMode;
+import org.apache.zookeeper.server.watch.WatcherOrBitSet;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -23,7 +26,7 @@ import org.mockito.ArgumentCaptor;
  * Guided JUnit4 tests for WatchManager focused exclusively watchers are not processed * Guided JUnit4 tests for WatchManager focused exclusively on:
  * - triggering a path with no watchers returns null
  */
-public class WatchManagerTestLLMGuidedToTFewShot {
+public class WatchManagerLLMGuidedToTFewShotTest {
 
     private WatchManager watchManager;
 

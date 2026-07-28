@@ -5,7 +5,7 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class RegressionTest0BeforeFacade {
+public class RegressionTestBeforeFacadeTest0 {
 
     public static boolean debug = false;
 

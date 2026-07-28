@@ -1,9 +1,11 @@
+package org.apache.zookeeper.server.snapshotcomparer.randoop.afterfacade;
+
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class RegressionTest0AfterFacade {
+public class RegressionTestAfterFacadeTest0 {
 
     public static boolean debug = false;
 

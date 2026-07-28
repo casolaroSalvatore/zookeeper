@@ -4,7 +4,7 @@
  * Tue Jun 30 17:05:34 GMT 2026
  */
 
-package org.apache.zookeeper.server;
+package org.apache.zookeeper.server.snapshotcomparer.evosuite.snapshotcomparerbranch;
 
 import org.evosuite.runtime.annotation.EvoSuiteClassExclude;
 import org.junit.BeforeClass;
@@ -12,7 +12,6 @@ import org.junit.Before;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.evosuite.runtime.sandbox.Sandbox;
-import org.evosuite.runtime.sandbox.Sandbox.SandboxMode;
 
 @EvoSuiteClassExclude
 public class SnapshotComparer_ESTest_scaffolding {

@@ -1,20 +1,5 @@
 package org.apache.zookeeper.server.snapshotcomparer.blackbox;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.Locale;
-
 import org.apache.zookeeper.server.SnapshotComparer;
 import org.apache.zookeeper.util.ServiceUtils;
 import org.junit.Ignore;
@@ -22,40 +7,15 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-/**
- * Black-box tests for SnapshotComparer derived from Category Partition,
- * Boundary Value Analysis and the final selected test suite.
- *
- * SnapshotComparer is executed in the current JUnit JVM through its public
- * command-line entry point, SnapshotComparer.main(String[]).
- * System.in, System.out and System.err are temporarily replaced in order to
- * provide interactive input and capture the observable CLI output.
- * SnapshotComparer delegates invalid-invocation termination to
- * ServiceUtils.requestSystemExit(). The test suite temporarily overrides the
- * corresponding exit procedure, allowing the requested exit status to be
- * observed without terminating the JUnit JVM.
- * Running the SUT in-process allows JaCoCo to instrument and measure the
- * execution of SnapshotComparer directly.
- *
- * Required folder:
- *   src/test/resources/data/comparer/
- *
- * Required assets:
- *   left.snap
- *   right_plus_1.snap
- *   right_identical.snap
- *   right_plus_1.gz
- *   left_mixed.snap
- *   right_mixed.snap
- *
- * Additional assets required by the ephemeral-node test:
- *   left_ephemeral.snap
- *   right_ephemeral.snap
- *
- * The ephemeral pair must differ only, or at least observably, at the calibrated
- * ephemeral path /ephemeral_test. SnapshotComparer must not report that path.
- */
-public class SnapshotComparerBlackBoxTest {
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.Locale;
+
+import static org.junit.Assert.*;
+
+public class SnapshotComparerBlackBoxCFMutationTest {
 
     private static final String BASE = "src/test/resources/data/comparer/";
     private static final String LEFT = BASE + "left.snap";
@@ -84,7 +44,8 @@ public class SnapshotComparerBlackBoxTest {
 
     // TEST
 
-    // T0, testT0_BaseChoice_HappyPath
+    /* MODIFIED IN ORDER TO KILL MUTANTS
+    T0, testT0_BaseChoice_HappyPath
     @Test
     public void testT0_BaseChoice_HappyPath() throws Exception {
         assertCoreAssets();
@@ -94,7 +55,26 @@ public class SnapshotComparerBlackBoxTest {
         assertOutputContains(result, "Node /payload found only in right tree");
         assertOutputDoesNotContainAny(result, "Exception in thread", "failed to deserialize");
     }
+    */
 
+    // T0, testT0_BaseChoice_HappyPath
+    @Test
+    public void testT0_BaseChoice_HappyPath() throws Exception {
+        assertCoreAssets();
+        RunResult result = runSnapshotComparer(args("-l", LEFT, "-r", RIGHT_PLUS_1, "-b", "0", "-n", "0"));
+        assertCompletedSuccessfully(result);
+
+        assertOutputContains(result, "Node /nodo_extra found only in right tree");
+        assertOutputContains(result, "Node /payload found only in right tree");
+        assertOutputDoesNotContainAny(result, "Exception in thread", "failed to deserialize");
+        assertOutputContains(result, "Successfully parsed options!");
+        assertOutputContains(result, "Deserialized snapshot in left.snap");
+        assertOutputContains(result, "Deserialized snapshot in right_plus_1.snap");
+        assertEquals("Both tree summaries must be printed", 2, countOccurrencesIgnoreCase(result.output, "Node count:"));
+        assertEquals("Both total-size summaries must be printed", 2, countOccurrencesIgnoreCase(result.output, "Total size:"));
+    }
+
+    /* MODIFIED IN ORDER TO KILL MUTANTS
     // T1, testConfig_MissingNodeThreshold_PrintsUsageOrFailsGracefully
     @Test
     public void testConfig_MissingNodeThreshold_PrintsUsageOrFailsGracefully() throws Exception {
@@ -102,6 +82,23 @@ public class SnapshotComparerBlackBoxTest {
         RunResult result = runSnapshotComparer(args("-l", LEFT, "-r", RIGHT_PLUS_1, "-b", "0"));
         assertFailed(result);
         assertOutputContainsAny(result, "usage", "missing", "required", "parse", "option");
+        assertOutputDoesNotContain(result, "All layers compared");
+    } */
+
+    // T1, testConfig_MissingNodeThreshold_PrintsErrorAndUsage
+    @Test
+    public void testConfig_MissingNodeThreshold_PrintsErrorAndUsage() throws Exception {
+        assertCoreAssets();
+        RunResult result = runSnapshotComparer(args("-l", LEFT, "-r", RIGHT_PLUS_1, "-b", "0"));
+        assertFailed(result);
+
+        // Parser error
+        assertOutputContainsAny(result, "missing required option", "missing required options");
+
+        // Usage generated by HelpFormatter.
+        assertOutputContains(result, "java -cp");
+        assertOutputContains(result, "SnapshotComparer");
+        assertOutputContains(result, "--nodes");
         assertOutputDoesNotContain(result, "All layers compared");
     }
 
@@ -238,6 +235,7 @@ public class SnapshotComparerBlackBoxTest {
         assertOutputContains(result, "Node /payload found only in left tree");
     }
 
+    /* MODIFIED TO KILL MUTANTS
     // T33, testRelation_MixedDifferences_AreReported
     @Test
     public void testRelation_MixedDifferences_AreReported() throws Exception {
@@ -247,6 +245,27 @@ public class SnapshotComparerBlackBoxTest {
         assertOutputContains(result, "Node /new found only in right tree");
         assertOutputContains(result, "Node /old found only in left tree");
         assertQuantitativeDeltaForPath(result, "/payload", D_BYTES + " bytes");
+        assertQuantitativeDeltaForPath(result, "/parent", "-1 bytes, -" + D_NODES + " descendants");
+    } */
+
+    // T33, testRelation_MixedDifferences_AreReported
+    @Test
+    public void testRelation_MixedDifferences_AreReported() throws Exception {
+        assertMixedAssets();
+        RunResult result = runMixedComparison("0", "0");
+
+        assertCompletedSuccessfully(result);
+        assertOutputContains(result, "Node /new found only in right tree. " + "Descendant size: 3. "
+                + "Descendant count: 0");
+
+        assertOutputContains(result, "Node /old found only in left tree. " + "Descendant size: 3. "
+                + "Descendant count: 0");
+
+        assertOutputContains(result, "Node /parent/leftOnly found only in left tree. " + "Descendant size: 1. "
+                        + "Descendant count: 0");
+
+        assertQuantitativeDeltaForPath(result, "/payload", D_BYTES + " bytes");
+
         assertQuantitativeDeltaForPath(result, "/parent", "-1 bytes, -" + D_NODES + " descendants");
     }
 
@@ -304,6 +323,127 @@ public class SnapshotComparerBlackBoxTest {
         assertNoQuantitativeDeltaForPath(result, "/parent");
     }
 
+    /* MODIFIED TO KILL MUTANTS
+    T44, testMode_DebugPresent_AddsDiagnosticOutput
+    @Test
+    public void testMode_DebugPresent_AddsDiagnosticOutput() throws Exception {
+        assertCoreAssets();
+
+        RunResult standardResult = runSnapshotComparer(args("-l", LEFT, "-r", RIGHT_PLUS_1, "-b", "0", "-n", "0"));
+
+        RunResult debugResult = runSnapshotComparer(args("-l", LEFT, "-r", RIGHT_PLUS_1, "-b", "0",
+                "-n", "0", "-d"));
+
+        assertCompletedSuccessfully(standardResult);
+        assertCompletedSuccessfully(debugResult);
+
+        assertOutputContains(debugResult, "Comparing");
+
+        assertOutputDoesNotContain(standardResult, "Comparing");
+    } */
+
+    // T44, testMode_DebugPresent_AddsDiagnosticOutput
+    @Test
+    public void testMode_DebugPresent_AddsDiagnosticOutput() throws Exception {
+        assertCoreAssets();
+
+        RunResult standardResult = runSnapshotComparer(args("-l", LEFT, "-r", RIGHT_PLUS_1, "-b", "0", "-n", "0"));
+
+        RunResult debugResult = runSnapshotComparer(args("-l", LEFT, "-r", RIGHT_PLUS_1, "-b", "0",
+                "-n", "0", "-d"));
+
+        assertCompletedSuccessfully(standardResult);
+        assertCompletedSuccessfully(debugResult);
+
+        assertOutputContains(debugResult, "Comparing");
+        assertOutputContains(debugResult, "same");
+
+        assertOutputDoesNotContain(standardResult, "Comparing");
+        assertOutputDoesNotContain(standardResult, "same");
+    }
+
+    // T45, testDebug_HighThresholds_ReportsFilteredLeftAndRightNodes
+    @Test
+    public void testDebug_HighThresholds_ReportsFilteredLeftAndRightNodes() throws Exception {
+
+        assertMixedAssets();
+        RunResult result = runSnapshotComparer(args("-l", LEFT_MIXED, "-r", RIGHT_MIXED, "-b", VERY_HIGH_THRESHOLD,
+                "-n", VERY_HIGH_THRESHOLD, "-d"));
+
+        assertCompletedSuccessfully(result);
+        assertOutputContains(result, "Comparing");
+        assertOutputContains(result, "left is less");
+        assertOutputContains(result, "right is less");
+        assertOutputContains(result, "Filtered left node /old");
+        assertOutputContains(result, "Filtered right node /new");
+        assertOutputContains(result, "same");
+    }
+
+    /* MODIFIED TO KILL MUTANTS
+    T45, testDebug_HighThresholds_ReportsFilteredLeftAndRightNodes
+    @Test
+    public void testDebug_HighThresholds_ReportsFilteredLeftAndRightNodes() throws Exception {
+
+        assertMixedAssets();
+        RunResult result = runSnapshotComparer(args("-l", LEFT_MIXED, "-r", RIGHT_MIXED, "-b", VERY_HIGH_THRESHOLD,
+                "-n", VERY_HIGH_THRESHOLD, "-d"));
+
+        assertCompletedSuccessfully(result);
+        assertOutputContains(result, "Comparing");
+        assertOutputContains(result, "left is less");
+        assertOutputContains(result, "right is less");
+        assertOutputContains(result, "Filtered left node /old");
+        assertOutputContains(result, "Filtered right node /new");
+    }
+    */
+
+    /* MODIFIED TO KILL MUTANTS
+    // T49, testInteractive_ValidDepth_AnalyzesSelectedLayer
+    @Test
+    public void testInteractive_ValidDepth_AnalyzesSelectedLayer() throws Exception {
+        assertCoreAssets();
+        String stdin = interactiveInput("1", INTERACTIVE_COMPLETION_NEWLINES);
+        RunResult result = runSnapshotComparer(args("-l", LEFT, "-r", RIGHT_PLUS_1, "-b", "0", "-n", "0", "-i"), stdin);
+
+        assertCompletedSuccessfully(result);
+        assertOutputContains(result, "Analysis for depth 1");
+        assertOutputDoesNotContain(result, "Depth must be in range");
+    } */
+
+    // T49, testInteractive_ValidDepth_AnalyzesSelectedLayer
+    @Test
+    public void testInteractive_ValidDepth_AnalyzesSelectedLayer() throws Exception {
+        assertCoreAssets();
+
+        String stdin = interactiveInput("1", INTERACTIVE_COMPLETION_NEWLINES);
+
+        RunResult result = runSnapshotComparer(args("-l", LEFT, "-r", RIGHT_PLUS_1, "-b", "0",
+                        "-n", "0", "-i"), stdin);
+
+        assertCompletedSuccessfully(result);
+        assertOutputContains(result, "Analysis for depth 1");
+        assertOutputDoesNotContain(result, "Depth must be in range");
+
+        String depthOutput = outputSection(result, "Analysis for depth 1", "Current depth is");
+
+        assertTrue("The selected layer must report the node " + "that exists only in the right tree."
+                        + "\nDepth output:\n" + depthOutput, depthOutput.contains(
+                                "Node /nodo_extra found only in right tree. "
+                                + "Descendant size: 5. "
+                                + "Descendant count: 0")
+        );
+
+        assertTrue(
+                "The selected layer must report /payload."
+                        + "\nDepth output:\n" + depthOutput,
+                depthOutput.contains(
+                        "Node /payload found only in right tree. "
+                                + "Descendant size: 10. "
+                                + "Descendant count: 0"
+                )
+        );
+    }
+
     // T50, testInteractive_DepthBelowMinimum_PrintsRangeError
     @Test
     public void testInteractive_DepthBelowMinimum_PrintsRangeError() throws Exception {
@@ -312,6 +452,70 @@ public class SnapshotComparerBlackBoxTest {
         RunResult result = runSnapshotComparer(args("-l", LEFT, "-r", RIGHT_PLUS_1, "-b", "0", "-n", "0", "-i"), stdin);
         assertCompletedSuccessfully(result);
         assertOutputContains(result, "Depth must be in range [0, 2]");
+    }
+
+    /* MODIFIED IN ORDER TO KILL MUTANTS
+    // T51, testInteractive_DepthAboveMaximum_PrintsRangeError
+    @Test
+    public void testInteractive_DepthAboveMaximum_PrintsRangeError() throws Exception {
+        assertCoreAssets();
+        String stdin = interactiveInput("3", INTERACTIVE_COMPLETION_NEWLINES);
+        RunResult result = runSnapshotComparer(args("-l", LEFT, "-r", RIGHT_PLUS_1, "-b", "0", "-n", "0", "-i"), stdin);
+
+        assertCompletedSuccessfully(result);
+        assertOutputContains(result, "Depth must be in range [0, 2]");
+    } */
+
+    // T51, testInteractive_DepthAtUpperInvalidBoundary_PrintsRangeError
+    @Test
+    public void testInteractive_DepthAtUpperInvalidBoundary_PrintsRangeError() throws Exception {
+        assertCoreAssets();
+        String stdin = interactiveInput("3", INTERACTIVE_COMPLETION_NEWLINES);
+
+        RunResult result = runSnapshotComparer(args("-l", LEFT, "-r", RIGHT_PLUS_1, "-b", "0",
+                        "-n", "0", "-i"), stdin);
+        assertCompletedSuccessfully(result);
+        assertOutputContains(result, "Depth must be in range [0, 2]");
+        assertOutputDoesNotContain(result, "Analysis for depth 3");
+    }
+
+    /* MODIFIED IN ORDER TO KILL MUTANTS
+    T53, testInteractive_ExistingAbsolutePath_AnalyzesSubtree
+    @Test
+    public void testInteractive_ExistingAbsolutePath_AnalyzesSubtree() throws Exception {
+        assertMixedAssets(); // Usiamo i mixed per avere dei payload
+        // Inseriamo un path assoluto valido esistente nei file .snap
+        String stdin = interactiveInput("/payload", INTERACTIVE_COMPLETION_NEWLINES);
+        RunResult result = runSnapshotComparer(args("-l", LEFT_MIXED, "-r", RIGHT_MIXED, "-b", "0", "-n", "0", "-i"), stdin);
+
+        assertCompletedSuccessfully(result);
+        assertOutputContains(result, "Analysis for node /payload");
+    }
+    */
+
+    // T53, testInteractive_ExistingAbsolutePath_AnalyzesSubtree
+    @Test
+    public void testInteractive_ExistingNonLeafPath_AnalyzesSubtree() throws Exception {
+
+        assertMixedAssets();
+        String stdin = interactiveInput("/parent", INTERACTIVE_COMPLETION_NEWLINES);
+
+        RunResult result = runSnapshotComparer(args("-l", LEFT_MIXED, "-r", RIGHT_MIXED,
+                        "-b", "0", "-n", "0", "-i"), stdin);
+        assertCompletedSuccessfully(result);
+
+        assertOutputContains(result, "Analysis for node /parent");
+        String subtreeOutput = outputSection(result, "Analysis for node /parent", "Current depth is");
+
+        assertTrue(
+                "The analysis of /parent must compare its immediate children."
+                        + "\nSubtree output:\n" + subtreeOutput,
+                subtreeOutput.contains(
+                        "Node /parent/leftOnly found only in left tree. "
+                                + "Descendant size: 1. "
+                                + "Descendant count: 0"
+                )
+        );
     }
 
     // T54, testInteractive_InvalidAbsolutePath_PrintsError
@@ -323,6 +527,89 @@ public class SnapshotComparerBlackBoxTest {
         assertCompletedSuccessfully(result);
         assertOutputContainsAny(result, "Path /nodo_inesistente is neither found " + "in left tree nor right tree", "not found in either tree", "absent from both trees");
     }
+
+    // T55, testInteractive_GenericText_PrintsInvalidInput
+    @Test
+    public void testInteractive_GenericText_PrintsInvalidInput() throws Exception {
+        assertCoreAssets();
+        String stdin = interactiveInput("non-sono-un-numero", INTERACTIVE_COMPLETION_NEWLINES);
+        RunResult result = runSnapshotComparer(args("-l", LEFT, "-r", RIGHT_PLUS_1, "-b", "0", "-n", "0", "-i"), stdin);
+
+        assertCompletedSuccessfully(result);
+        assertOutputContains(result, "non-sono-un-numero");
+        assertOutputContains(result, "is not valid");
+    }
+
+    /* MODIFIED IN ORDER TO KILL MUTANTS
+    // T56, testInteractive_HighThresholds_PrintsFilteredNodes
+    @Test
+    public void testInteractive_HighThresholds_PrintsFilteredNodes() throws Exception {
+
+        assertMixedAssets();
+        String stdin = interactiveInput("0", INTERACTIVE_COMPLETION_NEWLINES);
+
+        RunResult result = runSnapshotComparer(args("-l", LEFT_MIXED, "-r", RIGHT_MIXED,
+                "-b", VERY_HIGH_THRESHOLD, "-n", VERY_HIGH_THRESHOLD, "-i"), stdin);
+
+        assertCompletedSuccessfully(result);
+        assertOutputContainsAny(result, "Filtered left node", "Filtered right node", "Filtered node");
+    } */
+
+    // T56, testInteractive_HighThresholds_PrintsFilteredNodes
+    // The trailing empty lines advance the interactive comparison through
+    // all available levels, making the three filtering cases observable.
+    @Test
+    public void testInteractive_HighThresholds_PrintsFilteredNodes() throws Exception {
+        assertMixedAssets();
+        String stdin = interactiveInput("0", INTERACTIVE_COMPLETION_NEWLINES);
+
+        RunResult result = runSnapshotComparer(args("-l", LEFT_MIXED, "-r", RIGHT_MIXED,
+                "-b", VERY_HIGH_THRESHOLD, "-n", VERY_HIGH_THRESHOLD, "-i"), stdin);
+
+        assertCompletedSuccessfully(result);
+
+        // New assertion for Mutation Testing: substitute assertOutputContainsAny with strinct controls
+        assertOutputContains(result, "Filtered left node /old");
+        assertOutputContains(result, "Filtered right node /new");
+        assertOutputContains(result, "Filtered node /payload");
+    }
+
+    // ADDED IN ORDER TO IMPROVE METRICS
+    @Test
+    public void testInteractive_MaximumValidDepth_IsAccepted() throws Exception {
+
+        assertCoreAssets();
+        String stdin = interactiveInput("2", INTERACTIVE_COMPLETION_NEWLINES);
+
+        RunResult result = runSnapshotComparer(args("-l", LEFT, "-r", RIGHT_PLUS_1,
+                        "-b", "0", "-n", "0", "-i"), stdin);
+        assertCompletedSuccessfully(result);
+        assertOutputContains(result, "Analysis for depth 2");
+
+        assertOutputDoesNotContain(result, "Depth must be in range");
+    }
+
+    @Test
+    public void testInteractive_EnterActuallyComparesCurrentDepth() throws Exception {
+        assertCoreAssets();
+
+        String stdin = interactiveInput("", INTERACTIVE_COMPLETION_NEWLINES);
+
+        RunResult result = runSnapshotComparer(args("-l", LEFT, "-r", RIGHT_PLUS_1, "-b", "0",
+                        "-n", "0", "-i"), stdin);
+
+        assertCompletedSuccessfully(result);
+        assertOutputContains(result, "Analysis for depth 0");
+
+        String depthZeroOutput = outputSection(result, "Analysis for depth 0", "Current depth is");
+
+        assertTrue("Pressing Enter must compare the root nodes " + "at the current depth."
+                        + "\nDepth-zero output:\n" + depthZeroOutput, depthZeroOutput.contains("Node  found in both trees. "
+                                + "Delta: 16 bytes, 3 descendants"
+                )
+        );
+    }
+
 
     // HELPER METHODS & INNER CLASSES
 
@@ -547,5 +834,42 @@ public class SnapshotComparerBlackBoxTest {
             super("ServiceUtils.requestSystemExit(" + status + ") intercepted during black-box execution");
             this.status = status;
         }
+    }
+
+    // ADDED IN ORDER TO IMPROVE METRICS
+    private static int countOccurrencesIgnoreCase(String text, String fragment) {
+
+        String normalizedText = text.toLowerCase(Locale.ROOT);
+        String normalizedFragment = fragment.toLowerCase(Locale.ROOT);
+
+        int count = 0;
+        int index = 0;
+
+        while ((index = normalizedText.indexOf(normalizedFragment, index)) >= 0) {
+            count++;
+            index += normalizedFragment.length();
+        }
+        return count;
+    }
+
+    // Extracts the portion of captured output between two markers. The start marker is excluded
+    // from the returned value. If the end marker is not found, the section extends to the end
+    // of the captured output.
+    private static String outputSection(RunResult result, String startMarker, String endMarker) {
+
+        String output = result.output;
+        int start = output.indexOf(startMarker);
+
+        assertTrue("Start marker not found: " + startMarker + "\nActual output:\n" + output,
+                start >= 0);
+
+        int contentStart = start + startMarker.length();
+        int end = output.indexOf(endMarker, contentStart);
+
+        if (end < 0) {
+            end = output.length();
+        }
+
+        return output.substring(contentStart, end);
     }
 }

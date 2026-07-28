@@ -1,4 +1,4 @@
-package org.apache.zookeeper.server;
+package org.apache.zookeeper.server.snapshotcomparer.llm;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -19,7 +19,9 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class SnapshotComparerTestLLMFewShot {
+import org.apache.zookeeper.server.SnapshotComparer;
+
+public class SnapshotComparerLLMFewShotTest {
 
     private static final String LEFT =
             "src/test/resources/data/comparer/left.snap";

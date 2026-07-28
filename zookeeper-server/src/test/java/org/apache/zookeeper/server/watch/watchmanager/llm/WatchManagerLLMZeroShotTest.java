@@ -1,4 +1,4 @@
-package org.apache.zookeeper.server.watch;
+package org.apache.zookeeper.server.watch.watchmanager.llm;
 
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
@@ -8,16 +8,13 @@ import org.apache.zookeeper.server.watch.WatchManager;
 import org.apache.zookeeper.server.watch.WatcherMode;
 import org.apache.zookeeper.server.watch.WatcherOrBitSet;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Set;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.Assert.*;
 
-public class WatchManagerTestLLMZeroShot {
+public class WatchManagerLLMZeroShotTest {
     private WatchManager watchManager;
     private RecordingWatcher watcher;
 

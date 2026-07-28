@@ -5,6 +5,7 @@
 
 package org.apache.zookeeper.server.watch;
 
+import org.apache.zookeeper.server.watch.watchmanager.evosuite.WatchManager_ESTest_scaffolding;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.evosuite.runtime.EvoAssertions.*;
@@ -16,19 +17,12 @@ import java.util.Stack;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.server.DumbWatcher;
-import org.apache.zookeeper.server.watch.WatchManager;
-import org.apache.zookeeper.server.watch.WatchStats;
-import org.apache.zookeeper.server.watch.WatcherMode;
-import org.apache.zookeeper.server.watch.WatcherOrBitSet;
-import org.apache.zookeeper.server.watch.WatchesPathReport;
-import org.apache.zookeeper.server.watch.WatchesReport;
-import org.apache.zookeeper.server.watch.WatchesSummary;
 import org.evosuite.runtime.EvoRunner;
 import org.evosuite.runtime.EvoRunnerParameters;
 import org.evosuite.runtime.mock.java.io.MockPrintWriter;
 import org.junit.runner.RunWith;
 
-@RunWith(EvoRunner.class) @EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, separateClassLoader = true) 
+@RunWith(EvoRunner.class) @EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, separateClassLoader = false)
 public class WatchManager_ESTest extends WatchManager_ESTest_scaffolding {
 
   @Test(timeout = 4000)

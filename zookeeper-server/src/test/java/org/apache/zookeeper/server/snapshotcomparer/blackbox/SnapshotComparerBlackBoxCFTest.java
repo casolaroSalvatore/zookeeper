@@ -1,20 +1,5 @@
 package org.apache.zookeeper.server.snapshotcomparer.blackbox;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.Locale;
-
 import org.apache.zookeeper.server.SnapshotComparer;
 import org.apache.zookeeper.util.ServiceUtils;
 import org.junit.Ignore;
@@ -22,40 +7,15 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-/**
- * Black-box tests for SnapshotComparer derived from Category Partition,
- * Boundary Value Analysis and the final selected test suite.
- *
- * SnapshotComparer is executed in the current JUnit JVM through its public
- * command-line entry point, SnapshotComparer.main(String[]).
- * System.in, System.out and System.err are temporarily replaced in order to
- * provide interactive input and capture the observable CLI output.
- * SnapshotComparer delegates invalid-invocation termination to
- * ServiceUtils.requestSystemExit(). The test suite temporarily overrides the
- * corresponding exit procedure, allowing the requested exit status to be
- * observed without terminating the JUnit JVM.
- * Running the SUT in-process allows JaCoCo to instrument and measure the
- * execution of SnapshotComparer directly.
- *
- * Required folder:
- *   src/test/resources/data/comparer/
- *
- * Required assets:
- *   left.snap
- *   right_plus_1.snap
- *   right_identical.snap
- *   right_plus_1.gz
- *   left_mixed.snap
- *   right_mixed.snap
- *
- * Additional assets required by the ephemeral-node test:
- *   left_ephemeral.snap
- *   right_ephemeral.snap
- *
- * The ephemeral pair must differ only, or at least observably, at the calibrated
- * ephemeral path /ephemeral_test. SnapshotComparer must not report that path.
- */
-public class SnapshotComparerBlackBoxTest {
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.Locale;
+
+import static org.junit.Assert.*;
+
+public class SnapshotComparerBlackBoxCFTest {
 
     private static final String BASE = "src/test/resources/data/comparer/";
     private static final String LEFT = BASE + "left.snap";
@@ -322,6 +282,104 @@ public class SnapshotComparerBlackBoxTest {
         RunResult result = runSnapshotComparer(args("-l", LEFT, "-r", RIGHT_PLUS_1, "-b", "0", "-n", "0", "-i"), stdin);
         assertCompletedSuccessfully(result);
         assertOutputContainsAny(result, "Path /nodo_inesistente is neither found " + "in left tree nor right tree", "not found in either tree", "absent from both trees");
+    }
+
+
+    // ADDED IN ORDER TO IMPROVE METRICS
+
+    // T44, testMode_DebugPresent_AddsDiagnosticOutput
+    @Test
+    public void testMode_DebugPresent_AddsDiagnosticOutput() throws Exception {
+        assertCoreAssets();
+
+        RunResult standardResult = runSnapshotComparer(args("-l", LEFT, "-r", RIGHT_PLUS_1, "-b", "0", "-n", "0"));
+
+        RunResult debugResult = runSnapshotComparer(args("-l", LEFT, "-r", RIGHT_PLUS_1, "-b", "0",
+                "-n", "0", "-d"));
+
+        assertCompletedSuccessfully(standardResult);
+        assertCompletedSuccessfully(debugResult);
+
+        assertOutputContains(debugResult, "Comparing");
+
+        assertOutputDoesNotContain(standardResult, "Comparing");
+    }
+
+    // T45, testDebug_HighThresholds_ReportsFilteredLeftAndRightNodes
+    @Test
+    public void testDebug_HighThresholds_ReportsFilteredLeftAndRightNodes() throws Exception {
+
+        assertMixedAssets();
+        RunResult result = runSnapshotComparer(args("-l", LEFT_MIXED, "-r", RIGHT_MIXED, "-b", VERY_HIGH_THRESHOLD,
+                "-n", VERY_HIGH_THRESHOLD, "-d"));
+
+        assertCompletedSuccessfully(result);
+        assertOutputContains(result, "Comparing");
+        assertOutputContains(result, "left is less");
+        assertOutputContains(result, "right is less");
+        assertOutputContains(result, "Filtered left node /old");
+        assertOutputContains(result, "Filtered right node /new");
+    }
+
+    // T49, testInteractive_ValidDepth_AnalyzesSelectedLayer
+    @Test
+    public void testInteractive_ValidDepth_AnalyzesSelectedLayer() throws Exception {
+        assertCoreAssets();
+        String stdin = interactiveInput("1", INTERACTIVE_COMPLETION_NEWLINES);
+        RunResult result = runSnapshotComparer(args("-l", LEFT, "-r", RIGHT_PLUS_1, "-b", "0", "-n", "0", "-i"), stdin);
+
+        assertCompletedSuccessfully(result);
+        assertOutputContains(result, "Analysis for depth 1");
+        assertOutputDoesNotContain(result, "Depth must be in range");
+    }
+
+    // T51, testInteractive_DepthAboveMaximum_PrintsRangeError
+    @Test
+    public void testInteractive_DepthAboveMaximum_PrintsRangeError() throws Exception {
+        assertCoreAssets();
+        String stdin = interactiveInput("3", INTERACTIVE_COMPLETION_NEWLINES);
+        RunResult result = runSnapshotComparer(args("-l", LEFT, "-r", RIGHT_PLUS_1, "-b", "0", "-n", "0", "-i"), stdin);
+
+        assertCompletedSuccessfully(result);
+        assertOutputContains(result, "Depth must be in range [0, 2]");
+    }
+
+    // T53, testInteractive_ExistingAbsolutePath_AnalyzesSubtree
+    @Test
+    public void testInteractive_ExistingNonLeafPath_AnalyzesSubtree() throws Exception {
+        assertMixedAssets();
+        String stdin = interactiveInput("/parent", INTERACTIVE_COMPLETION_NEWLINES);
+
+        RunResult result = runSnapshotComparer(args("-l", LEFT_MIXED, "-r", RIGHT_MIXED, "-b", "0", "-n", "0", "-i"), stdin);
+        assertCompletedSuccessfully(result);
+        assertOutputContains(result, "Analysis for node /parent");
+        assertOutputContains(result, "Node /parent/leftOnly found only in left tree");
+    }
+
+    // T55, testInteractive_GenericText_PrintsInvalidInput
+    @Test
+    public void testInteractive_GenericText_PrintsInvalidInput() throws Exception {
+        assertCoreAssets();
+        String stdin = interactiveInput("non-sono-un-numero", INTERACTIVE_COMPLETION_NEWLINES);
+        RunResult result = runSnapshotComparer(args("-l", LEFT, "-r", RIGHT_PLUS_1, "-b", "0", "-n", "0", "-i"), stdin);
+
+        assertCompletedSuccessfully(result);
+        assertOutputContains(result, "non-sono-un-numero");
+        assertOutputContains(result, "is not valid");
+    }
+
+    // T56, testInteractive_HighThresholds_PrintsFilteredNodes
+    @Test
+    public void testInteractive_HighThresholds_PrintsFilteredNodes() throws Exception {
+
+        assertMixedAssets();
+        String stdin = interactiveInput("0", INTERACTIVE_COMPLETION_NEWLINES);
+
+        RunResult result = runSnapshotComparer(args("-l", LEFT_MIXED, "-r", RIGHT_MIXED,
+                        "-b", VERY_HIGH_THRESHOLD, "-n", VERY_HIGH_THRESHOLD, "-i"), stdin);
+
+        assertCompletedSuccessfully(result);
+        assertOutputContainsAny(result, "Filtered left node", "Filtered right node", "Filtered node");
     }
 
     // HELPER METHODS & INNER CLASSES

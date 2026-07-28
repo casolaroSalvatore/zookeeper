@@ -1,4 +1,4 @@
-package org.apache.zookeeper.server;
+package org.apache.zookeeper.server.snapshotcomparer.llm;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -11,7 +11,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.zookeeper.ZooDefs;
+import org.apache.zookeeper.server.DataTree;
 import org.apache.zookeeper.server.persistence.FileSnap;
+import org.apache.zookeeper.server.SnapshotComparer;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,7 +34,7 @@ import org.junit.rules.TemporaryFolder;
 
  access to private implementation details.
  */
-public class SnapshotComparerTestLLMZeroShot {
+public class SnapshotComparerLLMZeroShotTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
     private long zxid = 1L;

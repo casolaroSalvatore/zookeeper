@@ -1,4 +1,4 @@
-package org.apache.zookeeper.server;
+package org.apache.zookeeper.server.snapshotcomparer.llm;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.zookeeper.server.SnapshotComparer;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -34,7 +35,7 @@ import org.junit.Test;
  * <p>The tests intentionally do not use reflection, Unsafe, private nested
  * classes, or assumptions about snapshot serialization internals.
  */
-public class SnapshotComparerTestGuidedToTFewShot {
+public class SnapshotComparerGuidedToTFewShotTest {
 
     private static final String FIXTURE_DIRECTORY =
             "src/test/resources/data/comparer";

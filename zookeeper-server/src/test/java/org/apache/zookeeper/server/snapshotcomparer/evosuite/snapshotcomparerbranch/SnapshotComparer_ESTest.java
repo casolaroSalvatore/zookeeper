@@ -3,7 +3,7 @@
  * Tue Jun 30 17:05:34 GMT 2026
  */
 
-package org.apache.zookeeper.server;
+package org.apache.zookeeper.server.snapshotcomparer.evosuite.snapshotcomparerbranch;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -14,7 +14,7 @@ import org.evosuite.runtime.EvoRunnerParameters;
 import org.evosuite.runtime.System;
 import org.junit.runner.RunWith;
 
-@RunWith(EvoRunner.class) @EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, separateClassLoader = true) 
+@RunWith(EvoRunner.class) @EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, separateClassLoader = false)
 public class SnapshotComparer_ESTest extends SnapshotComparer_ESTest_scaffolding {
 
   @Test(timeout = 4000)

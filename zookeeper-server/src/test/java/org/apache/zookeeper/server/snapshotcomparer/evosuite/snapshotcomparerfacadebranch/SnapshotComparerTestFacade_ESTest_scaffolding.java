@@ -4,7 +4,7 @@
  * Mon Jul 27 13:36:03 GMT 2026
  */
 
-package org.apache.zookeeper.server.snapshotcomparer.evosuite.snapshot;
+package org.apache.zookeeper.server.snapshotcomparer.evosuite.snapshotcomparerfacadebranch;
 
 import org.evosuite.runtime.annotation.EvoSuiteClassExclude;
 import org.junit.BeforeClass;
