@@ -106,6 +106,7 @@ public class SnapshotComparerBlackBoxTest {
     }
 
     // T3, testConfig_DuplicateLeftFlag_DeterministicParserBehavior
+    // Robustness test for an unspecified duplicate-option scenario
     @Test
     public void testConfig_DuplicateLeftFlag_DeterministicParserBehavior() throws Exception {
         assertCoreAssets();
@@ -149,7 +150,7 @@ public class SnapshotComparerBlackBoxTest {
         Files.write(corruptFile.toPath(), "this is not a valid ZooKeeper snapshot".getBytes(StandardCharsets.UTF_8));
         RunResult result = runSnapshotComparer(args("-l", corruptFile.getAbsolutePath(), "-r", RIGHT_PLUS_1, "-b", "0", "-n", "0"));
         assertFailed(result);
-        assertOutputContainsAny(result, "snapshot", "magic", "checksum", "deserialize", "exception", "eof");
+        assertOutputContainsAny(result, "snapshot", "magic", "checksum", "deserialize", "eof");
         assertOutputDoesNotContain(result, "All layers compared");
     }
 
@@ -414,7 +415,8 @@ public class SnapshotComparerBlackBoxTest {
         return runSnapshotComparer(args("-l", LEFT_MIXED, "-r", RIGHT_MIXED, "-b", byteThreshold, "-n", nodeThreshold));
     }
 
-    // Asserts that the execution finished with a zero exit code and reached the end of the comparison.
+    // Asserts that the execution completed without requesting process termination, without throwing an
+    // exception, and reached the end of the comparison.
     private static void assertCompletedSuccessfully(RunResult result) {
         assertEquals("SnapshotComparer must not request process termination. " + "Output:\n" + result.output, null, result.exitStatus);
         assertEquals("SnapshotComparer must not throw an exception. " + "Output:\n" + result.output, null, result.throwable);
@@ -454,7 +456,7 @@ public class SnapshotComparerBlackBoxTest {
         }
     }
 
-    // Asserts that the execution failed, producing a non-zero exit code.
+    // Asserts that the execution failed through either a non-zero exit request or a propagated exception.
     private static void assertFailed(RunResult result) {
         assertTrue("Invalid input must cause either a non-zero exit request " + "or an exception. Output:\n" + observableText(result), isFailedExecution(result));
     }

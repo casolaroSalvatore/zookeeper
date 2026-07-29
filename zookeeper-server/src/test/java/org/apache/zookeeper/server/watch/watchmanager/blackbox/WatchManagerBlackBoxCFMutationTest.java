@@ -49,9 +49,10 @@ public class WatchManagerBlackBoxCFMutationTest {
     }
 
     @AfterClass
-    public static void restoreMetricsProvider() {
+    public static void installFreshDefaultMetricsProvider() {
 
-        // Avoids leaving a stopped or reset provider installed globally after this test class has completed
+        // Replace the test-controlled provider with a fresh default provider so that the reset test instance
+        // is not left globally installed.
         ServerMetrics.metricsProviderInitialized(
                 new DefaultMetricsProvider()
         );
