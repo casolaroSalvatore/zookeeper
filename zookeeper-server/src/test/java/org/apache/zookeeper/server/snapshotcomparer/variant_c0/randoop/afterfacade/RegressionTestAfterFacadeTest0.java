@@ -1,4 +1,4 @@
-package org.apache.zookeeper.server.snapshotcomparer.randoop.afterfacade;
+package org.apache.zookeeper.server.snapshotcomparer.variant_c0.randoop.afterfacade;
 
 import org.junit.FixMethodOrder;
 import org.junit.Test;

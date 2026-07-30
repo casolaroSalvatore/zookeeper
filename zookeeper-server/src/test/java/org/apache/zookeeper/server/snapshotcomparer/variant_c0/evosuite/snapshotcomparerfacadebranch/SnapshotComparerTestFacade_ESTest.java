@@ -3,12 +3,11 @@
  * Mon Jul 27 13:36:03 GMT 2026
  */
 
-package org.apache.zookeeper.server.snapshotcomparer.evosuite.snapshotcomparerfacadebranch;
+package org.apache.zookeeper.server.snapshotcomparer.variant_c0.evosuite.snapshotcomparerfacadebranch;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
-import static org.evosuite.runtime.EvoAssertions.*;
-import java.util.NoSuchElementException;
+
 import org.apache.zookeeper.server.SnapshotComparerTestFacade;
 import org.evosuite.runtime.EvoRunner;
 import org.evosuite.runtime.EvoRunnerParameters;

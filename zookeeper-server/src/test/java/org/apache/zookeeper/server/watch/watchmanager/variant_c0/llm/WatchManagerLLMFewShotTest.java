@@ -1,4 +1,4 @@
-package org.apache.zookeeper.server.watch.watchmanager.llm;
+package org.apache.zookeeper.server.watch.watchmanager.variant_c0.llm;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
