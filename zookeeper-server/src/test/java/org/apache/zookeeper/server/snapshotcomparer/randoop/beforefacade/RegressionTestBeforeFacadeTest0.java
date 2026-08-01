@@ -23,10 +23,12 @@ public class RegressionTestBeforeFacadeTest0 {
     @Test
     public void test1() throws Throwable {
         if (debug)
-            System.out.format("%n%s%n", "RegressionTest0.test1");
+            System.out.format("%n%s%n", "SnapshotComparerc1DirectRandoopTest0.test1");
         java.lang.Object obj0 = new java.lang.Object();
         java.lang.Class<?> wildcardClass1 = obj0.getClass();
         org.junit.Assert.assertNotNull(wildcardClass1);
     }
 }
+
+
 
