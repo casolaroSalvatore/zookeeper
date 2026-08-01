@@ -29,7 +29,7 @@ import org.apache.zookeeper.server.watch.WatcherMode;
 import org.apache.zookeeper.server.watch.WatcherOrBitSet;
 import org.junit.Test;
 
-public class WatchManagerGuidedToTFewShotTest {
+public class WatchManagerLLMGuidedToTFewShotTest {
 
     private static final String PATH = "/node";
 
