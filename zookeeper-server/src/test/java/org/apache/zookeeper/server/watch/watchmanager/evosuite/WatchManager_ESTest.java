@@ -5,7 +5,7 @@
 
 package org.apache.zookeeper.server.watch;
 
-import org.apache.zookeeper.server.watch.watchmanager.evosuite.WatchManager_ESTest_scaffolding;
+import org.apache.zookeeper.server.watch.WatchManager_ESTest_scaffolding;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.evosuite.runtime.EvoAssertions.*;
