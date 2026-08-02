@@ -3,7 +3,7 @@
  * Sat Aug 01 15:20:54 GMT 2026
  */
 
-package org.apache.zookeeper.server.snapshotcomparer.evosuite.snapshotcomparerbranch;
+package org.apache.zookeeper.server.snapshotcomparer.variant_c2.evosuite.snapshotcomparerfacadebranch;
 
 import org.junit.Test;
 import static org.junit.Assert.*;

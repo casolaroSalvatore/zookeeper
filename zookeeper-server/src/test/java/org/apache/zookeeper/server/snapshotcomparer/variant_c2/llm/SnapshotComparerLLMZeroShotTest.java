@@ -1,4 +1,4 @@
-package org.apache.zookeeper.server.snapshotcomparer.llm;
+package org.apache.zookeeper.server.snapshotcomparer.variant_c2.llm;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;

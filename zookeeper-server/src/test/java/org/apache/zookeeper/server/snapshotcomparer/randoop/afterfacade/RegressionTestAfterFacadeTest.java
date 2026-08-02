@@ -1,4 +1,4 @@
-package org.apache.zookeeper.server.snapshotcomparer.variant_c2.randoop.afterfacade;
+package org.apache.zookeeper.server.snapshotcomparer.randoop.afterfacade;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
