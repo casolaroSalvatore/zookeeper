@@ -1,4 +1,4 @@
-package org.apache.zookeeper.server.snapshotcomparer.randoop.beforefacade;
+package org.apache.zookeeper.server.snapshotcomparer.variant_c1.randoop.beforefacade;
 
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -23,10 +23,12 @@ public class RegressionTestBeforeFacadeTest0 {
     @Test
     public void test1() throws Throwable {
         if (debug)
-            System.out.format("%n%s%n", "RegressionTest0.test1");
-        Object obj0 = new Object();
-        Class<?> wildcardClass1 = obj0.getClass();
+            System.out.format("%n%s%n", "SnapshotComparerc1DirectRandoopTest0.test1");
+        java.lang.Object obj0 = new java.lang.Object();
+        java.lang.Class<?> wildcardClass1 = obj0.getClass();
         org.junit.Assert.assertNotNull(wildcardClass1);
     }
 }
+
+
 

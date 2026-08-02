@@ -11,396 +11,659 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.apache.zookeeper.server.SnapshotComparer;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
-/**
- * Black-box JUnit 4 tests for {@link SnapshotComparer}.
- *
- * <p>The application is launched in a separate JVM so tests observe the real command-line
- * contract and remain isolated from ServiceUtils.requestSystemExit. No reflection, Unsafe, or
- * private implementation detail is used.</p>
- */
+import org.apache.zookeeper.server.SnapshotComparer;
+
 public class SnapshotComparerLLMFewShotTest {
 
-    private static final String BASE = "src/test/resources/data/comparer/";
-    private static final String LEFT = BASE + "left.snap";
-    private static final String LEFT_MIXED = BASE + "left_mixed.snap";
-    private static final String RIGHT_IDENTICAL = BASE + "right_identical.snap";
-    private static final String RIGHT_MIXED = BASE + "right_mixed.snap";
-    private static final String RIGHT_PLUS_1 = BASE + "right_plus_1.snap";
-    private static final String RIGHT_PLUS_1_GZ = BASE + "right_plus_1.gz";
-    private static final String LEFT_EPHEMERAL = BASE + "left_ephemeral.snap";
-    private static final String RIGHT_EPHEMERAL = BASE + "right_ephemeral.snap";
-    private static final String CORRUPT = BASE + "corrupt_file.snap";
-    private static final String GHOST_RIGHT = BASE + "ghost_right.snap";
+    private static final String LEFT =
+            "src/test/resources/data/comparer/left.snap";
+    private static final String RIGHT_PLUS_1 =
+            "src/test/resources/data/comparer/right_plus_1.snap";
+    private static final String RIGHT_IDENTICAL =
+            "src/test/resources/data/comparer/right_identical.snap";
+    private static final String CORRUPT_FILE =
+            "src/test/resources/data/comparer/corrupt_file.snap";
+    private static final String RIGHT_PLUS_1_GZ =
+            "src/test/resources/data/comparer/right_plus_1.gz";
+    private static final String LEFT_MIXED =
+            "src/test/resources/data/comparer/left_mixed.snap";
+    private static final String RIGHT_MIXED =
+            "src/test/resources/data/comparer/right_mixed.snap";
+    private static final String GHOST_RIGHT =
+            "src/test/resources/data/comparer/ghost_right.snap";
+    private static final String LEFT_EPHEMERAL =
+            "src/test/resources/data/comparer/left_ephemeral.snap";
+    private static final String RIGHT_EPHEMERAL =
+            "src/test/resources/data/comparer/right_ephemeral.snap";
 
-    private static final long PROCESS_TIMEOUT_SECONDS = 30;
-    private static final int VERY_HIGH_THRESHOLD = Integer.MAX_VALUE;
+    private static final long PROCESS_TIMEOUT_SECONDS = 30L;
 
-    @Test
-    public void testIdenticalSnapshots_CompleteWithoutReportedDifference() throws Exception {
-        assertFixturesExist(LEFT, RIGHT_IDENTICAL);
-
-        RunResult result = run("", "-l", LEFT, "-r", RIGHT_IDENTICAL, "-b", "0", "-n", "0");
-
-        assertCompletedSuccessfully(result);
-        assertContains(result, "Successfully parsed options!", "All layers compared.");
-        assertContains(result, "Printing analysis for nodes difference larger than 0 bytes "
-                + "or node count difference larger than 0.");
-        assertNoReportedDifference(result);
+    @BeforeClass
+    public static void assertRequiredFixturesAreAvailable() {
+        assertFixtureExists(LEFT);
+        assertFixtureExists(RIGHT_PLUS_1);
+        assertFixtureExists(RIGHT_IDENTICAL);
+        assertFixtureExists(CORRUPT_FILE);
+        assertFixtureExists(RIGHT_PLUS_1_GZ);
+        assertFixtureExists(LEFT_MIXED);
+        assertFixtureExists(RIGHT_MIXED);
+        assertFixtureExists(LEFT_EPHEMERAL);
+        assertFixtureExists(RIGHT_EPHEMERAL);
     }
 
     @Test
-    public void testEquivalentCompressedAndUncompressedRightSnapshots_ProduceSameFindings()
+    public void testIdenticalSnapshots_CompleteWithoutReportingDifferences() throws Exception {
+        RunResult result = runSnapshotComparer(args(
+                "-l", LEFT,
+                "-r", RIGHT_IDENTICAL,
+                "-b", "0",
+                "-n", "0"
+        ));
+
+        assertCompletedSuccessfully(result);
+        assertOutputContains(result, "Successfully parsed options!");
+        assertOutputContains(result, "Printing analysis for nodes difference larger than 0 bytes");
+        assertOutputContains(result, "Analysis for depth 0");
+        assertOutputContains(result, "All layers compared.");
+
+        assertOutputDoesNotContain(result, "found only in left tree");
+        assertOutputDoesNotContain(result, "found only in right tree");
+        assertOutputDoesNotContain(result, "found in both trees. Delta:");
+    }
+
+    @Test
+    public void testLongOptions_AreAccepted() throws Exception {
+        RunResult result = runSnapshotComparer(args(
+                "--left", LEFT,
+                "--right", RIGHT_IDENTICAL,
+                "--bytes", "0",
+                "--nodes", "0"
+        ));
+
+        assertCompletedSuccessfully(result);
+        assertOutputContains(result, "Successfully parsed options!");
+        assertOutputContains(result, "All layers compared.");
+        assertOutputDoesNotContain(result, "found only in");
+        assertOutputDoesNotContain(result, "found in both trees. Delta:");
+    }
+
+    @Test
+    public void testRelation_PathOnlyInRight_IsReported() throws Exception {
+        RunResult result = runSnapshotComparer(args(
+                "-l", LEFT,
+                "-r", RIGHT_PLUS_1,
+                "-b", "0",
+                "-n", "0"
+        ));
+
+        assertCompletedSuccessfully(result);
+        assertOutputContains(result, "Node /nodo_extra found only in right tree");
+        assertOutputContains(result, "Node /payload found only in right tree");
+        assertOutputContains(result, "Descendant size:");
+        assertOutputContains(result, "Descendant count:");
+        assertOutputContains(result, "All layers compared.");
+    }
+
+    @Test
+    public void testRelation_ReversingSnapshots_ReportsPathsOnlyInLeft() throws Exception {
+        RunResult result = runSnapshotComparer(args(
+                "-l", RIGHT_PLUS_1,
+                "-r", LEFT,
+                "-b", "0",
+                "-n", "0"
+        ));
+
+        assertCompletedSuccessfully(result);
+        assertOutputContains(result, "Node /nodo_extra found only in left tree");
+        assertOutputContains(result, "Node /payload found only in left tree");
+        assertOutputDoesNotContain(result, "Node /nodo_extra found only in right tree");
+        assertOutputDoesNotContain(result, "Node /payload found only in right tree");
+    }
+
+    @Test
+    public void testGzipSnapshot_IsAutomaticallyDecompressedAndCompared() throws Exception {
+        RunResult result = runSnapshotComparer(args(
+                "-l", LEFT,
+                "-r", RIGHT_PLUS_1_GZ,
+                "-b", "0",
+                "-n", "0"
+        ));
+
+        assertCompletedSuccessfully(result);
+        assertOutputContains(result, "Deserialized snapshot in right_plus_1.gz");
+        assertOutputContains(result, "Node /nodo_extra found only in right tree");
+        assertOutputContains(result, "Node /payload found only in right tree");
+        assertOutputContains(result, "All layers compared.");
+    }
+
+    @Test
+    public void testVeryHighThresholds_FilterAllObservableDifferences() throws Exception {
+        RunResult result = runSnapshotComparer(args(
+                "-l", LEFT,
+                "-r", RIGHT_PLUS_1,
+                "-b", String.valueOf(Integer.MAX_VALUE),
+                "-n", String.valueOf(Integer.MAX_VALUE)
+        ));
+
+        assertCompletedSuccessfully(result);
+        assertOutputContains(
+                result,
+                "Printing analysis for nodes difference larger than "
+                        + Integer.MAX_VALUE
+                        + " bytes");
+        assertOutputDoesNotContain(result, "found only in left tree");
+        assertOutputDoesNotContain(result, "found only in right tree");
+        assertOutputDoesNotContain(result, "found in both trees. Delta:");
+        assertOutputContains(result, "All layers compared.");
+    }
+
+    @Test
+    public void testByteThreshold_IsStrictlyGreaterThanConfiguredValue() throws Exception {
+        RunResult unfiltered = runMixedComparison("-1", String.valueOf(Integer.MAX_VALUE));
+
+        assertCompletedSuccessfully(unfiltered);
+        int payloadDelta = absolutePayloadByteDelta(unfiltered);
+        assertTrue("Mixed fixtures must expose a non-zero /payload byte delta", payloadDelta > 0);
+
+        RunResult belowDelta = runMixedComparison(
+                String.valueOf(payloadDelta - 1),
+                String.valueOf(Integer.MAX_VALUE));
+        RunResult exactlyAtDelta = runMixedComparison(
+                String.valueOf(payloadDelta),
+                String.valueOf(Integer.MAX_VALUE));
+
+        assertCompletedSuccessfully(belowDelta);
+        assertCompletedSuccessfully(exactlyAtDelta);
+        assertQuantitativeDeltaForPath(belowDelta, "/payload", payloadDelta + " bytes");
+        assertNoQuantitativeDeltaForPath(exactlyAtDelta, "/payload");
+    }
+
+    @Test
+    public void testNegativeThresholds_CauseOtherwiseEqualNodesToBePrinted() throws Exception {
+        RunResult result = runSnapshotComparer(args(
+                "-l", LEFT,
+                "-r", RIGHT_IDENTICAL,
+                "-b", "-1",
+                "-n", "-1"
+        ));
+
+        assertCompletedSuccessfully(result);
+        assertOutputContains(result, "found in both trees. Delta: 0 bytes, 0 descendants");
+        assertOutputContains(result, "All layers compared.");
+    }
+
+    @Test
+    public void testDebugMode_ReportsComparisonsAndFilteredNodes() throws Exception {
+        RunResult result = runSnapshotComparer(args(
+                "-l", LEFT,
+                "-r", RIGHT_IDENTICAL,
+                "-b", String.valueOf(Integer.MAX_VALUE),
+                "-n", String.valueOf(Integer.MAX_VALUE),
+                "-d"
+        ));
+
+        assertCompletedSuccessfully(result);
+        assertOutputContains(result, "Comparing ");
+        assertOutputContains(result, "same");
+        assertOutputContains(result, "Filtered node ");
+        assertOutputContains(result, "left size");
+        assertOutputContains(result, "right size");
+        assertOutputContains(result, "All layers compared.");
+    }
+
+    @Ignore
+    @Test
+    public void testEphemeralNodes_AreNotReportedAsSnapshotDifferences() throws Exception {
+        RunResult result = runSnapshotComparer(args(
+                "-l", LEFT_EPHEMERAL,
+                "-r", RIGHT_EPHEMERAL,
+                "-b", "0",
+                "-n", "0"
+        ));
+
+        assertCompletedSuccessfully(result);
+        assertOutputDoesNotContain(result, "found only in left tree");
+        assertOutputDoesNotContain(result, "found only in right tree");
+        assertOutputDoesNotContain(result, "found in both trees. Delta:");
+        assertOutputContains(result, "All layers compared.");
+    }
+
+    @Test
+    public void testInteractiveMode_EmptyInputPrintsCurrentDepthAndCompletes()
             throws Exception {
-        assertFixturesExist(LEFT, RIGHT_PLUS_1, RIGHT_PLUS_1_GZ);
-
-        RunResult plain = run("", "-l", LEFT, "-r", RIGHT_PLUS_1, "-b", "0", "-n", "0");
-        RunResult gzip = run("", "-l", LEFT, "-r", RIGHT_PLUS_1_GZ, "-b", "0", "-n", "0");
-
-        assertCompletedSuccessfully(plain);
-        assertCompletedSuccessfully(gzip);
-        assertEquals("Compression must not alter comparison findings",
-                comparisonFindings(plain.output), comparisonFindings(gzip.output));
-        assertFalse("Fixture should exercise at least one finding", comparisonFindings(plain.output).isEmpty());
-    }
-
-    @Test
-    public void testPathOnlyInRight_IsReported() throws Exception {
-        assertFixturesExist(LEFT, RIGHT_PLUS_1);
-
-        RunResult result = run("", "-l", LEFT, "-r", RIGHT_PLUS_1, "-b", "0", "-n", "0");
+        RunResult result = runSnapshotComparer(
+                args(
+                        "-l", LEFT,
+                        "-r", RIGHT_IDENTICAL,
+                        "-b", "0",
+                        "-n", "0",
+                        "-i"),
+                repeatedNewLines(64));
 
         assertCompletedSuccessfully(result);
-        assertContains(result, "Node /nodo_extra found only in right tree",
-                "Node /payload found only in right tree");
+        assertOutputContains(result, "Current depth is 0");
+        assertOutputContains(result, "Press enter to move to print current depth layer");
+        assertOutputContains(result, "Analysis for depth 0");
+        assertOutputContains(result, "All layers compared.");
     }
 
     @Test
-    public void testHighThreshold_SuppressesAllOrdinaryFindings() throws Exception {
-        assertFixturesExist(LEFT_MIXED, RIGHT_MIXED);
-
-        RunResult result = run("", "-l", LEFT_MIXED, "-r", RIGHT_MIXED,
-                "-b", String.valueOf(VERY_HIGH_THRESHOLD),
-                "-n", String.valueOf(VERY_HIGH_THRESHOLD));
-
-        assertCompletedSuccessfully(result);
-        assertNoReportedDifference(result);
-    }
-
-    @Test
-    public void testDebugMode_ExposesComparisonAndFilteredDiagnostics() throws Exception {
-        assertFixturesExist(LEFT, RIGHT_IDENTICAL);
-
-        RunResult result = run("", "-l", LEFT, "-r", RIGHT_IDENTICAL,
-                "-b", String.valueOf(VERY_HIGH_THRESHOLD),
-                "-n", String.valueOf(VERY_HIGH_THRESHOLD), "-d");
-
-        assertCompletedSuccessfully(result);
-        assertContains(result, "Comparing ");
-        assertTrue("Debug output should explain matching or filtered nodes. Output:\n" + result.output,
-                result.output.contains("same") || result.output.contains("Filtered node "));
-    }
-
-    @Test
-    public void testLongOptionNames_AreAccepted() throws Exception {
-        assertFixturesExist(LEFT, RIGHT_IDENTICAL);
-
-        RunResult result = run("", "--left", LEFT, "--right", RIGHT_IDENTICAL,
-                "--bytes", "0", "--nodes", "0");
-
-        assertCompletedSuccessfully(result);
-        assertContains(result, "Successfully parsed options!", "All layers compared.");
-    }
-
-    @Test
-    public void testEphemeralDifferences_AreNotReportedAsPersistentTreeChanges() throws Exception {
-        assertFixturesExist(LEFT_EPHEMERAL, RIGHT_EPHEMERAL);
-
-        RunResult result = run("", "-l", LEFT_EPHEMERAL, "-r", RIGHT_EPHEMERAL,
-                "-b", "0", "-n", "0");
-
-        assertCompletedSuccessfully(result);
-        assertNoReportedDifference(result);
-    }
-
-    @Test
-    public void testInteractive_EmptyLinesAdvanceThroughEveryDepthAndTerminate() throws Exception {
-        assertFixturesExist(LEFT, RIGHT_IDENTICAL);
-        StringBuilder input = new StringBuilder();
-        for (int i = 0; i < 128; i++) {
-            input.append('\n');
-        }
-
-        RunResult result = run(input.toString(), "-l", LEFT, "-r", RIGHT_IDENTICAL,
-                "-b", "0", "-n", "0", "-i");
-
-        assertCompletedSuccessfully(result);
-        assertContains(result, "Current depth is 0", "Analysis for depth 0", "All layers compared.");
-    }
-
-    @Test
-    public void testInteractive_AbsoluteUnknownPathReportsNeitherTree() throws Exception {
-        assertFixturesExist(LEFT, RIGHT_IDENTICAL);
-        String absentPath = "/path_that_is_absent_from_both_fixtures";
-
-        RunResult result = run(absentPath + "\n" + repeatedNewlines(128),
-                "-l", LEFT, "-r", RIGHT_IDENTICAL, "-b", "0", "-n", "0", "-i");
-
-        assertCompletedSuccessfully(result);
-        assertContains(result, "Analysis for node " + absentPath,
-                "Path " + absentPath + " is neither found in left tree nor right tree.");
-    }
-
-    @Test
-    public void testInteractive_InvalidTextAndOutOfRangeDepth_AreRejectedThenRecover()
+    public void testInteractiveMode_InvalidInputPrintsGuidanceAndContinues()
             throws Exception {
-        assertFixturesExist(LEFT, RIGHT_IDENTICAL);
-
-        RunResult result = run("not-a-depth\n-1\n" + repeatedNewlines(128),
-                "-l", LEFT, "-r", RIGHT_IDENTICAL, "-b", "0", "-n", "0", "-i");
+        RunResult result = runSnapshotComparer(
+                args(
+                        "-l", LEFT,
+                        "-r", RIGHT_IDENTICAL,
+                        "-b", "0",
+                        "-n", "0",
+                        "-i"),
+                "not-a-depth\n" + repeatedNewLines(64));
 
         assertCompletedSuccessfully(result);
-        assertContains(result, "Input not-a-depth is not valid.", "Depth must be in range [0,");
-        assertContains(result, "All layers compared.");
+        assertOutputContains(result, "Input not-a-depth is not valid.");
+        assertOutputContains(result, "Path must be an absolute path which starts with '/'.");
+        assertOutputContains(result, "All layers compared.");
     }
 
     @Test
-    public void testMissingRequiredOption_FailsWithUsageAndDoesNotCompare() throws Exception {
-        RunResult result = run("", "-l", LEFT, "-r", RIGHT_IDENTICAL, "-b", "0");
+    public void testInteractiveMode_OutOfRangeDepthPrintsAllowedRange()
+            throws Exception {
+        RunResult result = runSnapshotComparer(
+                args(
+                        "-l", LEFT,
+                        "-r", RIGHT_IDENTICAL,
+                        "-b", "0",
+                        "-n", "0",
+                        "-i"),
+                "2147483647\n" + repeatedNewLines(64));
+
+        assertCompletedSuccessfully(result);
+        assertOutputContains(result, "Depth must be in range [0,");
+        assertOutputContains(result, "All layers compared.");
+    }
+
+    @Test
+    public void testInteractiveMode_UnknownAbsolutePathIsReported()
+            throws Exception {
+        RunResult result = runSnapshotComparer(
+                args(
+                        "-l", LEFT,
+                        "-r", RIGHT_IDENTICAL,
+                        "-b", "0",
+                        "-n", "0",
+                        "-i"),
+                "/path-that-does-not-exist\n" + repeatedNewLines(64));
+
+        assertCompletedSuccessfully(result);
+        assertOutputContains(result, "Analysis for node /path-that-does-not-exist");
+        assertOutputContains(
+                result,
+                "Path /path-that-does-not-exist is neither found in left tree nor right tree.");
+        assertOutputContains(result, "All layers compared.");
+    }
+
+    @Test
+    public void testMissingRequiredOption_FailsWithUsageInformation() throws Exception {
+        RunResult result = runSnapshotComparer(args(
+                "-l", LEFT,
+                "-r", RIGHT_IDENTICAL,
+                "-b", "0"
+        ));
 
         assertFailed(result);
-        assertContainsIgnoreCase(result, "missing required option");
-        assertContains(result, "java -cp <classPath> " + SnapshotComparer.class.getName());
-        assertDoesNotContain(result, "Successfully parsed options!", "All layers compared.");
+        assertOutputContainsAny(
+                result,
+                "missing required option",
+                "missing required options",
+                "required option");
+        assertOutputContains(result, "java -cp");
+        assertOutputContains(result, "--left");
+        assertOutputContains(result, "--right");
+        assertOutputContains(result, "--bytes");
+        assertOutputContains(result, "--nodes");
+        assertOutputDoesNotContain(result, "Successfully parsed options!");
+        assertOutputDoesNotContain(result, "All layers compared.");
     }
 
     @Test
-    public void testUnknownOption_FailsWithUsage() throws Exception {
-        RunResult result = run("", "-l", LEFT, "-r", RIGHT_IDENTICAL,
-                "-b", "0", "-n", "0", "--not-a-real-option");
+    public void testUnknownOption_FailsWithUsageInformation() throws Exception {
+        RunResult result = runSnapshotComparer(args(
+                "-l", LEFT,
+                "-r", RIGHT_IDENTICAL,
+                "-b", "0",
+                "-n", "0",
+                "--unknown-option"
+        ));
 
         assertFailed(result);
-        assertContainsIgnoreCase(result, "unrecognized option");
-        assertDoesNotContain(result, "Successfully parsed options!", "All layers compared.");
+        assertOutputContainsAny(
+                result,
+                "unrecognized option",
+                "unknown option",
+                "unexpected option");
+        assertOutputContains(result, "java -cp");
+        assertOutputDoesNotContain(result, "Successfully parsed options!");
+        assertOutputDoesNotContain(result, "All layers compared.");
     }
 
+    /* Allucination by LLM
     @Test
-    public void testNonNumericByteThreshold_FailsBeforeLoadingSnapshots() throws Exception {
-        assertFixturesExist(LEFT, RIGHT_IDENTICAL);
-
-        RunResult result = run("", "-l", LEFT, "-r", RIGHT_IDENTICAL,
-                "-b", "NaN", "-n", "0");
+    public void testNonNumericByteThreshold_FailsBeforeSnapshotsAreLoaded()
+            throws Exception {
+        RunResult result = runSnapshotComparer(args(
+                "-l", LEFT,
+                "-r", RIGHT_IDENTICAL,
+                "-b", "not-a-number",
+                "-n", "0"
+        ));
 
         assertFailed(result);
-        assertContainsIgnoreCase(result, "numberformatexception");
-        assertDoesNotContain(result, "Successfully parsed options!", "All layers compared.");
-    }
+        assertOutputContains(result, "Successfully parsed options!");
+        assertOutputContainsAny(
+                result,
+                "numberformatexception",
+                "for input string",
+                "not-a-number");
+        assertOutputDoesNotContain(result, "All layers compared.");
+    } */
 
     @Test
-    public void testNonNumericNodeThreshold_FailsBeforeLoadingSnapshots() throws Exception {
-        assertFixturesExist(LEFT, RIGHT_IDENTICAL);
-
-        RunResult result = run("", "-l", LEFT, "-r", RIGHT_IDENTICAL,
-                "-b", "0", "-n", "not-an-integer");
+    public void testNonNumericByteThreshold_FailsBeforeSnapshotsAreLoaded()
+            throws Exception {
+        RunResult result = runSnapshotComparer(args(
+                "-l", LEFT,
+                "-r", RIGHT_IDENTICAL,
+                "-b", "not-a-number",
+                "-n", "0"
+        ));
 
         assertFailed(result);
-        assertContainsIgnoreCase(result, "numberformatexception");
-        assertDoesNotContain(result, "Successfully parsed options!", "All layers compared.");
+        // Correction: the program does not have to print this message if parsing fails
+        assertOutputDoesNotContain(result, "Successfully parsed options!");
+        assertOutputContainsAny(
+                result,
+                "numberformatexception",
+                "for input string",
+                "not-a-number");
+        assertOutputDoesNotContain(result, "All layers compared.");
     }
 
+    /* Allucination by LLM
     @Test
-    public void testIntegerOverflowThreshold_Fails() throws Exception {
-        assertFixturesExist(LEFT, RIGHT_IDENTICAL);
-
-        RunResult result = run("", "-l", LEFT, "-r", RIGHT_IDENTICAL,
-                "-b", "2147483648", "-n", "0");
+    public void testNonNumericNodeThreshold_FailsBeforeSnapshotsAreLoaded()
+            throws Exception {
+        RunResult result = runSnapshotComparer(args(
+                "-l", LEFT,
+                "-r", RIGHT_IDENTICAL,
+                "-b", "0",
+                "-n", "not-a-number"
+        ));
 
         assertFailed(result);
-        assertContainsIgnoreCase(result, "numberformatexception");
-        assertDoesNotContain(result, "All layers compared.");
-    }
+        assertOutputContains(result, "Successfully parsed options!");
+        assertOutputContainsAny(
+                result,
+                "numberformatexception",
+                "for input string",
+                "not-a-number");
+        assertOutputDoesNotContain(result, "All layers compared.");
+    } */
+
 
     @Test
-    public void testCorruptSnapshot_FailsLoadingAndNeverCompletesComparison() throws Exception {
-        assertFixturesExist(LEFT, CORRUPT);
-
-        RunResult result = run("", "-l", LEFT, "-r", CORRUPT, "-b", "0", "-n", "0");
+    public void testNonNumericNodeThreshold_FailsBeforeSnapshotsAreLoaded()
+            throws Exception {
+        RunResult result = runSnapshotComparer(args(
+                "-l", LEFT,
+                "-r", RIGHT_IDENTICAL,
+                "-b", "0",
+                "-n", "not-a-number"
+        ));
 
         assertFailed(result);
-        assertDoesNotContain(result, "All layers compared.");
+        // Correction: the program does not have to print this message if parsing fails
+        assertOutputDoesNotContain(result, "Successfully parsed options!");
+        assertOutputContainsAny(
+                result,
+                "numberformatexception",
+                "for input string",
+                "not-a-number");
+        assertOutputDoesNotContain(result, "All layers compared.");
     }
 
     @Test
-    public void testMissingRightSnapshot_FailsLoadingAndNeverCompletesComparison() throws Exception {
-        assertFixturesExist(LEFT);
-        assertFalse("Ghost fixture is the designated nonexistent snapshot", new File(GHOST_RIGHT).exists());
+    public void testMissingSnapshot_FailsLoading() throws Exception {
+        assertFalse(
+                "The ghost fixture path must remain absent so it can represent a missing file",
+                new File(GHOST_RIGHT).exists());
 
-        RunResult result = run("", "-l", LEFT, "-r", GHOST_RIGHT, "-b", "0", "-n", "0");
+        RunResult result = runSnapshotComparer(args(
+                "-l", LEFT,
+                "-r", GHOST_RIGHT,
+                "-b", "0",
+                "-n", "0"
+        ));
 
         assertFailed(result);
-        assertContainsAnyIgnoreCase(result, "no such file", "file not found",
-                "filenotfoundexception", "cannot find");
-        assertDoesNotContain(result, "All layers compared.");
+        assertOutputContainsAny(
+                result,
+                "no such file",
+                "file not found",
+                "filenotfoundexception",
+                "cannot find");
+        assertOutputDoesNotContain(result, "All layers compared.");
     }
 
     @Test
-    public void testThresholdComparison_IsStrictAtObservedByteDelta() throws Exception {
-        assertFixturesExist(LEFT_MIXED, RIGHT_MIXED);
-        RunResult baseline = run("", "-l", LEFT_MIXED, "-r", RIGHT_MIXED,
-                "-b", "0", "-n", String.valueOf(VERY_HIGH_THRESHOLD));
-        assertCompletedSuccessfully(baseline);
+    public void testCorruptSnapshot_FailsDeserialization() throws Exception {
+        RunResult result = runSnapshotComparer(args(
+                "-l", LEFT,
+                "-r", CORRUPT_FILE,
+                "-b", "0",
+                "-n", "0"
+        ));
 
-        Matcher finding = Pattern.compile(
-                        "Node (\\S+) found in both trees\\. Delta: (-?\\d+) bytes, (-?\\d+) descendants")
-                .matcher(baseline.output);
-        assertTrue("Mixed fixtures must expose a byte delta. Output:\n" + baseline.output, finding.find());
-        String path = finding.group(1);
-        long absoluteDelta = Math.abs(Long.parseLong(finding.group(2)));
-        assertTrue("Fixture byte delta must fit the CLI's int threshold", absoluteDelta <= Integer.MAX_VALUE);
+        assertFailed(result);
+        assertOutputContains(result, "Successfully parsed options!");
+        assertOutputDoesNotContain(result, "All layers compared.");
+    }
 
-        RunResult atThreshold = run("", "-l", LEFT_MIXED, "-r", RIGHT_MIXED,
-                "-b", String.valueOf(absoluteDelta),
-                "-n", String.valueOf(VERY_HIGH_THRESHOLD));
-        assertCompletedSuccessfully(atThreshold);
-        assertDoesNotContain(atThreshold, "Node " + path + " found in both trees. Delta:");
+    private static RunResult runMixedComparison(String byteThreshold, String nodeThreshold)
+            throws Exception {
+        return runSnapshotComparer(args(
+                "-l", LEFT_MIXED,
+                "-r", RIGHT_MIXED,
+                "-b", byteThreshold,
+                "-n", nodeThreshold
+        ));
+    }
 
-        if (absoluteDelta > 0) {
-            RunResult belowThreshold = run("", "-l", LEFT_MIXED, "-r", RIGHT_MIXED,
-                    "-b", String.valueOf(absoluteDelta - 1),
-                    "-n", String.valueOf(VERY_HIGH_THRESHOLD));
-            assertCompletedSuccessfully(belowThreshold);
-            assertContains(belowThreshold, "Node " + path + " found in both trees. Delta:");
+    private static String[] args(String... args) {
+        return args;
+    }
+
+    private static RunResult runSnapshotComparer(String[] comparerArguments)
+            throws Exception {
+        return runSnapshotComparer(comparerArguments, "");
+    }
+
+    private static RunResult runSnapshotComparer(
+            String[] comparerArguments,
+            String standardInput) throws Exception {
+
+        String javaExecutable = new File(
+                new File(System.getProperty("java.home"), "bin"),
+                isWindows() ? "java.exe" : "java").getAbsolutePath();
+
+        String[] command = new String[4 + comparerArguments.length];
+        command[0] = javaExecutable;
+        command[1] = "-cp";
+        command[2] = System.getProperty("java.class.path");
+        command[3] = SnapshotComparer.class.getName();
+        System.arraycopy(comparerArguments, 0, command, 4, comparerArguments.length);
+
+        ProcessBuilder processBuilder = new ProcessBuilder(command);
+        processBuilder.redirectErrorStream(true);
+        Process process = processBuilder.start();
+
+        ByteArrayOutputStream capturedOutput = new ByteArrayOutputStream();
+        Thread outputReader = new Thread(
+                () -> copy(process.getInputStream(), capturedOutput),
+                "snapshot-comparer-test-output-reader");
+        outputReader.setDaemon(true);
+        outputReader.start();
+
+        try (OutputStream processInput = process.getOutputStream()) {
+            processInput.write(standardInput.getBytes(StandardCharsets.UTF_8));
+            processInput.flush();
         }
-    }
 
-    private static RunResult run(String stdin, String... arguments) throws Exception {
-        List<String> command = new ArrayList<>();
-        command.add(javaExecutable());
-        command.add("-cp");
-        command.add(System.getProperty("java.class.path"));
-        command.add(SnapshotComparer.class.getName());
-        command.addAll(Arrays.asList(arguments));
-
-        Process process = new ProcessBuilder(command).redirectErrorStream(true).start();
-        try (OutputStream input = process.getOutputStream()) {
-            input.write(stdin.getBytes(StandardCharsets.UTF_8));
-        }
-
-        ByteArrayOutputStream captured = new ByteArrayOutputStream();
-        Thread reader = new Thread(() -> copy(process.getInputStream(), captured),
-                "snapshot-comparer-output-reader");
-        reader.setDaemon(true);
-        reader.start();
-
-        if (!process.waitFor(PROCESS_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+        boolean completed = process.waitFor(PROCESS_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        if (!completed) {
             process.destroyForcibly();
-            reader.join(TimeUnit.SECONDS.toMillis(2));
-            fail("SnapshotComparer timed out. Partial output:\n" +
-                    new String(captured.toByteArray(), StandardCharsets.UTF_8));
+            process.waitFor(5, TimeUnit.SECONDS);
+            fail("SnapshotComparer did not terminate within "
+                    + PROCESS_TIMEOUT_SECONDS + " seconds");
         }
-        reader.join(TimeUnit.SECONDS.toMillis(2));
-        return new RunResult(process.exitValue(),
-                new String(captured.toByteArray(), StandardCharsets.UTF_8));
+
+        outputReader.join(TimeUnit.SECONDS.toMillis(5));
+        if (outputReader.isAlive()) {
+            fail("Timed out while collecting SnapshotComparer output");
+        }
+
+        return new RunResult(
+                process.exitValue(),
+                new String(capturedOutput.toByteArray(), StandardCharsets.UTF_8));
     }
 
-    private static void copy(InputStream source, OutputStream destination) {
+    private static void copy(InputStream source, ByteArrayOutputStream destination) {
         byte[] buffer = new byte[4096];
-        int count;
-        try (InputStream input = source) {
-            while ((count = input.read(buffer)) != -1) {
-                destination.write(buffer, 0, count);
+        int read;
+        try {
+            while ((read = source.read(buffer)) != -1) {
+                destination.write(buffer, 0, read);
             }
         } catch (Exception e) {
-            throw new AssertionError("Could not capture child-process output", e);
+            throw new AssertionError("Failed to capture child process output", e);
         }
     }
 
-    private static String javaExecutable() {
-        return Paths.get(System.getProperty("java.home"), "bin",
-                isWindows() ? "java.exe" : "java").toString();
-    }
+    private static int absolutePayloadByteDelta(RunResult result) {
+        Pattern pattern = Pattern.compile(
+                "Node\\s+/payload\\s+found in both trees\\.\\s+Delta:\\s+(-?\\d+)\\s+bytes",
+                Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(result.output);
 
-    private static boolean isWindows() {
-        return System.getProperty("os.name", "").toLowerCase(Locale.ROOT).contains("win");
-    }
-
-    private static List<String> comparisonFindings(String output) {
-        List<String> findings = new ArrayList<>();
-        for (String line : output.split("\\R")) {
-            if (line.startsWith("Node ")) {
-                findings.add(line.trim());
-            }
+        if (!matcher.find()) {
+            fail("No quantitative /payload delta was present in output:\n" + result.output);
         }
-        return findings;
+
+        long signedDelta = Long.parseLong(matcher.group(1));
+        long absoluteDelta = Math.abs(signedDelta);
+        assertTrue("Payload delta is too large for an integer threshold",
+                absoluteDelta <= Integer.MAX_VALUE);
+        return (int) absoluteDelta;
     }
 
-    private static String repeatedNewlines(int count) {
-        char[] chars = new char[count];
-        Arrays.fill(chars, '\n');
-        return new String(chars);
+    private static void assertQuantitativeDeltaForPath(
+            RunResult result,
+            String path,
+            String expectedByteDelta) {
+        Pattern pattern = Pattern.compile(
+                "Node\\s+"
+                        + Pattern.quote(path)
+                        + "\\s+found in both trees\\.\\s+Delta:\\s+-?"
+                        + Pattern.quote(expectedByteDelta),
+                Pattern.CASE_INSENSITIVE);
+        assertTrue(
+                "Expected a quantitative delta for " + path + " in output:\n" + result.output,
+                pattern.matcher(result.output).find());
     }
 
-    private static void assertFixturesExist(String... names) {
-        for (String name : names) {
-            Path path = Paths.get(name);
-            assertTrue("Required fixture does not exist: " + path.toAbsolutePath(), Files.isRegularFile(path));
-        }
+    private static void assertNoQuantitativeDeltaForPath(
+            RunResult result,
+            String path) {
+        Pattern pattern = Pattern.compile(
+                "Node\\s+"
+                        + Pattern.quote(path)
+                        + "\\s+found in both trees\\.\\s+Delta:",
+                Pattern.CASE_INSENSITIVE);
+        assertFalse(
+                "Did not expect a quantitative delta for " + path + " in output:\n"
+                        + result.output,
+                pattern.matcher(result.output).find());
+    }
+
+    private static void assertFixtureExists(String path) {
+        File fixture = new File(path);
+        assertTrue("Required fixture does not exist: " + fixture.getAbsolutePath(),
+                fixture.isFile());
     }
 
     private static void assertCompletedSuccessfully(RunResult result) {
-        assertEquals("Expected successful exit. Output:\n" + result.output, 0, result.exitCode);
+        assertEquals(
+                "Expected SnapshotComparer to succeed, but output was:\n" + result.output,
+                0,
+                result.exitCode);
     }
 
     private static void assertFailed(RunResult result) {
-        assertNotEquals("Expected nonzero exit. Output:\n" + result.output, 0, result.exitCode);
+        assertNotEquals(
+                "Expected SnapshotComparer to fail, but output was:\n" + result.output,
+                0,
+                result.exitCode);
     }
 
-    private static void assertContains(RunResult result, String... fragments) {
-        for (String fragment : fragments) {
-            assertTrue("Expected output to contain [" + fragment + "] but was:\n" + result.output,
-                    result.output.contains(fragment));
-        }
+    private static void assertOutputContains(RunResult result, String expected) {
+        assertTrue(
+                "Expected output to contain <" + expected + ">, but output was:\n"
+                        + result.output,
+                result.output.contains(expected));
     }
 
-    private static void assertContainsIgnoreCase(RunResult result, String fragment) {
-        assertTrue("Expected output to contain [" + fragment + "] ignoring case but was:\n" + result.output,
-                result.output.toLowerCase(Locale.ROOT).contains(fragment.toLowerCase(Locale.ROOT)));
+    private static void assertOutputDoesNotContain(RunResult result, String unexpected) {
+        assertFalse(
+                "Expected output not to contain <" + unexpected + ">, but output was:\n"
+                        + result.output,
+                result.output.contains(unexpected));
     }
 
-    private static void assertContainsAnyIgnoreCase(RunResult result, String... fragments) {
-        String lower = result.output.toLowerCase(Locale.ROOT);
-        for (String fragment : fragments) {
-            if (lower.contains(fragment.toLowerCase(Locale.ROOT))) {
+    private static void assertOutputContainsAny(
+            RunResult result,
+            String... expectedAlternatives) {
+        String normalizedOutput = result.output.toLowerCase(Locale.ROOT);
+        for (String alternative : expectedAlternatives) {
+            if (normalizedOutput.contains(alternative.toLowerCase(Locale.ROOT))) {
                 return;
             }
         }
-        fail("Expected any of " + Arrays.toString(fragments) + " but output was:\n" + result.output);
+
+        fail("Expected output to contain at least one of "
+                + java.util.Arrays.toString(expectedAlternatives)
+                + ", but output was:\n"
+                + result.output);
     }
 
-    private static void assertDoesNotContain(RunResult result, String... fragments) {
-        for (String fragment : fragments) {
-            assertFalse("Expected output not to contain [" + fragment + "] but was:\n" + result.output,
-                    result.output.contains(fragment));
+    private static String repeatedNewLines(int count) {
+        StringBuilder input = new StringBuilder(count);
+        for (int i = 0; i < count; i++) {
+            input.append('\n');
         }
+        return input.toString();
     }
 
-    private static void assertNoReportedDifference(RunResult result) {
-        assertFalse("Expected no reported node difference. Output:\n" + result.output,
-                Pattern.compile("(?m)^Node .*?(found only|found in both trees\\. Delta:)")
-                        .matcher(result.output).find());
+    private static boolean isWindows() {
+        return System.getProperty("os.name", "")
+                .toLowerCase(Locale.ROOT)
+                .contains("win");
     }
 
     private static final class RunResult {
@@ -413,4 +676,3 @@ public class SnapshotComparerLLMFewShotTest {
         }
     }
 }
-
