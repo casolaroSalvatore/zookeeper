@@ -3,8 +3,9 @@
  * Tue Jun 30 17:38:17 GMT 2026
  */
 
-package org.apache.zookeeper.server.watch.watchmanager.evosuite;
+package org.apache.zookeeper.server.watch;
 
+import org.apache.zookeeper.server.watch.WatchManager_ESTest_scaffolding;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.evosuite.runtime.EvoAssertions.*;
