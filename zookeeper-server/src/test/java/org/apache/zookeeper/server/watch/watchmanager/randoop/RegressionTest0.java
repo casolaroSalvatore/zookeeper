@@ -1,4 +1,4 @@
-package org.apache.zookeeper.server.watch.watchmanager.randoop;
+package org.apache.zookeeper.server.watch;
 
 import org.junit.FixMethodOrder;
 import org.junit.Test;
