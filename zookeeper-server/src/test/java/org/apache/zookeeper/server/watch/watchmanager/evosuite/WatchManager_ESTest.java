@@ -5,6 +5,7 @@
 
 package org.apache.zookeeper.server.watch;
 
+import org.apache.zookeeper.server.watch.WatchManager_ESTest_scaffolding;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.evosuite.runtime.EvoAssertions.*;
@@ -22,7 +23,7 @@ import org.evosuite.runtime.mock.java.io.MockPrintWriter;
 import org.junit.runner.RunWith;
 
 @RunWith(EvoRunner.class) @EvoRunnerParameters(mockJVMNonDeterminism = true, useVFS = true, useVNET = true, resetStaticState = true, separateClassLoader = false)
-public class WatchManager_ESTest extends org.apache.zookeeper.server.watch.WatchManager_ESTest_scaffolding {
+public class WatchManager_ESTest extends WatchManager_ESTest_scaffolding {
 
   @Test(timeout = 4000)
   public void test00()  throws Throwable  {
