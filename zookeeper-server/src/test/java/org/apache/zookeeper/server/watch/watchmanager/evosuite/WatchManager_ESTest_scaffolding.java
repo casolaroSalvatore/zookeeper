@@ -4,7 +4,7 @@
  * Tue Jun 30 17:38:17 GMT 2026
  */
 
-package org.apache.zookeeper.server.watch.watchmanager.evosuite;
+package org.apache.zookeeper.server.watch;
 
 import org.evosuite.runtime.annotation.EvoSuiteClassExclude;
 import org.junit.BeforeClass;
