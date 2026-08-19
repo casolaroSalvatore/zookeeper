@@ -22,7 +22,7 @@ import org.junit.Test;
  * - containsWatcher(String, Watcher, WatcherMode)
  * - removeWatcher(String, Watcher, WatcherMode)
  */
-public class WatchManagerLLMFewShotTest {
+public class WatchManagerC1LLMFewShotTest {
 
     private static class RecordingWatcher implements Watcher {
         private final List<WatchedEvent> events = new ArrayList<>();
