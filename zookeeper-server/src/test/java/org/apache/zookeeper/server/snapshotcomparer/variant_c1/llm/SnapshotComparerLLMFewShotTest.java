@@ -6,10 +6,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,12 +15,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.zookeeper.server.SnapshotComparer;
 import org.junit.Test;
+
+import org.apache.zookeeper.util.ServiceUtils;
 
 /**
  * Black-box JUnit 4 tests for {@link SnapshotComparer}.
@@ -46,7 +44,6 @@ public class SnapshotComparerLLMFewShotTest {
     private static final String CORRUPT = BASE + "corrupt_file.snap";
     private static final String GHOST_RIGHT = BASE + "ghost_right.snap";
 
-    private static final long PROCESS_TIMEOUT_SECONDS = 30;
     private static final int VERY_HIGH_THRESHOLD = Integer.MAX_VALUE;
 
     @Test
@@ -286,55 +283,67 @@ public class SnapshotComparerLLMFewShotTest {
         }
     }
 
-    private static RunResult run(String stdin, String... arguments) throws Exception {
-        List<String> command = new ArrayList<>();
-        command.add(javaExecutable());
-        command.add("-cp");
-        command.add(System.getProperty("java.class.path"));
-        command.add(SnapshotComparer.class.getName());
-        command.addAll(Arrays.asList(arguments));
+    private static RunResult run(String standardInput, String... arguments)
+            throws Exception {
 
-        Process process = new ProcessBuilder(command).redirectErrorStream(true).start();
-        try (OutputStream input = process.getOutputStream()) {
-            input.write(stdin.getBytes(StandardCharsets.UTF_8));
-        }
+        synchronized (ServiceUtils.class) {
+            PrintStream originalOut = System.out;
+            PrintStream originalErr = System.err;
+            InputStream originalIn = System.in;
 
-        ByteArrayOutputStream captured = new ByteArrayOutputStream();
-        Thread reader = new Thread(() -> copy(process.getInputStream(), captured),
-                "snapshot-comparer-output-reader");
-        reader.setDaemon(true);
-        reader.start();
+            ByteArrayOutputStream capturedOutput =
+                    new ByteArrayOutputStream();
 
-        if (!process.waitFor(PROCESS_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
-            process.destroyForcibly();
-            reader.join(TimeUnit.SECONDS.toMillis(2));
-            fail("SnapshotComparer timed out. Partial output:\n" +
-                    new String(captured.toByteArray(), StandardCharsets.UTF_8));
-        }
-        reader.join(TimeUnit.SECONDS.toMillis(2));
-        return new RunResult(process.exitValue(),
-                new String(captured.toByteArray(), StandardCharsets.UTF_8));
-    }
+            PrintStream capturedStream = new PrintStream(
+                    capturedOutput,
+                    true,
+                    StandardCharsets.UTF_8.name());
 
-    private static void copy(InputStream source, OutputStream destination) {
-        byte[] buffer = new byte[4096];
-        int count;
-        try (InputStream input = source) {
-            while ((count = input.read(buffer)) != -1) {
-                destination.write(buffer, 0, count);
+            String effectiveInput =
+                    standardInput == null ? "" : standardInput;
+
+            int exitCode = 0;
+
+            try {
+                System.setIn(new ByteArrayInputStream(
+                        effectiveInput.getBytes(StandardCharsets.UTF_8)));
+
+                System.setOut(capturedStream);
+                System.setErr(capturedStream);
+
+                ServiceUtils.setSystemExitProcedure(
+                        code -> {
+                            throw new ExitRequestedException(code);
+                        });
+
+                SnapshotComparer.main(arguments);
+
+            } catch (ExitRequestedException exitRequested) {
+                exitCode = exitRequested.exitCode;
+
+            } catch (Exception failure) {
+                exitCode = 1;
+                failure.printStackTrace(capturedStream);
+
+            } finally {
+                capturedStream.flush();
+
+                ServiceUtils.setSystemExitProcedure(
+                        ServiceUtils.SYSTEM_EXIT);
+
+                System.setIn(originalIn);
+                System.setOut(originalOut);
+                System.setErr(originalErr);
+
+                capturedStream.close();
             }
-        } catch (Exception e) {
-            throw new AssertionError("Could not capture child-process output", e);
+
+            return new RunResult(
+                    exitCode,
+                    new String(
+                            capturedOutput.toByteArray(),
+                            StandardCharsets.UTF_8));
         }
-    }
-
-    private static String javaExecutable() {
-        return Paths.get(System.getProperty("java.home"), "bin",
-                isWindows() ? "java.exe" : "java").toString();
-    }
-
-    private static boolean isWindows() {
-        return System.getProperty("os.name", "").toLowerCase(Locale.ROOT).contains("win");
     }
 
     private static List<String> comparisonFindings(String output) {
@@ -401,6 +410,20 @@ public class SnapshotComparerLLMFewShotTest {
         assertFalse("Expected no reported node difference. Output:\n" + result.output,
                 Pattern.compile("(?m)^Node .*?(found only|found in both trees\\. Delta:)")
                         .matcher(result.output).find());
+    }
+
+    private static final class ExitRequestedException
+            extends RuntimeException {
+
+        private static final long serialVersionUID = 1L;
+
+        private final int exitCode;
+
+        private ExitRequestedException(int exitCode) {
+            super("SnapshotComparer requested JVM exit with code "
+                    + exitCode);
+            this.exitCode = exitCode;
+        }
     }
 
     private static final class RunResult {
