@@ -9,26 +9,29 @@ import static org.junit.Assert.fail;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
+import org.apache.zookeeper.util.ServiceUtils;
 import org.apache.zookeeper.server.SnapshotComparer;
 import org.junit.Test;
 
 /**
  * Black-box JUnit 4 tests for {@link SnapshotComparer}.
  *
- * <p>The tests invoke only the public main entry point. A separate JVM is used
- * so that command-line exit behavior cannot terminate the JUnit process.</p>
+ * <p>The tests invoke the public main entry point directly in the current
+ * JUnit JVM. The ZooKeeper system-exit procedure is temporarily replaced so
+ * command-line failures cannot terminate Surefire or PIT.
+ *
+ * <p>Executing SnapshotComparer in-process allows JaCoCo and PIT to observe
+ * the production code exercised by these tests.
  */
+
 public class SnapshotComparerGuidedToTFewShotTest {
 
     private static final String RESOURCE_ROOT =
@@ -58,7 +61,6 @@ public class SnapshotComparerGuidedToTFewShotTest {
     private static final String VERY_HIGH_THRESHOLD =
             String.valueOf(Integer.MAX_VALUE);
 
-    private static final long PROCESS_TIMEOUT_SECONDS = 60L;
 
     @Test
     public void testRelation_IdenticalSnapshots_ReportNoDifferences()
@@ -457,105 +459,66 @@ public class SnapshotComparerGuidedToTFewShotTest {
 
     private static RunResult runSnapshotComparer(
             String standardInput,
-            String[] arguments
-    ) throws Exception {
-        List<String> command = new ArrayList<String>();
-        command.add(javaExecutable());
-        command.add("-cp");
-        command.add(System.getProperty("java.class.path"));
-        command.add(SnapshotComparer.class.getName());
-        command.addAll(Arrays.asList(arguments));
+            String[] arguments) throws Exception {
 
-        ProcessBuilder processBuilder = new ProcessBuilder(command);
-        processBuilder.redirectErrorStream(true);
+        synchronized (ServiceUtils.class) {
+            PrintStream originalOut = System.out;
+            PrintStream originalErr = System.err;
+            InputStream originalIn = System.in;
 
-        Process process = processBuilder.start();
+            ByteArrayOutputStream capturedOutput =
+                    new ByteArrayOutputStream();
 
-        try (OutputStream input = process.getOutputStream()) {
-            if (standardInput != null && !standardInput.isEmpty()) {
-                input.write(standardInput.getBytes(StandardCharsets.UTF_8));
-                input.flush();
+            PrintStream capturedStream = new PrintStream(
+                    capturedOutput,
+                    true,
+                    StandardCharsets.UTF_8.name());
+
+            String effectiveInput =
+                    standardInput == null ? "" : standardInput;
+
+            int exitCode = 0;
+
+            try {
+                System.setIn(new ByteArrayInputStream(
+                        effectiveInput.getBytes(StandardCharsets.UTF_8)));
+
+                System.setOut(capturedStream);
+                System.setErr(capturedStream);
+
+                ServiceUtils.setSystemExitProcedure(
+                        code -> {
+                            throw new ExitRequestedException(code);
+                        });
+
+                SnapshotComparer.main(arguments);
+
+            } catch (ExitRequestedException requestedExit) {
+                exitCode = requestedExit.exitCode;
+
+            } catch (Exception failure) {
+                exitCode = 1;
+                failure.printStackTrace(capturedStream);
+
+            } finally {
+                capturedStream.flush();
+
+                ServiceUtils.setSystemExitProcedure(
+                        ServiceUtils.SYSTEM_EXIT);
+
+                System.setIn(originalIn);
+                System.setOut(originalOut);
+                System.setErr(originalErr);
             }
+
+            String output = new String(
+                    capturedOutput.toByteArray(),
+                    StandardCharsets.UTF_8);
+
+            capturedStream.close();
+
+            return new RunResult(exitCode, output);
         }
-
-        ByteArrayOutputStream capturedOutput = new ByteArrayOutputStream();
-        Thread outputReader = createOutputReader(
-                process.getInputStream(),
-                capturedOutput
-        );
-        outputReader.start();
-
-        boolean completed = process.waitFor(
-                PROCESS_TIMEOUT_SECONDS,
-                TimeUnit.SECONDS
-        );
-
-        if (!completed) {
-            process.destroyForcibly();
-            process.waitFor(10L, TimeUnit.SECONDS);
-        }
-
-        outputReader.join(TimeUnit.SECONDS.toMillis(10L));
-
-        String output = new String(
-                capturedOutput.toByteArray(),
-                StandardCharsets.UTF_8
-        );
-
-        if (!completed) {
-            fail(
-                    "SnapshotComparer did not terminate within "
-                            + PROCESS_TIMEOUT_SECONDS
-                            + " seconds. Output:\n"
-                            + output
-            );
-        }
-
-        return new RunResult(process.exitValue(), output);
-    }
-
-    private static Thread createOutputReader(
-            final InputStream source,
-            final ByteArrayOutputStream destination
-    ) {
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                byte[] buffer = new byte[4096];
-                int count;
-
-                try {
-                    while ((count = source.read(buffer)) != -1) {
-                        destination.write(buffer, 0, count);
-                    }
-                } catch (IOException exception) {
-                    throw new RuntimeException(exception);
-                } finally {
-                    try {
-                        source.close();
-                    } catch (IOException ignored) {
-                        // The process may already have closed its output.
-                    }
-                }
-            }
-        }, "snapshot-comparer-output-reader");
-
-        thread.setDaemon(true);
-        return thread;
-    }
-
-    private static String javaExecutable() {
-        String executableName = isWindows() ? "java.exe" : "java";
-        return new File(
-                new File(System.getProperty("java.home"), "bin"),
-                executableName
-        ).getAbsolutePath();
-    }
-
-    private static boolean isWindows() {
-        return System.getProperty("os.name", "")
-                .toLowerCase(Locale.ROOT)
-                .contains("win");
     }
 
     private static String repeatedNewlines(int count) {
@@ -694,6 +657,20 @@ public class SnapshotComparerGuidedToTFewShotTest {
                         + result.output,
                 deltaPattern.matcher(result.output).find()
         );
+    }
+
+    private static final class ExitRequestedException
+            extends RuntimeException {
+
+        private static final long serialVersionUID = 1L;
+
+        private final int exitCode;
+
+        private ExitRequestedException(int exitCode) {
+            super("SnapshotComparer requested JVM exit with code "
+                    + exitCode);
+            this.exitCode = exitCode;
+        }
     }
 
     private static final class RunResult {
