@@ -28,7 +28,7 @@ import org.junit.Test;
  * Focused JUnit 4 tests for WatchManager's mode-aware add, trigger, contains,
  * and remove operations.
  */
-public class WatchManagerLLMZeroShotTest {
+public class WatchManagerC4LLMZeroShotTest {
 
     private WatchManager manager;
     private RecordingWatcher watcher;

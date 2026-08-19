@@ -19,7 +19,7 @@ import org.apache.zookeeper.server.watch.WatcherMode;
 import org.apache.zookeeper.server.watch.WatcherOrBitSet;
 import org.junit.Test;
 
-public class WatchManagerLLMGuidedToTFewShotTest {
+public class WatchManagerC4LLMGuidedToTFewShotTest {
 
     private static final String PATH = "/node";
 
