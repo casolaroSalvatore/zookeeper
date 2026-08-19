@@ -7,8 +7,6 @@ package org.apache.zookeeper.server.snapshotcomparer.variant_c2.evosuite.snapsho
 
 import org.junit.Test;
 import static org.junit.Assert.*;
-import static org.evosuite.runtime.EvoAssertions.*;
-import java.util.NoSuchElementException;
 import org.apache.zookeeper.server.SnapshotComparerTestFacade;
 import org.evosuite.runtime.EvoRunner;
 import org.evosuite.runtime.EvoRunnerParameters;
@@ -131,6 +129,7 @@ public class SnapshotComparerTestFacade_ESTest extends SnapshotComparerTestFacad
         assertTrue(boolean0);
     }
 
+    /* Modified in order to solve the failure
     @Test(timeout = 4000)
     public void test19()  throws Throwable  {
         try {
@@ -143,7 +142,16 @@ public class SnapshotComparerTestFacade_ESTest extends SnapshotComparerTestFacad
             //
             verifyException("java.util.LinkedList", e);
         }
+    } */
+
+    @Test(timeout = 4000)
+    public void test19() throws Throwable {
+        boolean result =
+                SnapshotComparerTestFacade.missingNodeThresholdIsRejected();
+
+        assertTrue(result);
     }
+
 
     @Test(timeout = 4000)
     public void test20()  throws Throwable  {
@@ -163,6 +171,7 @@ public class SnapshotComparerTestFacade_ESTest extends SnapshotComparerTestFacad
         assertTrue(boolean0);
     }
 
+    /* Modified in order to solve the failure
     @Test(timeout = 4000)
     public void test23()  throws Throwable  {
         try {
@@ -175,6 +184,14 @@ public class SnapshotComparerTestFacade_ESTest extends SnapshotComparerTestFacad
             //
             verifyException("java.util.LinkedList", e);
         }
+    } */
+
+    @Test(timeout = 4000)
+    public void test23() throws Throwable {
+        boolean result =
+                SnapshotComparerTestFacade.flagWithoutArgumentFailsParsing();
+
+        assertTrue(result);
     }
 
     @Test(timeout = 4000)

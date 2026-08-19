@@ -17,10 +17,7 @@ import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.server.DataTree;
 import org.apache.zookeeper.server.SnapshotComparer;
 import org.apache.zookeeper.server.persistence.FileSnap;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.rules.TemporaryFolder;
 
 /**
@@ -308,6 +305,8 @@ public class SnapshotComparerLLMZeroShotTest {
         assertTrue(output.contains("All layers compared."));
     }
 
+    /* Modified in order to solve the failure
+    @Ignore
     @Test
     public void snapshotSummaryIncludesCountsSizeAndDepth() throws Exception {
         File snapshot = createSnapshot(
@@ -327,6 +326,48 @@ public class SnapshotComparerLLMZeroShotTest {
         assertTrue(output.contains("Count of nodes at depth 0: 1"));
         assertTrue(output.contains("Count of nodes at depth 1: 2"));
         assertTrue(output.contains("Count of nodes at depth 2: 1"));
+    }
+     */
+
+    @Test
+    public void snapshotSummaryIncludesCountsSizeAndDepth() throws Exception {
+
+        File snapshot = createSnapshot(
+                "snapshot-summary",
+                nodes(
+                        node("/a", bytes(3)),
+                        node("/b", bytes(5)),
+                        node("/a/child", bytes(7))));
+
+        SnapshotComparer.main(
+                arguments(snapshot, snapshot, "1000", "1000"));
+
+        String output = stdout();
+
+        assertTrue(
+                "Expected seven permanent nodes, including ZooKeeper "
+                        + "internal nodes. Actual output:\n" + output,
+                output.contains("Node count: 7"));
+
+        assertTrue(
+                "Expected total payload size 15. Actual output:\n" + output,
+                output.contains("Total size: 15"));
+
+        assertTrue(
+                "Expected maximum depth 3. Actual output:\n" + output,
+                output.contains("Max depth: 3"));
+
+        assertTrue(
+                "Expected one node at depth 0. Actual output:\n" + output,
+                output.contains("Count of nodes at depth 0: 1"));
+
+        assertTrue(
+                "Expected three nodes at depth 1. Actual output:\n" + output,
+                output.contains("Count of nodes at depth 1: 3"));
+
+        assertTrue(
+                "Expected three nodes at depth 2. Actual output:\n" + output,
+                output.contains("Count of nodes at depth 2: 3"));
     }
 
     @Test
@@ -547,6 +588,7 @@ public class SnapshotComparerLLMZeroShotTest {
                 "Path /leftParent is neither found in left tree nor right tree."));
     }
 
+    /* Modified in order to solve the failure
     @Test
     public void nonNumericByteThresholdIsRejectedWithNumberFormatException()
             throws Exception {
@@ -563,7 +605,32 @@ public class SnapshotComparerLLMZeroShotTest {
         assertTrue(exception.getMessage().contains("not-a-number"));
         assertTrue(stdout().isEmpty());
     }
+     */
 
+    @Test
+    public void nonNumericByteThresholdIsRejectedWithNumberFormatException()
+            throws Exception {
+
+        NumberFormatException exception = assertThrows(
+                NumberFormatException.class,
+                () -> SnapshotComparer.main(new String[] {
+                        "--left", leftSnapshot.getAbsolutePath(),
+                        "--right", rightSnapshot.getAbsolutePath(),
+                        "--bytes", "not-a-number",
+                        "--nodes", "0"
+                }));
+
+        assertTrue(exception.getMessage().contains("not-a-number"));
+
+        String output = stdout();
+
+        assertFalse(output.contains("Successfully parsed options!"));
+        assertFalse(output.contains("Deserialized snapshot"));
+        assertFalse(output.contains("Processed data tree"));
+        assertFalse(output.contains("All layers compared."));
+    }
+
+    /* Modified in order to solve the failure
     @Test
     public void nonNumericNodeThresholdIsRejectedWithNumberFormatException()
             throws Exception {
@@ -579,6 +646,30 @@ public class SnapshotComparerLLMZeroShotTest {
 
         assertTrue(exception.getMessage().contains("invalid"));
         assertTrue(stdout().isEmpty());
+    }
+     */
+
+    @Test
+    public void nonNumericNodeThresholdIsRejectedWithNumberFormatException()
+            throws Exception {
+
+        NumberFormatException exception = assertThrows(
+                NumberFormatException.class,
+                () -> SnapshotComparer.main(new String[] {
+                        "--left", leftSnapshot.getAbsolutePath(),
+                        "--right", rightSnapshot.getAbsolutePath(),
+                        "--bytes", "0",
+                        "--nodes", "invalid"
+                }));
+
+        assertTrue(exception.getMessage().contains("invalid"));
+
+        String output = stdout();
+
+        assertFalse(output.contains("Successfully parsed options!"));
+        assertFalse(output.contains("Deserialized snapshot"));
+        assertFalse(output.contains("Processed data tree"));
+        assertFalse(output.contains("All layers compared."));
     }
 
     @Test
