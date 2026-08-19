@@ -4,7 +4,7 @@
  * contributor license agreements. See the NOTICE file distributed with
  * this work for additional information regarding copyright ownership.
  */
-package org.apache.zookeeper.server.watch.watchmanager.variant_c2.llm;
+package org.apache.zookeeper.server.watch;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -33,7 +33,7 @@ import org.junit.Test;
  * Focused JUnit 4 tests for WatchManager's mode-aware add, trigger, contains,
  * and remove operations.
  */
-public class WatchManagerLLMFewShotTest {
+public class WatchManagerC2LLMFewShotTest {
 
     private WatchManager manager;
     private RecordingWatcher watcher1;

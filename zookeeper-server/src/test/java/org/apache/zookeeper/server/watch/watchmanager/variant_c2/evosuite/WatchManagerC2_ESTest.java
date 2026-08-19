@@ -3,7 +3,7 @@
  * Sat Aug 01 15:43:20 GMT 2026
  */
 
-package org.apache.zookeeper.server.watch.watchmanager.variant_c2.evosuite;
+package org.apache.zookeeper.server.watch;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -19,19 +19,13 @@ import java.util.Stack;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.data.ACL;
 import org.apache.zookeeper.server.DumbWatcher;
-import org.apache.zookeeper.server.watch.WatchManager;
-import org.apache.zookeeper.server.watch.WatchStats;
-import org.apache.zookeeper.server.watch.WatcherMode;
-import org.apache.zookeeper.server.watch.WatcherOrBitSet;
-import org.apache.zookeeper.server.watch.WatchesPathReport;
-import org.apache.zookeeper.server.watch.WatchesReport;
-import org.apache.zookeeper.server.watch.WatchesSummary;
+import org.apache.zookeeper.server.watch.WatchManagerC2_ESTest_scaffolding;
 import org.evosuite.runtime.EvoRunner;
 import org.evosuite.runtime.EvoRunnerParameters;
 import org.junit.runner.RunWith;
 
 @RunWith(EvoRunner.class) @EvoRunnerParameters(mockJVMNonDeterminism = true, useVNET = true, resetStaticState = true, separateClassLoader = true)
-public class WatchManager_ESTest extends WatchManager_ESTest_scaffolding {
+public class WatchManagerC2_ESTest extends WatchManagerC2_ESTest_scaffolding {
 
     @Test(timeout = 4000)
     public void test00()  throws Throwable  {

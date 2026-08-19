@@ -4,7 +4,7 @@
  * Place this file under:
  *   zookeeper-server/src/test/java/org/apache/zookeeper/server/watch/
  */
-package org.apache.zookeeper.server.watch.watchmanager.variant_c2.llm;
+package org.apache.zookeeper.server.watch;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -36,7 +36,7 @@ import org.junit.Test;
  *   <li>{@link WatchManager#removeWatcher(String, Watcher, WatcherMode)}</li>
  * </ul>
  */
-public class WatchManagerLLMGuidedToTFewShotTest {
+public class WatchManagerC2LLMGuidedToTFewShotTest {
 
     private WatchManager manager;
 
@@ -126,7 +126,13 @@ public class WatchManagerLLMGuidedToTFewShotTest {
         manager.addWatch("/node", suppressed, WatcherMode.PERSISTENT);
         manager.addWatch("/node", delivered, WatcherMode.PERSISTENT);
 
+
+        /* Modified to resolve the compilation error
         WatcherOrBitSet suppress = new WatcherOrBitSet(suppressed);
+        */
+
+        WatcherOrBitSet suppress = new WatcherOrBitSet(Collections.<Watcher>singleton(suppressed));
+
         WatcherOrBitSet result = manager.triggerWatch(
                 "/node", EventType.NodeCreated, 7L, Collections.<ACL>emptyList(), suppress);
 
