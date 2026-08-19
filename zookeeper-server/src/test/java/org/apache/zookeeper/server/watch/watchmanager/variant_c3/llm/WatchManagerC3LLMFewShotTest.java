@@ -1,4 +1,4 @@
-package org.apache.zookeeper.server.watch.watchmanager.variant_c3.llm;
+package org.apache.zookeeper.server.watch;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -11,7 +11,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.Watcher.Event.EventType;
@@ -28,7 +28,7 @@ import org.junit.Test;
 /**
  * Focused JUnit 4 tests for the mode-aware WatchManager operations.
  */
-public class WatchManagerLLMFewShotTest {
+public class WatchManagerC3LLMFewShotTest {
 
     private WatchManager manager;
 
@@ -240,7 +240,7 @@ public class WatchManagerLLMFewShotTest {
 
         manager.triggerWatch("/secure", EventType.NodeDataChanged, 77L, acl, null);
 
-        assertEquals(1, watcher.events.size());
+        assertEquals(1, watcher.getEvents().size());
         assertSame(acl, watcher.lastAcl);
         assertEvent(watcher, 0, "/secure", EventType.NodeDataChanged, 77L);
     }
@@ -258,12 +258,29 @@ public class WatchManagerLLMFewShotTest {
         assertEquals(zxid, event.getZxid());
     }
 
+    /* Modified to solve the compilation error
     private static class RecordingWatcher implements Watcher {
         private final List<WatchedEvent> events = new java.util.ArrayList<>();
 
         @Override
         public void process(WatchedEvent event) {
             events.add(event);
+        }
+    }
+     */
+
+    private static class RecordingWatcher implements Watcher {
+
+        private final List<WatchedEvent> events =
+                new java.util.ArrayList<>();
+
+        @Override
+        public void process(WatchedEvent event) {
+            events.add(event);
+        }
+
+        List<WatchedEvent> getEvents() {
+            return events;
         }
     }
 

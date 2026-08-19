@@ -1,4 +1,4 @@
-package org.apache.zookeeper.server.watch.watchmanager.variant_c3.llm;
+package org.apache.zookeeper.server.watch;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -16,9 +16,6 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.Watcher.Event.EventType;
 import org.apache.zookeeper.Watcher.Event.KeeperState;
 import org.apache.zookeeper.data.ACL;
-import org.apache.zookeeper.server.watch.WatchManager;
-import org.apache.zookeeper.server.watch.WatcherMode;
-import org.apache.zookeeper.server.watch.WatcherOrBitSet;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -26,7 +23,7 @@ import org.junit.Test;
  * Focused JUnit 4 tests for WatchManager's mode-aware add, trigger,
  * contains, and remove operations.
  */
-public class WatchManagerLLMZeroShotTest {
+public class WatchManagerC3LLMZeroShotTest {
 
     private WatchManager manager;
     private RecordingWatcher watcher;

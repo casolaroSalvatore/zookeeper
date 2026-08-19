@@ -5,7 +5,6 @@
 
 package org.apache.zookeeper.server.watch;
 
-import org.apache.zookeeper.server.watch.WatchManager_ESTest_scaffolding;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import static org.evosuite.runtime.EvoAssertions.*;
@@ -16,6 +15,7 @@ import java.util.Map;
 import java.util.Stack;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.data.ACL;
+import org.apache.zookeeper.server.watch.WatchManager_ESTest_scaffolding;
 import org.apache.zookeeper.server.DumbWatcher;
 import org.evosuite.runtime.EvoRunner;
 import org.evosuite.runtime.EvoRunnerParameters;

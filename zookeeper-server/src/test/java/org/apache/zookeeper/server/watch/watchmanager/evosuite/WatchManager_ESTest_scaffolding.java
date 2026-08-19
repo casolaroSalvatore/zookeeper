@@ -115,7 +115,7 @@ public class WatchManager_ESTest_scaffolding {
   }
 
   private static void initializeClasses() {
-    org.evosuite.runtime.classhandling.ClassStateSupport.initializeClasses(WatchManager_ESTest_scaffolding.class.getClassLoader() ,
+    org.evosuite.runtime.classhandling.ClassStateSupport.initializeClasses(org.apache.zookeeper.server.watch.WatchManagerC3_ESTest_scaffolding.class.getClassLoader() ,
       "org.apache.zookeeper.metrics.impl.NullMetricsProvider",
       "com.codahale.metrics.UniformSnapshot",
       "org.apache.zookeeper.metrics.Counter",
@@ -181,7 +181,7 @@ public class WatchManager_ESTest_scaffolding {
   } 
 
   private static void resetClasses() {
-    org.evosuite.runtime.classhandling.ClassResetter.getInstance().setClassLoader(WatchManager_ESTest_scaffolding.class.getClassLoader()); 
+    org.evosuite.runtime.classhandling.ClassResetter.getInstance().setClassLoader(org.apache.zookeeper.server.watch.WatchManagerC3_ESTest_scaffolding.class.getClassLoader());
 
     org.evosuite.runtime.classhandling.ClassStateSupport.resetClasses(
       "org.apache.zookeeper.server.watch.WatchManager",

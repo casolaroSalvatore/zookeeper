@@ -1,7 +1,7 @@
 /*
  * Comprehensive JUnit 4 tests for the four requested WatchManager operations.
  */
-package org.apache.zookeeper.server.watch.watchmanager.variant_c3.llm;
+package org.apache.zookeeper.server.watch;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -35,7 +35,7 @@ import org.junit.Test;
  *   <li>{@link WatchManager#removeWatcher(String, Watcher, WatcherMode)}</li>
  * </ul>
  */
-public class WatchManagerLLMGuidedToTFewShotTest {
+public class WatchManagerC3LLMGuidedToTFewShotTest {
 
     private WatchManager manager;
 
