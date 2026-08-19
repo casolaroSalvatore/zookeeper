@@ -16,15 +16,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.zip.CheckedOutputStream;
-import org.apache.jute.BinaryOutputArchive;
-import org.apache.jute.OutputArchive;
 import org.apache.zookeeper.ZooDefs;
 import org.apache.zookeeper.data.Stat;
 import org.apache.zookeeper.server.DataTree;
 import org.apache.zookeeper.server.SnapshotComparer;
 import org.apache.zookeeper.server.persistence.FileSnap;
-import org.apache.zookeeper.server.persistence.SnapStream;
 import org.apache.zookeeper.util.ServiceUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -144,7 +140,7 @@ public class SnapshotComparerLLMZeroShotTest {
 
     @Test
     public void thresholdsAreStrictAndDebugExplainsFilteredNodes() throws Exception {
-        File left = snapshot("left", Collections.<NodeSpec>emptyMap());
+        File left = snapshot("left", Collections.<String,NodeSpec>emptyMap());
         File right = snapshot("right", nodes(
                 node("/a", bytes(3)),
                 node("/a/child", bytes(2))));
@@ -160,7 +156,7 @@ public class SnapshotComparerLLMZeroShotTest {
 
     @Test
     public void descendantCountCanTriggerOutputWhenByteDeltaDoesNot() throws Exception {
-        File left = snapshot("left", Collections.<NodeSpec>emptyMap());
+        File left = snapshot("left", Collections.<String,NodeSpec>emptyMap());
         File right = snapshot("right", nodes(
                 node("/parent", new byte[0]),
                 node("/parent/child", new byte[0])));
@@ -187,7 +183,7 @@ public class SnapshotComparerLLMZeroShotTest {
 
     @Test
     public void outputAtEachDepthIsAlphabeticallyOrdered() throws Exception {
-        File left = snapshot("left", Collections.<NodeSpec>emptyMap());
+        File left = snapshot("left", Collections.<String,NodeSpec>emptyMap());
         File right = snapshot("right", nodes(
                 node("/z", bytes(1)),
                 node("/a", bytes(1)),
@@ -204,8 +200,8 @@ public class SnapshotComparerLLMZeroShotTest {
 
     @Test
     public void longOptionNamesAreAccepted() throws Exception {
-        File left = snapshot("left", Collections.<NodeSpec>emptyMap());
-        File right = snapshot("right", Collections.<NodeSpec>emptyMap());
+        File left = snapshot("left", Collections.<String,NodeSpec>emptyMap());
+        File right = snapshot("right", Collections.<String,NodeSpec>emptyMap());
 
         SnapshotComparer.main(new String[] {
                 "--left", left.getAbsolutePath(),
@@ -220,8 +216,8 @@ public class SnapshotComparerLLMZeroShotTest {
 
     @Test
     public void nonNumericThresholdPropagatesNumberFormatException() throws Exception {
-        File left = snapshot("left", Collections.<NodeSpec>emptyMap());
-        File right = snapshot("right", Collections.<NodeSpec>emptyMap());
+        File left = snapshot("left", Collections.<String,NodeSpec>emptyMap());
+        File right = snapshot("right", Collections.<String,NodeSpec>emptyMap());
 
         try {
             SnapshotComparer.main(arguments(left, right, "not-an-integer", "0"));
@@ -234,7 +230,7 @@ public class SnapshotComparerLLMZeroShotTest {
     @Test
     public void missingSnapshotPropagatesLoadingFailureAfterOptionsParse() throws Exception {
         File missing = new File(temporaryFolder.getRoot(), "does-not-exist.snapshot");
-        File right = snapshot("right", Collections.<NodeSpec>emptyMap());
+        File right = snapshot("right", Collections.<String,NodeSpec>emptyMap());
 
         try {
             SnapshotComparer.main(arguments(missing, right, "0", "0"));
@@ -274,7 +270,11 @@ public class SnapshotComparerLLMZeroShotTest {
     public void interactiveNumericJumpPrintsRequestedDepthAndContinuesThere() throws Exception {
         File left = snapshot("left", nodes(node("/a", bytes(1))));
         File right = snapshot("right", nodes(node("/a", bytes(1))));
+        /* Modified in order to solve the failure
         System.setIn(new ByteArrayInputStream("1\n\n".getBytes(StandardCharsets.UTF_8)));
+         */
+
+        System.setIn(new ByteArrayInputStream("1\n\n\n".getBytes(StandardCharsets.UTF_8)));
 
         SnapshotComparer.main(arguments(left, right, "0", "0", "-i"));
 
@@ -310,6 +310,7 @@ public class SnapshotComparerLLMZeroShotTest {
         assertFalse(output.contains("All layers compared."));
     }
 
+    /* Modified in order to solve the compilation error
     private File snapshot(String name, Map<String, NodeSpec> specifications) throws Exception {
         DataTree tree = new DataTree();
         long zxid = 1L;
@@ -333,6 +334,35 @@ public class SnapshotComparerLLMZeroShotTest {
         } finally {
             checked.close();
         }
+        return file;
+    }
+     */
+
+    private File snapshot(String name, Map<String, NodeSpec> specifications) throws Exception {
+
+        DataTree tree = new DataTree();
+        long zxid = 1L;
+
+        for (NodeSpec specification : specifications.values()) {
+            tree.createNode(specification.path, specification.data, ZooDefs.Ids.OPEN_ACL_UNSAFE,
+                    0L, -1, zxid++, System.currentTimeMillis(), new Stat());
+        }
+
+        File directory = temporaryFolder.newFolder(name + "-snapshot-directory");
+
+        File file = new File(directory, "snapshot." + Long.toHexString(zxid));
+
+        FileSnap fileSnap = new FileSnap(directory);
+
+        try {
+            fileSnap.serialize(tree, new HashMap<Long, Integer>(), file, false);
+        } finally {
+            fileSnap.close();
+        }
+
+        assertTrue("Snapshot fixture was not created: " + file.getAbsolutePath(),
+                Files.isRegularFile(file.toPath()));
+
         return file;
     }
 
