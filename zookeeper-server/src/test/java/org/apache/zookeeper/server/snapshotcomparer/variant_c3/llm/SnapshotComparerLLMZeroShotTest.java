@@ -14,8 +14,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.zip.CheckedOutputStream;
 import org.apache.jute.BinaryOutputArchive;
 import org.apache.jute.OutputArchive;
@@ -25,6 +25,7 @@ import org.apache.zookeeper.server.DataTree;
 import org.apache.zookeeper.server.SnapshotComparer;
 import org.apache.zookeeper.server.persistence.FileSnap;
 import org.apache.zookeeper.server.persistence.SnapStream;
+import org.apache.zookeeper.util.ServiceUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -54,15 +55,33 @@ public class SnapshotComparerLLMZeroShotTest {
         originalOut = System.out;
         originalErr = System.err;
         originalIn = System.in;
+
         stdout = new ByteArrayOutputStream();
         stderr = new ByteArrayOutputStream();
-        System.setOut(new PrintStream(stdout, true, StandardCharsets.UTF_8.name()));
-        System.setErr(new PrintStream(stderr, true, StandardCharsets.UTF_8.name()));
+
+        System.setOut(new PrintStream(
+                stdout,
+                true,
+                StandardCharsets.UTF_8.name()));
+
+        System.setErr(new PrintStream(
+                stderr,
+                true,
+                StandardCharsets.UTF_8.name()));
+
         System.setIn(new ByteArrayInputStream(new byte[0]));
+
+        ServiceUtils.setSystemExitProcedure(
+                code -> {
+                    throw new ExitRequestedException(code);
+                });
     }
 
     @After
     public void restoreConsole() {
+        ServiceUtils.setSystemExitProcedure(
+                ServiceUtils.SYSTEM_EXIT);
+
         System.setOut(originalOut);
         System.setErr(originalErr);
         System.setIn(originalIn);
@@ -266,23 +285,29 @@ public class SnapshotComparerLLMZeroShotTest {
     }
 
     @Test
-    public void missingRequiredOptionsExitNonZeroAndPrintUsageInSeparateJvm() throws Exception {
-        restoreConsole();
-        Process process = new ProcessBuilder(
-                javaExecutable(),
-                "-cp", System.getProperty("java.class.path"),
-                SnapshotComparer.class.getName())
-                .redirectErrorStream(true)
-                .start();
-        assertTrue("SnapshotComparer process timed out", process.waitFor(20, TimeUnit.SECONDS));
-        String output = new String(readFully(process), StandardCharsets.UTF_8);
+    public void missingRequiredOptionsRequestNonZeroExitAndPrintUsage()
+            throws Exception {
 
-        assertNotEquals(0, process.exitValue());
-        assertTrue(output.contains("Missing required option"));
-        assertTrue(output.contains("usage:"));
+        try {
+            SnapshotComparer.main(new String[0]);
+            fail("Expected SnapshotComparer to request a nonzero exit");
+        } catch (ExitRequestedException expected) {
+            assertNotEquals(0, expected.exitCode);
+        }
+
+        String output = out() + err();
+
+        assertTrue(
+                "Expected a missing required option diagnostic. Output:\n"
+                        + output,
+                output.toLowerCase(Locale.ROOT)
+                        .contains("missing required option"));
+
+        assertTrue(output.toLowerCase(Locale.ROOT).contains("usage:"));
         assertTrue(output.contains("--left"));
         assertTrue(output.contains("--right"));
-        captureConsole();
+        assertFalse(output.contains("Successfully parsed options!"));
+        assertFalse(output.contains("All layers compared."));
     }
 
     private File snapshot(String name, Map<String, NodeSpec> specifications) throws Exception {
@@ -350,19 +375,18 @@ public class SnapshotComparerLLMZeroShotTest {
         return stderr.toString(StandardCharsets.UTF_8.name());
     }
 
-    private static String javaExecutable() {
-        return new File(new File(System.getProperty("java.home"), "bin"), "java")
-                .getAbsolutePath();
-    }
+    private static final class ExitRequestedException
+            extends RuntimeException {
 
-    private static byte[] readFully(Process process) throws Exception {
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        byte[] chunk = new byte[4096];
-        int read;
-        while ((read = process.getInputStream().read(chunk)) != -1) {
-            buffer.write(chunk, 0, read);
+        private static final long serialVersionUID = 1L;
+
+        private final int exitCode;
+
+        private ExitRequestedException(int exitCode) {
+            super("SnapshotComparer requested JVM exit with code "
+                    + exitCode);
+            this.exitCode = exitCode;
         }
-        return buffer.toByteArray();
     }
 
     private static final class NodeSpec {

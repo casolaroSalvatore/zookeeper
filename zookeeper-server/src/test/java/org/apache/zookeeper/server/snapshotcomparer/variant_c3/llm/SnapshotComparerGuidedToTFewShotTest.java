@@ -9,28 +9,34 @@ import static org.junit.Assert.fail;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.zookeeper.util.ServiceUtils;
 import org.apache.zookeeper.server.SnapshotComparer;
 import org.junit.Test;
+
+
 
 /**
  * Black-box tests for {@link SnapshotComparer}.
  *
- * <p>The tests invoke only the public main method, through a child JVM. They
- * observe process completion, exit status, and console output. No reflection,
- * Unsafe access, or private implementation detail is used.
+ * <p>The tests invoke the public main method directly in the current JUnit
+ * JVM. The ZooKeeper system-exit procedure is temporarily replaced so invalid
+ * invocations cannot terminate Surefire or PIT.
+ *
+ * <p>Executing the production entry point in-process allows JaCoCo and PIT to
+ * observe all exercised code without reflection or access to private details.
  */
+
 public class SnapshotComparerGuidedToTFewShotTest {
 
     private static final String RESOURCE_ROOT =
@@ -59,8 +65,6 @@ public class SnapshotComparerGuidedToTFewShotTest {
 
     private static final String VERY_HIGH_THRESHOLD =
             String.valueOf(Integer.MAX_VALUE);
-
-    private static final long PROCESS_TIMEOUT_SECONDS = 30L;
 
     private static final Pattern DELTA_PATTERN = Pattern.compile(
             "Node (.*?) found in both trees\\. Delta: "
@@ -675,96 +679,73 @@ public class SnapshotComparerGuidedToTFewShotTest {
 
     private static RunResult runSnapshotComparerWithInput(
             String standardInput,
-            String... arguments
-    ) throws Exception {
-        List<String> command = new ArrayList<String>();
-        command.add(javaExecutable());
-        command.add("-cp");
-        command.add(absoluteClassPath());
-        command.add(SnapshotComparer.class.getName());
-        command.addAll(Arrays.asList(arguments));
+            String... arguments) throws Exception {
 
-        ProcessBuilder builder = new ProcessBuilder(command);
-        builder.directory(new File(System.getProperty("user.dir")));
-        builder.redirectErrorStream(true);
+        synchronized (ServiceUtils.class) {
+            PrintStream originalOut = System.out;
+            PrintStream originalErr = System.err;
+            InputStream originalIn = System.in;
 
-        Process process = builder.start();
+            ByteArrayOutputStream capturedOutput =
+                    new ByteArrayOutputStream();
 
-        try (OutputStream input = process.getOutputStream()) {
-            input.write(standardInput.getBytes(StandardCharsets.UTF_8));
-            input.flush();
-        }
+            PrintStream capturedStream = new PrintStream(
+                    capturedOutput,
+                    true,
+                    StandardCharsets.UTF_8.name());
 
-        ByteArrayOutputStream captured = new ByteArrayOutputStream();
-        Thread reader = new Thread(new StreamCollector(
-                process.getInputStream(),
-                captured));
-        reader.setDaemon(true);
-        reader.start();
+            String effectiveInput =
+                    standardInput == null ? "" : standardInput;
 
-        boolean finished = process.waitFor(
-                PROCESS_TIMEOUT_SECONDS,
-                TimeUnit.SECONDS);
+            List<String> invocation = new ArrayList<String>();
+            invocation.add(SnapshotComparer.class.getName());
+            invocation.addAll(Arrays.asList(arguments));
 
-        if (!finished) {
-            process.destroyForcibly();
-            process.waitFor(5L, TimeUnit.SECONDS);
-            reader.join(5000L);
-            fail("SnapshotComparer did not finish within "
-                    + PROCESS_TIMEOUT_SECONDS + " seconds.\nOutput:\n"
-                    + new String(
-                    captured.toByteArray(),
-                    StandardCharsets.UTF_8));
-        }
+            int exitCode = 0;
 
-        reader.join(5000L);
-        assertFalse(
-                "Output collector did not terminate",
-                reader.isAlive());
+            try {
+                System.setIn(new ByteArrayInputStream(
+                        effectiveInput.getBytes(StandardCharsets.UTF_8)));
 
-        return new RunResult(
-                process.exitValue(),
-                new String(
-                        captured.toByteArray(),
-                        StandardCharsets.UTF_8),
-                command);
-    }
+                System.setOut(capturedStream);
+                System.setErr(capturedStream);
 
-    private static String javaExecutable() {
-        String executable = isWindows() ? "java.exe" : "java";
-        File java = new File(
-                new File(System.getProperty("java.home"), "bin"),
-                executable);
-        assertTrue(
-                "Java executable does not exist: "
-                        + java.getAbsolutePath(),
-                java.isFile());
-        return java.getAbsolutePath();
-    }
+                ServiceUtils.setSystemExitProcedure(
+                        code -> {
+                            throw new ExitRequestedException(code);
+                        });
 
-    private static String absoluteClassPath() {
-        String[] entries = System.getProperty("java.class.path")
-                .split(Pattern.quote(File.pathSeparator));
-        StringBuilder result = new StringBuilder();
+                SnapshotComparer.main(arguments);
 
-        for (String entry : entries) {
-            if (result.length() > 0) {
-                result.append(File.pathSeparator);
+            } catch (ExitRequestedException requestedExit) {
+                exitCode = requestedExit.exitCode;
+
+            } catch (Exception failure) {
+                exitCode = 1;
+                failure.printStackTrace(capturedStream);
+
+            } finally {
+                capturedStream.flush();
+
+                ServiceUtils.setSystemExitProcedure(
+                        ServiceUtils.SYSTEM_EXIT);
+
+                System.setIn(originalIn);
+                System.setOut(originalOut);
+                System.setErr(originalErr);
             }
 
-            File file = new File(entry);
-            result.append(file.isAbsolute()
-                    ? file.getPath()
-                    : file.getAbsolutePath());
+            String output = new String(
+                    capturedOutput.toByteArray(),
+                    StandardCharsets.UTF_8);
+
+            capturedStream.close();
+
+            return new RunResult(
+                    exitCode,
+                    output,
+                    invocation);
         }
-
-        return result.toString();
-    }
-
-    private static boolean isWindows() {
-        return System.getProperty("os.name")
-                .toLowerCase(Locale.ROOT)
-                .contains("win");
     }
 
     private static String repeatedNewLines(int count) {
@@ -885,39 +866,6 @@ public class SnapshotComparerGuidedToTFewShotTest {
                 linePattern.matcher(result.output).find());
     }
 
-    private static final class StreamCollector implements Runnable {
-        private final InputStream source;
-        private final ByteArrayOutputStream destination;
-
-        private StreamCollector(
-                InputStream source,
-                ByteArrayOutputStream destination
-        ) {
-            this.source = source;
-            this.destination = destination;
-        }
-
-        @Override
-        public void run() {
-            byte[] buffer = new byte[4096];
-            int count;
-
-            try (InputStream input = source) {
-                while ((count = input.read(buffer)) != -1) {
-                    destination.write(buffer, 0, count);
-                }
-            } catch (IOException exception) {
-                try {
-                    destination.write(
-                            ("\nOutput collection failed: " + exception)
-                                    .getBytes(StandardCharsets.UTF_8));
-                } catch (IOException ignored) {
-                    // ByteArrayOutputStream does not normally throw here.
-                }
-            }
-        }
-    }
-
     private static final class ObservedDelta {
         private final String path;
         private final long byteDelta;
@@ -931,6 +879,20 @@ public class SnapshotComparerGuidedToTFewShotTest {
             this.path = path;
             this.byteDelta = byteDelta;
             this.descendantDelta = descendantDelta;
+        }
+    }
+
+    private static final class ExitRequestedException
+            extends RuntimeException {
+
+        private static final long serialVersionUID = 1L;
+
+        private final int exitCode;
+
+        private ExitRequestedException(int exitCode) {
+            super("SnapshotComparer requested JVM exit with code "
+                    + exitCode);
+            this.exitCode = exitCode;
         }
     }
 
