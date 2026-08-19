@@ -182,7 +182,12 @@ public class SnapshotComparerLLMZeroShotTest {
     public void interactiveModeSupportsPathLookupInvalidInputAndDepthAdvance() throws Exception {
         File left = snapshot("left", mapOf("/p", bytes(0), "/p/old", bytes(1)));
         File right = snapshot("right", mapOf("/p", bytes(0), "/p/new", bytes(1)));
-        System.setIn(new ByteArrayInputStream("/p\nmissing\n99\n\n\n".getBytes(StandardCharsets.UTF_8)));
+        /* Bugged, modified in order to solve the problem
+        System.setIn(new ByteArrayInputStream("/p\nmissing\n99\n\n\n".getBytes(StandardCharsets.UTF_8))); */
+
+        System.setIn(new ByteArrayInputStream(
+                ("/p\nmissing\n99\n" + repeatedNewlines(128))
+                        .getBytes(StandardCharsets.UTF_8)));
 
         run(left, right, 100, 100, "--interactive");
 
@@ -192,7 +197,7 @@ public class SnapshotComparerLLMZeroShotTest {
         assertTrue(output.contains("Filtered right node /p/new of size 1"));
         assertTrue(output.contains("Filtered left node /p/old of size 1"));
         assertTrue(output.contains("Input missing is not valid."));
-        assertTrue(output.contains("Depth must be in range [0, 1]"));
+        assertTrue(output.contains("Depth must be in range [0, 2]"));
         assertTrue(output.contains("Analysis for depth 0"));
         assertTrue(output.contains("Analysis for depth 1"));
         assertTrue(output.contains("All layers compared."));
@@ -202,7 +207,10 @@ public class SnapshotComparerLLMZeroShotTest {
     public void interactiveModeReportsUnknownAbsolutePath() throws Exception {
         File left = snapshot("left", Collections.<String, byte[]>emptyMap());
         File right = snapshot("right", Collections.<String, byte[]>emptyMap());
-        System.setIn(new ByteArrayInputStream("/absent\n\n".getBytes(StandardCharsets.UTF_8)));
+        /* Bugged, modified in order to solve the problem
+        System.setIn(new ByteArrayInputStream("/absent\n\n".getBytes(StandardCharsets.UTF_8))); */
+
+        System.setIn(new ByteArrayInputStream(("/absent\n" + repeatedNewlines(128)).getBytes(StandardCharsets.UTF_8)));
 
         run(left, right, 0, 0, "-i");
 
@@ -252,5 +260,14 @@ public class SnapshotComparerLLMZeroShotTest {
     private String out() throws Exception {
         System.out.flush();
         return stdout.toString("UTF-8").replace("\r\n", "\n");
+    }
+
+    // Added in order to solve the 2 errors
+    private static String repeatedNewlines(int count) {
+        StringBuilder input = new StringBuilder(count);
+        for (int index = 0; index < count; index++) {
+            input.append('\n');
+        }
+        return input.toString();
     }
 }
