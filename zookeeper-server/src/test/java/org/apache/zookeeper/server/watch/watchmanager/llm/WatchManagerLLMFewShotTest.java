@@ -1,4 +1,11 @@
-package org.apache.zookeeper.server.watch.watchmanager.llm;
+// ###Test START##
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements. See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to you under the Apache License, Version 2.0.
+ */
+package org.apache.zookeeper.server.watch;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -6,332 +13,294 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.Watcher.Event.EventType;
 import org.apache.zookeeper.Watcher.Event.KeeperState;
-import org.apache.zookeeper.data.ACL;
-import org.apache.zookeeper.server.watch.WatchManager;
-import org.apache.zookeeper.server.watch.WatcherMode;
-import org.apache.zookeeper.server.watch.WatcherOrBitSet;
+import org.junit.Before;
 import org.junit.Test;
 
+/**
+ * JUnit 4 tests for {@link WatchManager}.
+ *
+ * <p>The suite exercises watch registration, duplicate detection, mode-specific
+ * lookup and removal, one-shot delivery, persistent delivery, recursive
+ * delivery, watcher-wide cleanup, and basic manager state reporting.</p>
+ */
 public class WatchManagerLLMFewShotTest {
-    private static final List<ACL> NO_ACL = Collections.emptyList();
+
+    private WatchManager manager;
+    private RecordingWatcher watcher1;
+    private RecordingWatcher watcher2;
+
+    @Before
+    public void setUp() {
+        manager = new WatchManager();
+        watcher1 = new RecordingWatcher();
+        watcher2 = new RecordingWatcher();
+    }
+
+    @Test
+    public void testNewManagerIsEmpty() {
+        assertEquals(0, manager.size());
+        assertEquals(0, manager.getRecursiveWatchQty());
+        assertTrue(manager.getWatch2Paths().isEmpty());
+        assertEquals("0 connections watching 0 paths\nTotal watches:0", manager.toString());
+    }
+
+    @Test
+    public void testAddDefaultWatchAndRejectDuplicate() {
+        assertTrue(manager.addWatch("/node", watcher1));
+        assertFalse(manager.addWatch("/node", watcher1));
+
+        assertEquals(1, manager.size());
+        assertTrue(manager.containsWatcher("/node", watcher1));
+        assertTrue(manager.containsWatcher("/node", watcher1, WatcherMode.STANDARD));
+        assertFalse(manager.containsWatcher("/node", watcher1, WatcherMode.PERSISTENT));
+        assertFalse(manager.containsWatcher("/missing", watcher1));
+        assertFalse(manager.containsWatcher("/node", watcher2));
+    }
+
+    @Test
+    public void testSameWatcherCanUseAllModesOnOnePath() {
+        assertTrue(manager.addWatch("/node", watcher1, WatcherMode.STANDARD));
+        assertTrue(manager.addWatch("/node", watcher1, WatcherMode.PERSISTENT));
+        assertTrue(manager.addWatch("/node", watcher1, WatcherMode.PERSISTENT_RECURSIVE));
+
+        assertFalse(manager.addWatch("/node", watcher1, WatcherMode.STANDARD));
+        assertFalse(manager.addWatch("/node", watcher1, WatcherMode.PERSISTENT));
+        assertFalse(manager.addWatch("/node", watcher1, WatcherMode.PERSISTENT_RECURSIVE));
+
+        assertEquals(1, manager.size());
+        assertEquals(1, manager.getRecursiveWatchQty());
+        assertTrue(manager.containsWatcher("/node", watcher1, WatcherMode.STANDARD));
+        assertTrue(manager.containsWatcher("/node", watcher1, WatcherMode.PERSISTENT));
+        assertTrue(manager.containsWatcher("/node", watcher1, WatcherMode.PERSISTENT_RECURSIVE));
+    }
+
+    @Test
+    public void testRemoveSingleModePreservesRemainingModes() {
+        manager.addWatch("/node", watcher1, WatcherMode.STANDARD);
+        manager.addWatch("/node", watcher1, WatcherMode.PERSISTENT);
+        manager.addWatch("/node", watcher1, WatcherMode.PERSISTENT_RECURSIVE);
+
+        assertTrue(manager.removeWatcher("/node", watcher1, WatcherMode.STANDARD));
+        assertFalse(manager.containsWatcher("/node", watcher1, WatcherMode.STANDARD));
+        assertTrue(manager.containsWatcher("/node", watcher1, WatcherMode.PERSISTENT));
+        assertTrue(manager.containsWatcher("/node", watcher1, WatcherMode.PERSISTENT_RECURSIVE));
+        assertEquals(1, manager.size());
+        assertEquals(1, manager.getRecursiveWatchQty());
+
+        assertTrue(manager.removeWatcher("/node", watcher1, WatcherMode.PERSISTENT_RECURSIVE));
+        assertFalse(manager.containsWatcher("/node", watcher1, WatcherMode.PERSISTENT_RECURSIVE));
+        assertTrue(manager.containsWatcher("/node", watcher1, WatcherMode.PERSISTENT));
+        assertEquals(0, manager.getRecursiveWatchQty());
+
+        assertTrue(manager.removeWatcher("/node", watcher1, WatcherMode.PERSISTENT));
+        assertFalse(manager.containsWatcher("/node", watcher1));
+        assertEquals(0, manager.size());
+        assertTrue(manager.getWatch2Paths().isEmpty());
+    }
+
+    @Test
+    public void testRemoveMismatchChangesNothing() {
+        manager.addWatch("/node1", watcher1, WatcherMode.STANDARD);
+        manager.addWatch("/node1", watcher1, WatcherMode.PERSISTENT);
+
+        assertFalse(manager.removeWatcher("/node1", watcher2));
+        assertFalse(manager.removeWatcher("/node2", watcher1));
+        assertFalse(manager.removeWatcher("/node1", watcher1, WatcherMode.PERSISTENT_RECURSIVE));
+
+        assertEquals(1, manager.size());
+        assertTrue(manager.containsWatcher("/node1", watcher1, WatcherMode.STANDARD));
+        assertTrue(manager.containsWatcher("/node1", watcher1, WatcherMode.PERSISTENT));
+    }
+
+    @Test
+    public void testRemoveAllModesForPath() {
+        manager.addWatch("/node", watcher1, WatcherMode.STANDARD);
+        manager.addWatch("/node", watcher1, WatcherMode.PERSISTENT);
+        manager.addWatch("/node", watcher1, WatcherMode.PERSISTENT_RECURSIVE);
+
+        assertTrue(manager.removeWatcher("/node", watcher1));
+
+        assertFalse(manager.containsWatcher("/node", watcher1));
+        assertEquals(0, manager.size());
+        assertEquals(0, manager.getRecursiveWatchQty());
+        assertTrue(manager.getWatch2Paths().isEmpty());
+        assertFalse(manager.removeWatcher("/node", watcher1));
+    }
+
+    @Test
+    public void testRemoveWatcherAcrossAllPathsDoesNotAffectOtherWatchers() {
+        manager.addWatch("/a", watcher1, WatcherMode.STANDARD);
+        manager.addWatch("/b", watcher1, WatcherMode.PERSISTENT_RECURSIVE);
+        manager.addWatch("/a", watcher2, WatcherMode.PERSISTENT);
+
+        manager.removeWatcher(watcher1);
+
+        assertFalse(manager.containsWatcher("/a", watcher1));
+        assertFalse(manager.containsWatcher("/b", watcher1));
+        assertTrue(manager.containsWatcher("/a", watcher2, WatcherMode.PERSISTENT));
+        assertEquals(1, manager.size());
+        assertEquals(0, manager.getRecursiveWatchQty());
+
+        manager.removeWatcher(watcher1);
+        assertEquals(1, manager.size());
+    }
+
+    @Test
+    public void testStandardWatchIsDeliveredOnceAndRemoved() {
+        manager.addWatch("/node", watcher1, WatcherMode.STANDARD);
+
+        WatcherOrBitSet fired = manager.triggerWatch("/node", EventType.NodeCreated, 101L, null);
+
+        assertNotNull(fired);
+        assertTrue(fired.contains(watcher1));
+        assertEquals(1, watcher1.eventCount());
+        assertEvent(watcher1.lastEvent(), "/node", EventType.NodeCreated, 101L);
+        assertFalse(manager.containsWatcher("/node", watcher1, WatcherMode.STANDARD));
+        assertEquals(0, manager.size());
+
+        assertNull(manager.triggerWatch("/node", EventType.NodeDataChanged, 102L, null));
+        assertEquals(1, watcher1.eventCount());
+    }
+
+    @Test
+    public void testPersistentWatchSurvivesMultipleTriggers() {
+        manager.addWatch("/node", watcher1, WatcherMode.PERSISTENT);
+
+        WatcherOrBitSet first = manager.triggerWatch("/node", EventType.NodeCreated, 201L, null);
+        WatcherOrBitSet second = manager.triggerWatch("/node", EventType.NodeDataChanged, 202L, null);
+
+        assertNotNull(first);
+        assertNotNull(second);
+        assertEquals(2, watcher1.eventCount());
+        assertEvent(watcher1.events.get(0), "/node", EventType.NodeCreated, 201L);
+        assertEvent(watcher1.events.get(1), "/node", EventType.NodeDataChanged, 202L);
+        assertTrue(manager.containsWatcher("/node", watcher1, WatcherMode.PERSISTENT));
+        assertEquals(1, manager.size());
+    }
+
+    @Test
+    public void testRecursiveWatchReceivesDescendantEvents() {
+        manager.addWatch("/root", watcher1, WatcherMode.PERSISTENT_RECURSIVE);
+
+        WatcherOrBitSet fired = manager.triggerWatch(
+                "/root/child/grandchild", EventType.NodeDeleted, 301L, null);
+
+        assertNotNull(fired);
+        assertTrue(fired.contains(watcher1));
+        assertEquals(1, watcher1.eventCount());
+        assertEvent(watcher1.lastEvent(), "/root/child/grandchild", EventType.NodeDeleted, 301L);
+        assertTrue(manager.containsWatcher("/root", watcher1, WatcherMode.PERSISTENT_RECURSIVE));
+        assertEquals(1, manager.getRecursiveWatchQty());
+    }
+
+    @Test
+    public void testRecursiveWatchDoesNotMatchSiblingPath() {
+        manager.addWatch("/root", watcher1, WatcherMode.PERSISTENT_RECURSIVE);
+
+        assertNull(manager.triggerWatch("/rooted/child", EventType.NodeCreated, 401L, null));
+        assertEquals(0, watcher1.eventCount());
+        assertTrue(manager.containsWatcher("/root", watcher1, WatcherMode.PERSISTENT_RECURSIVE));
+    }
+
+    @Test
+    public void testStandardAndPersistentModesDeliverWatcherOnlyOncePerTrigger() {
+        manager.addWatch("/node", watcher1, WatcherMode.STANDARD);
+        manager.addWatch("/node", watcher1, WatcherMode.PERSISTENT);
+
+        WatcherOrBitSet fired = manager.triggerWatch("/node", EventType.NodeChildrenChanged, 501L, null);
+
+        assertNotNull(fired);
+        assertTrue(fired.contains(watcher1));
+        assertEquals(1, watcher1.eventCount());
+        assertFalse(manager.containsWatcher("/node", watcher1, WatcherMode.STANDARD));
+        assertTrue(manager.containsWatcher("/node", watcher1, WatcherMode.PERSISTENT));
+        assertEquals(1, manager.size());
+    }
+
+    @Test
+    public void testTriggerNotifiesAllWatchersOnPath() {
+        manager.addWatch("/node", watcher1, WatcherMode.STANDARD);
+        manager.addWatch("/node", watcher2, WatcherMode.STANDARD);
+
+        WatcherOrBitSet fired = manager.triggerWatch("/node", EventType.NodeCreated, 601L, null);
+
+        assertNotNull(fired);
+        assertTrue(fired.contains(watcher1));
+        assertTrue(fired.contains(watcher2));
+        assertEquals(1, watcher1.eventCount());
+        assertEquals(1, watcher2.eventCount());
+        assertEquals(0, manager.size());
+    }
+
+    @Test
+    public void testInternalPathMapTracksModesAndPaths() {
+        manager.addWatch("/a", watcher1, WatcherMode.STANDARD);
+        manager.addWatch("/b", watcher1, WatcherMode.PERSISTENT);
+
+        Map<Watcher, Map<String, WatchStats>> watch2Paths = manager.getWatch2Paths();
+
+        assertEquals(1, watch2Paths.size());
+        assertTrue(watch2Paths.containsKey(watcher1));
+        assertEquals(2, watch2Paths.get(watcher1).size());
+        assertTrue(watch2Paths.get(watcher1).get("/a").hasMode(WatcherMode.STANDARD));
+        assertTrue(watch2Paths.get(watcher1).get("/b").hasMode(WatcherMode.PERSISTENT));
+    }
+
+    @Test
+    public void testToStringCountsConnectionsPathsAndWatchAssociations() {
+        manager.addWatch("/a", watcher1, WatcherMode.STANDARD);
+        manager.addWatch("/b", watcher1, WatcherMode.PERSISTENT);
+        manager.addWatch("/a", watcher2, WatcherMode.STANDARD);
+
+        assertEquals(3, manager.size());
+        assertEquals("2 connections watching 2 paths\nTotal watches:3", manager.toString());
+    }
+
+    @Test
+    public void testShutdownLeavesRegisteredWatchesUntouched() {
+        manager.addWatch("/node", watcher1, WatcherMode.PERSISTENT);
+
+        manager.shutdown();
+
+        assertTrue(manager.containsWatcher("/node", watcher1, WatcherMode.PERSISTENT));
+        assertEquals(1, manager.size());
+    }
+
+    private static void assertEvent(
+            WatchedEvent event,
+            String expectedPath,
+            EventType expectedType,
+            long expectedZxid) {
+        assertNotNull(event);
+        assertEquals(expectedPath, event.getPath());
+        assertSame(expectedType, event.getType());
+        assertSame(KeeperState.SyncConnected, event.getState());
+        assertEquals(expectedZxid, event.getZxid());
+    }
 
     private static final class RecordingWatcher implements Watcher {
-
-        private final String name;
         private final List<WatchedEvent> events = new ArrayList<>();
-
-        private RecordingWatcher(String name) {
-            this.name = name;
-        }
 
         @Override
         public void process(WatchedEvent event) {
             events.add(event);
         }
 
-        int eventCount() {
+        private int eventCount() {
             return events.size();
         }
 
-        WatchedEvent lastEvent() {
-            assertFalse("Expected at least one event for " + name, events.isEmpty());
-            return events.get(events.size() - 1);
+        private WatchedEvent lastEvent() {
+            return events.isEmpty() ? null : events.get(events.size() - 1);
         }
-
-        void assertNoEvents() {
-            assertTrue("Expected no events for " + name, events.isEmpty());
-        }
-
-        @Override
-        public String toString() {
-            return "RecordingWatcher{" + name + '}';
-        }
-    }
-
-    @Test
-    public void testAddWatchReturnsTrueOnlyForNewPathWatcherModeCombinationAndContainsByMode() {
-        WatchManager manager = new WatchManager();
-        RecordingWatcher watcher1 = new RecordingWatcher("watcher1");
-        RecordingWatcher watcher2 = new RecordingWatcher("watcher2");
-
-        assertTrue(manager.addWatch("/node1", watcher1, WatcherMode.STANDARD));
-        assertFalse("Adding the same watcher/path/mode twice must not create a new watch",
-                manager.addWatch("/node1", watcher1, WatcherMode.STANDARD));
-
-        assertTrue(manager.containsWatcher("/node1", watcher1, null));
-        assertTrue(manager.containsWatcher("/node1", watcher1, WatcherMode.STANDARD));
-        assertFalse(manager.containsWatcher("/node1", watcher1, WatcherMode.PERSISTENT));
-        assertFalse(manager.containsWatcher("/node1", watcher1, WatcherMode.PERSISTENT_RECURSIVE));
-
-        assertTrue(manager.addWatch("/node1", watcher1, WatcherMode.PERSISTENT));
-        assertTrue(manager.addWatch("/node1", watcher1, WatcherMode.PERSISTENT_RECURSIVE));
-
-        assertTrue(manager.containsWatcher("/node1", watcher1, null));
-        assertTrue(manager.containsWatcher("/node1", watcher1, WatcherMode.STANDARD));
-        assertTrue(manager.containsWatcher("/node1", watcher1, WatcherMode.PERSISTENT));
-        assertTrue(manager.containsWatcher("/node1", watcher1, WatcherMode.PERSISTENT_RECURSIVE));
-
-        assertFalse(manager.addWatch("/node1", watcher1, WatcherMode.PERSISTENT));
-        assertFalse(manager.addWatch("/node1", watcher1, WatcherMode.PERSISTENT_RECURSIVE));
-
-        assertFalse(manager.containsWatcher("/node1", watcher2, null));
-        assertFalse(manager.containsWatcher("/node1", watcher2, WatcherMode.STANDARD));
-        assertFalse(manager.containsWatcher("/missing", watcher1, null));
-        assertFalse(manager.containsWatcher("/missing", watcher1, WatcherMode.STANDARD));
-    }
-
-    @Test
-    public void testRemoveWatcherBySpecificModeDoesNotRemoveOtherModesOrOtherWatchers() {
-        WatchManager manager = new WatchManager();
-        RecordingWatcher watcher1 = new RecordingWatcher("watcher1");
-        RecordingWatcher watcher2 = new RecordingWatcher("watcher2");
-
-        assertTrue(manager.addWatch("/node1", watcher1, WatcherMode.STANDARD));
-        assertTrue(manager.addWatch("/node1", watcher1, WatcherMode.PERSISTENT));
-        assertTrue(manager.addWatch("/node1", watcher1, WatcherMode.PERSISTENT_RECURSIVE));
-        assertTrue(manager.addWatch("/node1", watcher2, WatcherMode.STANDARD));
-        assertTrue(manager.addWatch("/node2", watcher1, WatcherMode.STANDARD));
-
-        assertTrue(manager.removeWatcher("/node1", watcher1, WatcherMode.STANDARD));
-
-        assertFalse(manager.containsWatcher("/node1", watcher1, WatcherMode.STANDARD));
-        assertTrue(manager.containsWatcher("/node1", watcher1, WatcherMode.PERSISTENT));
-        assertTrue(manager.containsWatcher("/node1", watcher1, WatcherMode.PERSISTENT_RECURSIVE));
-        assertTrue(manager.containsWatcher("/node1", watcher2, WatcherMode.STANDARD));
-        assertTrue(manager.containsWatcher("/node2", watcher1, WatcherMode.STANDARD));
-
-        assertFalse("Removing an already removed mode must return false",
-                manager.removeWatcher("/node1", watcher1, WatcherMode.STANDARD));
-        assertFalse(manager.removeWatcher("/node1", watcher2, WatcherMode.PERSISTENT));
-        assertFalse(manager.removeWatcher("/missing", watcher1, WatcherMode.STANDARD));
-    }
-
-    @Test
-    public void testRemoveWatcherWithNullModeRemovesAllModesForOnlyThatPath() {
-        WatchManager manager = new WatchManager();
-        RecordingWatcher watcher = new RecordingWatcher("watcher");
-
-        assertTrue(manager.addWatch("/node1", watcher, WatcherMode.STANDARD));
-        assertTrue(manager.addWatch("/node1", watcher, WatcherMode.PERSISTENT));
-        assertTrue(manager.addWatch("/node1", watcher, WatcherMode.PERSISTENT_RECURSIVE));
-        assertTrue(manager.addWatch("/node2", watcher, WatcherMode.PERSISTENT));
-
-        assertTrue(manager.removeWatcher("/node1", watcher, null));
-
-        assertFalse(manager.containsWatcher("/node1", watcher, null));
-        assertFalse(manager.containsWatcher("/node1", watcher, WatcherMode.STANDARD));
-        assertFalse(manager.containsWatcher("/node1", watcher, WatcherMode.PERSISTENT));
-        assertFalse(manager.containsWatcher("/node1", watcher, WatcherMode.PERSISTENT_RECURSIVE));
-
-        assertTrue("Removing one path must not remove the same watcher from another path",
-                manager.containsWatcher("/node2", watcher, WatcherMode.PERSISTENT));
-
-        assertFalse(manager.removeWatcher("/node1", watcher, null));
-        assertTrue(manager.removeWatcher("/node2", watcher, null));
-        assertFalse(manager.containsWatcher("/node2", watcher, null));
-    }
-
-    @Test
-    public void testRemoveWatcherMismatchDoesNotBreakExistingWatches() {
-        WatchManager manager = new WatchManager();
-        RecordingWatcher watcher1 = new RecordingWatcher("watcher1");
-        RecordingWatcher watcher2 = new RecordingWatcher("watcher2");
-
-        assertTrue(manager.addWatch("/node1", watcher1, WatcherMode.STANDARD));
-        assertTrue(manager.addWatch("/node1", watcher1, WatcherMode.PERSISTENT));
-        assertTrue(manager.addWatch("/node2", watcher2, WatcherMode.PERSISTENT_RECURSIVE));
-
-        assertFalse(manager.removeWatcher("/node1", watcher2, null));
-        assertFalse(manager.removeWatcher("/node1", watcher2, WatcherMode.STANDARD));
-        assertFalse(manager.removeWatcher("/node2", watcher1, null));
-        assertFalse(manager.removeWatcher("/node2", watcher1, WatcherMode.PERSISTENT_RECURSIVE));
-        assertFalse(manager.removeWatcher("/missing", watcher1, WatcherMode.STANDARD));
-
-        assertTrue(manager.containsWatcher("/node1", watcher1, WatcherMode.STANDARD));
-        assertTrue(manager.containsWatcher("/node1", watcher1, WatcherMode.PERSISTENT));
-        assertTrue(manager.containsWatcher("/node2", watcher2, WatcherMode.PERSISTENT_RECURSIVE));
-    }
-
-    @Test
-    public void testTriggerStandardWatchFiresOnceAndRemovesOnlyStandardMode() {
-        WatchManager manager = new WatchManager();
-        RecordingWatcher standardOnly = new RecordingWatcher("standardOnly");
-        RecordingWatcher standardAndPersistent = new RecordingWatcher("standardAndPersistent");
-
-        assertTrue(manager.addWatch("/node", standardOnly, WatcherMode.STANDARD));
-        assertTrue(manager.addWatch("/node", standardAndPersistent, WatcherMode.STANDARD));
-        assertTrue(manager.addWatch("/node", standardAndPersistent, WatcherMode.PERSISTENT));
-
-        WatcherOrBitSet fired = manager.triggerWatch("/node", EventType.NodeCreated, 10L, NO_ACL, null);
-
-        assertNotNull(fired);
-        assertTrue(fired.contains(standardOnly));
-        assertTrue(fired.contains(standardAndPersistent));
-        assertWatchedEvent(standardOnly.lastEvent(), "/node", EventType.NodeCreated, 10L);
-        assertWatchedEvent(standardAndPersistent.lastEvent(), "/node", EventType.NodeCreated, 10L);
-
-        assertFalse(manager.containsWatcher("/node", standardOnly, WatcherMode.STANDARD));
-        assertFalse(manager.containsWatcher("/node", standardOnly, null));
-
-        assertFalse(manager.containsWatcher("/node", standardAndPersistent, WatcherMode.STANDARD));
-        assertTrue(manager.containsWatcher("/node", standardAndPersistent, WatcherMode.PERSISTENT));
-
-        WatcherOrBitSet secondFire = manager.triggerWatch("/node", EventType.NodeDataChanged, 11L, NO_ACL, null);
-
-        assertNotNull(secondFire);
-        assertFalse(secondFire.contains(standardOnly));
-        assertTrue(secondFire.contains(standardAndPersistent));
-        assertEquals("Standard-only watcher must not fire a second time", 1, standardOnly.eventCount());
-        assertEquals(2, standardAndPersistent.eventCount());
-        assertWatchedEvent(standardAndPersistent.lastEvent(), "/node", EventType.NodeDataChanged, 11L);
-        assertTrue(manager.containsWatcher("/node", standardAndPersistent, WatcherMode.PERSISTENT));
-    }
-
-    @Test
-    public void testTriggerPersistentAndPersistentRecursiveWatchesAreNotRemovedByTrigger() {
-        WatchManager manager = new WatchManager();
-        RecordingWatcher persistent = new RecordingWatcher("persistent");
-        RecordingWatcher recursive = new RecordingWatcher("recursive");
-
-        assertTrue(manager.addWatch("/node", persistent, WatcherMode.PERSISTENT));
-        assertTrue(manager.addWatch("/node", recursive, WatcherMode.PERSISTENT_RECURSIVE));
-
-        WatcherOrBitSet first = manager.triggerWatch("/node", EventType.NodeCreated, 1L, NO_ACL, null);
-        WatcherOrBitSet second = manager.triggerWatch("/node", EventType.NodeDeleted, 2L, NO_ACL, null);
-
-        assertNotNull(first);
-        assertNotNull(second);
-        assertTrue(first.contains(persistent));
-        assertTrue(first.contains(recursive));
-        assertTrue(second.contains(persistent));
-        assertTrue(second.contains(recursive));
-
-        assertEquals(2, persistent.eventCount());
-        assertEquals(2, recursive.eventCount());
-        assertWatchedEvent(persistent.lastEvent(), "/node", EventType.NodeDeleted, 2L);
-        assertWatchedEvent(recursive.lastEvent(), "/node", EventType.NodeDeleted, 2L);
-
-        assertTrue(manager.containsWatcher("/node", persistent, WatcherMode.PERSISTENT));
-        assertTrue(manager.containsWatcher("/node", recursive, WatcherMode.PERSISTENT_RECURSIVE));
-    }
-
-    @Test
-    public void testTriggerRecursiveParentWatchFiresForDescendantButNonRecursiveParentDoesNot() {
-        WatchManager manager = new WatchManager();
-        RecordingWatcher parentStandard = new RecordingWatcher("parentStandard");
-        RecordingWatcher parentRecursive = new RecordingWatcher("parentRecursive");
-        RecordingWatcher childStandard = new RecordingWatcher("childStandard");
-
-        assertTrue(manager.addWatch("/root", parentStandard, WatcherMode.STANDARD));
-        assertTrue(manager.addWatch("/root", parentRecursive, WatcherMode.PERSISTENT_RECURSIVE));
-        assertTrue(manager.addWatch("/root/child", childStandard, WatcherMode.STANDARD));
-
-        WatcherOrBitSet fired = manager.triggerWatch("/root/child", EventType.NodeChildrenChanged, 20L, NO_ACL, null);
-
-        assertNotNull(fired);
-        assertFalse("A standard watch on the parent path must not fire for a child path",
-                fired.contains(parentStandard));
-        assertTrue(fired.contains(parentRecursive));
-        assertTrue(fired.contains(childStandard));
-
-        parentStandard.assertNoEvents();
-        assertWatchedEvent(parentRecursive.lastEvent(), "/root/child", EventType.NodeChildrenChanged, 20L);
-        assertWatchedEvent(childStandard.lastEvent(), "/root/child", EventType.NodeChildrenChanged, 20L);
-
-        assertTrue("Recursive watch must remain after firing for a descendant",
-                manager.containsWatcher("/root", parentRecursive, WatcherMode.PERSISTENT_RECURSIVE));
-        assertTrue("Parent standard watch was not triggered, so it must remain",
-                manager.containsWatcher("/root", parentStandard, WatcherMode.STANDARD));
-        assertFalse("Direct child standard watch must be removed after firing",
-                manager.containsWatcher("/root/child", childStandard, WatcherMode.STANDARD));
-    }
-
-    @Test
-    public void testTriggerWatchReturnsNullWhenNoWatchersMatchPathOrParentRecursiveWatch() {
-        WatchManager manager = new WatchManager();
-        RecordingWatcher watcher = new RecordingWatcher("watcher");
-
-        assertTrue(manager.addWatch("/other", watcher, WatcherMode.STANDARD));
-
-        assertNull(manager.triggerWatch("/missing", EventType.NodeCreated, 30L, NO_ACL, null));
-        watcher.assertNoEvents();
-
-        assertTrue(manager.containsWatcher("/other", watcher, WatcherMode.STANDARD));
-    }
-
-    @Test
-    public void testTriggerWatchSuppressSkipsProcessingButReturnedSetStillContainsWatcherAndStandardWatchIsConsumed() {
-        WatchManager manager = new WatchManager();
-        RecordingWatcher suppressed = new RecordingWatcher("suppressed");
-        RecordingWatcher delivered = new RecordingWatcher("delivered");
-
-        assertTrue(manager.addWatch("/suppress-source", suppressed, WatcherMode.PERSISTENT));
-        WatcherOrBitSet suppress = manager.triggerWatch("/suppress-source", EventType.NodeCreated, 100L, NO_ACL, null);
-        assertNotNull(suppress);
-        assertTrue(suppress.contains(suppressed));
-        assertEquals(1, suppressed.eventCount());
-
-        assertTrue(manager.addWatch("/target", suppressed, WatcherMode.STANDARD));
-        assertTrue(manager.addWatch("/target", delivered, WatcherMode.STANDARD));
-
-        WatcherOrBitSet fired = manager.triggerWatch("/target", EventType.NodeDataChanged, 101L, NO_ACL, suppress);
-
-        assertNotNull(fired);
-        assertTrue(fired.contains(suppressed));
-        assertTrue(fired.contains(delivered));
-
-        assertEquals("Suppressed watcher must be in the fired set but must not receive the target event",
-                1, suppressed.eventCount());
-        assertEquals(1, delivered.eventCount());
-        assertWatchedEvent(delivered.lastEvent(), "/target", EventType.NodeDataChanged, 101L);
-
-        assertFalse("Suppressed standard watches are still consumed by triggerWatch",
-                manager.containsWatcher("/target", suppressed, WatcherMode.STANDARD));
-        assertFalse(manager.containsWatcher("/target", delivered, WatcherMode.STANDARD));
-    }
-
-    @Test
-    public void testTriggerDirectPathWithMultipleWatchersDeliversSameEventToEachWatcherOnce() {
-        WatchManager manager = new WatchManager();
-        RecordingWatcher watcher1 = new RecordingWatcher("watcher1");
-        RecordingWatcher watcher2 = new RecordingWatcher("watcher2");
-        RecordingWatcher watcher3 = new RecordingWatcher("watcher3");
-
-        assertTrue(manager.addWatch("/multi", watcher1, WatcherMode.STANDARD));
-        assertTrue(manager.addWatch("/multi", watcher2, WatcherMode.PERSISTENT));
-        assertTrue(manager.addWatch("/multi", watcher3, WatcherMode.PERSISTENT_RECURSIVE));
-
-        WatcherOrBitSet fired = manager.triggerWatch("/multi", EventType.NodeDeleted, 77L, NO_ACL, null);
-
-        assertNotNull(fired);
-        assertTrue(fired.contains(watcher1));
-        assertTrue(fired.contains(watcher2));
-        assertTrue(fired.contains(watcher3));
-
-        assertEquals(1, watcher1.eventCount());
-        assertEquals(1, watcher2.eventCount());
-        assertEquals(1, watcher3.eventCount());
-        assertWatchedEvent(watcher1.lastEvent(), "/multi", EventType.NodeDeleted, 77L);
-        assertWatchedEvent(watcher2.lastEvent(), "/multi", EventType.NodeDeleted, 77L);
-        assertWatchedEvent(watcher3.lastEvent(), "/multi", EventType.NodeDeleted, 77L);
-
-        assertFalse(manager.containsWatcher("/multi", watcher1, WatcherMode.STANDARD));
-        assertTrue(manager.containsWatcher("/multi", watcher2, WatcherMode.PERSISTENT));
-        assertTrue(manager.containsWatcher("/multi", watcher3, WatcherMode.PERSISTENT_RECURSIVE));
-    }
-
-    private static void assertWatchedEvent(WatchedEvent event, String path, EventType type, long zxid) {
-        assertEquals(path, event.getPath());
-        assertSame(type, event.getType());
-        assertSame(KeeperState.SyncConnected, event.getState());
-        assertEquals(zxid, event.getZxid());
     }
 }
-
+// ###Test END##
