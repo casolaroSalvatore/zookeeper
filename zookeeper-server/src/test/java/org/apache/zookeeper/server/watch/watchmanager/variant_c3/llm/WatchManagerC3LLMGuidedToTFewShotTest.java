@@ -7,9 +7,8 @@ import static org.mockito.Mockito.*;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.Watcher.Event.EventType;
@@ -301,10 +300,18 @@ public class WatchManagerC3LLMGuidedToTFewShotTest {
 
         WatchesReport report = manager.getWatches();
 
+        /* Modified to remove the compilation error
         assertEquals(2, report.getSessionIds().size());
         assertTrue(report.getPaths(0x11L).contains("/a"));
         assertTrue(report.getPaths(0x11L).contains("/b"));
         assertEquals(Collections.singleton("/b"), report.getPaths(0x22L));
+        */
+
+        Map<Long, Set<String>> map = report.toMap();
+        assertEquals(2, map.size());
+        assertTrue(map.get(0x11L).contains("/a"));
+        assertTrue(map.get(0x11L).contains("/b"));
+        assertEquals(Collections.singleton("/b"), map.get(0x22L));
     }
 
     @Test
@@ -317,10 +324,19 @@ public class WatchManagerC3LLMGuidedToTFewShotTest {
 
         WatchesPathReport report = manager.getWatchesByPath();
 
+        /* Modified to remove the compilation error
         assertTrue(report.getPaths().contains("/a"));
         assertTrue(report.getSessions("/a").contains(0x11L));
         assertTrue(report.getSessions("/a").contains(0x22L));
         assertEquals(2, report.getSessions("/a").size());
+        */
+
+        Map<String, java.util.Set<Long>> map = report.toMap();
+
+        assertTrue(map.containsKey("/a"));
+        assertTrue(map.get("/a").contains(0x11L));
+        assertTrue(map.get("/a").contains(0x22L));
+        assertEquals(2, map.get("/a").size());
     }
 
     @Test
