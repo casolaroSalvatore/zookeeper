@@ -24,8 +24,8 @@ public class RegressionTestBeforeFacadeTest0 {
     public void test1() throws Throwable {
         if (debug)
             System.out.format("%n%s%n", "RegressionTest0.test1");
-        Object obj0 = new Object();
-        Class<?> wildcardClass1 = obj0.getClass();
+        java.lang.Object obj0 = new java.lang.Object();
+        java.lang.Class<?> wildcardClass1 = obj0.getClass();
         org.junit.Assert.assertNotNull(wildcardClass1);
     }
 }
