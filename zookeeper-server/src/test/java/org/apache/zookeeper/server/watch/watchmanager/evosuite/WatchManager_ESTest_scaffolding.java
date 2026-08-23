@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.evosuite.runtime.sandbox.Sandbox;
+import org.evosuite.runtime.sandbox.Sandbox.SandboxMode;
 
 @EvoSuiteClassExclude
 public class WatchManager_ESTest_scaffolding {
@@ -19,7 +20,7 @@ public class WatchManager_ESTest_scaffolding {
   @org.junit.Rule
   public org.evosuite.runtime.vnet.NonFunctionalRequirementRule nfr = new org.evosuite.runtime.vnet.NonFunctionalRequirementRule();
 
-  private static final java.util.Properties defaultProperties = (java.util.Properties) System.getProperties().clone();
+  private static final java.util.Properties defaultProperties = (java.util.Properties) java.lang.System.getProperties().clone(); 
 
   private org.evosuite.runtime.thread.ThreadStopper threadStopper =  new org.evosuite.runtime.thread.ThreadStopper (org.evosuite.runtime.thread.KillSwitchHandler.getInstance(), 3000);
 
@@ -31,8 +32,8 @@ public class WatchManager_ESTest_scaffolding {
     org.evosuite.runtime.RuntimeSettings.maxNumberOfThreads = 100; 
     org.evosuite.runtime.RuntimeSettings.maxNumberOfIterationsPerLoop = 10000; 
     org.evosuite.runtime.RuntimeSettings.mockSystemIn = true; 
-    org.evosuite.runtime.RuntimeSettings.sandboxMode = Sandbox.SandboxMode.RECOMMENDED;
-    Sandbox.initializeSecurityManagerForSUT();
+    org.evosuite.runtime.RuntimeSettings.sandboxMode = org.evosuite.runtime.sandbox.Sandbox.SandboxMode.RECOMMENDED; 
+    org.evosuite.runtime.sandbox.Sandbox.initializeSecurityManagerForSUT(); 
     org.evosuite.runtime.classhandling.JDKClassResetter.init();
     setSystemProperties();
     initializeClasses();
@@ -42,7 +43,7 @@ public class WatchManager_ESTest_scaffolding {
   @AfterClass
   public static void clearEvoSuiteFramework(){ 
     Sandbox.resetDefaultSecurityManager(); 
-    System.setProperties((java.util.Properties) defaultProperties.clone());
+    java.lang.System.setProperties((java.util.Properties) defaultProperties.clone()); 
   } 
 
   @Before
@@ -50,7 +51,7 @@ public class WatchManager_ESTest_scaffolding {
     threadStopper.storeCurrentThreads();
     threadStopper.startRecordingTime();
     org.evosuite.runtime.jvm.ShutdownHookHandler.getInstance().initHandler(); 
-    Sandbox.goingToExecuteSUTCode();
+    org.evosuite.runtime.sandbox.Sandbox.goingToExecuteSUTCode(); 
     setSystemProperties(); 
     org.evosuite.runtime.GuiSupport.setHeadless(); 
     org.evosuite.runtime.Runtime.getInstance().resetRuntime(); 
@@ -63,55 +64,55 @@ public class WatchManager_ESTest_scaffolding {
     org.evosuite.runtime.jvm.ShutdownHookHandler.getInstance().safeExecuteAddedHooks(); 
     org.evosuite.runtime.classhandling.JDKClassResetter.reset(); 
     resetClasses(); 
-    Sandbox.doneWithExecutingSUTCode();
+    org.evosuite.runtime.sandbox.Sandbox.doneWithExecutingSUTCode(); 
     org.evosuite.runtime.agent.InstrumentingAgent.deactivate(); 
     org.evosuite.runtime.GuiSupport.restoreHeadlessMode(); 
   } 
 
   public static void setSystemProperties() {
  
-    System.setProperties((java.util.Properties) defaultProperties.clone());
-    System.setProperty("java.io.tmpdir", "C:\\Users\\casol\\AppData\\Local\\Temp\\");
-    System.setProperty("user.name", "casol");
-    System.setProperty("sun.boot.library.path", "C:\\Program Files\\Java\\jdk1.8.0_202\\jre\\bin");
-    System.setProperty("search_budget", "60");
-    System.setProperty("file.encoding.pkg", "sun.io");
-    System.setProperty("user.script", "");
-    System.setProperty("user.country", "IT");
-    System.setProperty("sun.java.launcher", "SUN_STANDARD");
-    System.setProperty("sun.os.patch.level", "");
-    System.setProperty("user.dir", "C:\\Users\\casol\\Desktop\\zookeeper-evosuite\\zookeeper-server");
-    System.setProperty("inline", "true");
-    System.setProperty("user.variant", "");
-    System.setProperty("master_log_port", "3426");
-    System.setProperty("log4j.configuration", "SUT.log4j.properties");
-    System.setProperty("sun.jnu.encoding", "Cp1252");
-    System.setProperty("selection_function", "RANK_CROWD_DISTANCE_TOURNAMENT");
-    System.setProperty("sun.management.compiler", "HotSpot 64-Bit Tiered Compilers");
-    System.setProperty("user.home", "C:\\Users\\casol");
-    System.setProperty("user.timezone", "Europe/Berlin");
-    System.setProperty("file.encoding", "Cp1252");
-    System.setProperty("strategy", "MOSuite");
-    System.setProperty("CP_file_path", "C:\\Users\\casol\\AppData\\Local\\Temp\\EvoSuite_classpathFile682453244788692194.txt");
-    System.setProperty("num_parallel_clients", "1");
-    System.setProperty("PROJECT_PREFIX", "");
-    System.setProperty("sun.arch.data.model", "64");
-    System.setProperty("algorithm", "DYNAMOSA");
-    System.setProperty("sun.java.command", "org.evosuite.ClientProcess Client-0");
-    System.setProperty("user.language", "it");
-    System.setProperty("process_communication_port", "21344");
-    System.setProperty("sun.boot.class.path", "C:\\Program Files\\Java\\jdk1.8.0_202\\jre\\lib\\resources.jar;C:\\Program Files\\Java\\jdk1.8.0_202\\jre\\lib\\rt.jar;C:\\Program Files\\Java\\jdk1.8.0_202\\jre\\lib\\sunrsasign.jar;C:\\Program Files\\Java\\jdk1.8.0_202\\jre\\lib\\jsse.jar;C:\\Program Files\\Java\\jdk1.8.0_202\\jre\\lib\\jce.jar;C:\\Program Files\\Java\\jdk1.8.0_202\\jre\\lib\\charsets.jar;C:\\Program Files\\Java\\jdk1.8.0_202\\jre\\lib\\jfr.jar;C:\\Program Files\\Java\\jdk1.8.0_202\\jre\\classes");
-    System.setProperty("java.awt.headless", "true");
-    System.setProperty("logback.configurationFile", "logback-evosuite.xml");
-    System.setProperty("criterion", "BRANCH");
-    System.setProperty("java.vendor.url.bug", "http://bugreport.sun.com/bugreport/");
-    System.setProperty("sun.cpu.endian", "little");
-    System.setProperty("sun.io.unicode.encoding", "UnicodeLittle");
-    System.setProperty("java.rmi.server.hostname", "127.0.0.1");
-    System.setProperty("TARGET_CLASS", "org.apache.zookeeper.server.watch.WatchManager");
-    System.setProperty("sun.desktop", "windows");
-    System.setProperty("evosuite.log.appender", "CLIENT");
-    System.setProperty("sun.cpu.isalist", "amd64");
+    java.lang.System.setProperties((java.util.Properties) defaultProperties.clone()); 
+    java.lang.System.setProperty("java.io.tmpdir", "C:\\Users\\casol\\AppData\\Local\\Temp\\"); 
+    java.lang.System.setProperty("user.name", "casol"); 
+    java.lang.System.setProperty("sun.boot.library.path", "C:\\Program Files\\Java\\jdk1.8.0_202\\jre\\bin"); 
+    java.lang.System.setProperty("search_budget", "60"); 
+    java.lang.System.setProperty("file.encoding.pkg", "sun.io"); 
+    java.lang.System.setProperty("user.script", ""); 
+    java.lang.System.setProperty("user.country", "IT"); 
+    java.lang.System.setProperty("sun.java.launcher", "SUN_STANDARD"); 
+    java.lang.System.setProperty("sun.os.patch.level", ""); 
+    java.lang.System.setProperty("user.dir", "C:\\Users\\casol\\Desktop\\zookeeper-evosuite\\zookeeper-server"); 
+    java.lang.System.setProperty("inline", "true"); 
+    java.lang.System.setProperty("user.variant", ""); 
+    java.lang.System.setProperty("master_log_port", "3426"); 
+    java.lang.System.setProperty("log4j.configuration", "SUT.log4j.properties"); 
+    java.lang.System.setProperty("sun.jnu.encoding", "Cp1252"); 
+    java.lang.System.setProperty("selection_function", "RANK_CROWD_DISTANCE_TOURNAMENT"); 
+    java.lang.System.setProperty("sun.management.compiler", "HotSpot 64-Bit Tiered Compilers"); 
+    java.lang.System.setProperty("user.home", "C:\\Users\\casol"); 
+    java.lang.System.setProperty("user.timezone", "Europe/Berlin"); 
+    java.lang.System.setProperty("file.encoding", "Cp1252"); 
+    java.lang.System.setProperty("strategy", "MOSuite"); 
+    java.lang.System.setProperty("CP_file_path", "C:\\Users\\casol\\AppData\\Local\\Temp\\EvoSuite_classpathFile682453244788692194.txt"); 
+    java.lang.System.setProperty("num_parallel_clients", "1"); 
+    java.lang.System.setProperty("PROJECT_PREFIX", ""); 
+    java.lang.System.setProperty("sun.arch.data.model", "64"); 
+    java.lang.System.setProperty("algorithm", "DYNAMOSA"); 
+    java.lang.System.setProperty("sun.java.command", "org.evosuite.ClientProcess Client-0"); 
+    java.lang.System.setProperty("user.language", "it"); 
+    java.lang.System.setProperty("process_communication_port", "21344"); 
+    java.lang.System.setProperty("sun.boot.class.path", "C:\\Program Files\\Java\\jdk1.8.0_202\\jre\\lib\\resources.jar;C:\\Program Files\\Java\\jdk1.8.0_202\\jre\\lib\\rt.jar;C:\\Program Files\\Java\\jdk1.8.0_202\\jre\\lib\\sunrsasign.jar;C:\\Program Files\\Java\\jdk1.8.0_202\\jre\\lib\\jsse.jar;C:\\Program Files\\Java\\jdk1.8.0_202\\jre\\lib\\jce.jar;C:\\Program Files\\Java\\jdk1.8.0_202\\jre\\lib\\charsets.jar;C:\\Program Files\\Java\\jdk1.8.0_202\\jre\\lib\\jfr.jar;C:\\Program Files\\Java\\jdk1.8.0_202\\jre\\classes"); 
+    java.lang.System.setProperty("java.awt.headless", "true"); 
+    java.lang.System.setProperty("logback.configurationFile", "logback-evosuite.xml"); 
+    java.lang.System.setProperty("criterion", "BRANCH"); 
+    java.lang.System.setProperty("java.vendor.url.bug", "http://bugreport.sun.com/bugreport/"); 
+    java.lang.System.setProperty("sun.cpu.endian", "little"); 
+    java.lang.System.setProperty("sun.io.unicode.encoding", "UnicodeLittle"); 
+    java.lang.System.setProperty("java.rmi.server.hostname", "127.0.0.1"); 
+    java.lang.System.setProperty("TARGET_CLASS", "org.apache.zookeeper.server.watch.WatchManager"); 
+    java.lang.System.setProperty("sun.desktop", "windows"); 
+    java.lang.System.setProperty("evosuite.log.appender", "CLIENT"); 
+    java.lang.System.setProperty("sun.cpu.isalist", "amd64"); 
   }
 
   private static void initializeClasses() {
