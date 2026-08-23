@@ -31,7 +31,7 @@ public class RegressionTest0 {
         try {
             boolean boolean4 = watchManager0.addWatch("", watcher2, watcherMode3);
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"org.apache.zookeeper.server.watch.WatcherMode.ordinal()\" because \"mode\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
     }
@@ -55,7 +55,7 @@ public class RegressionTest0 {
         try {
             org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet15 = watchManager0.triggerWatch("hi!", eventType11, 100L, aCLList13, watcherOrBitSet14);
             org.junit.Assert.fail("Expected exception of type java.lang.StringIndexOutOfBoundsException; message: Range [0, -1) out of bounds for length 3");
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (java.lang.StringIndexOutOfBoundsException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -79,9 +79,9 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet9 = watchManager0.triggerWatch("", eventType3, 0L, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList6, watcherOrBitSet8);
         // The following exception was thrown during execution in test generation
         try {
-            Class<?> wildcardClass10 = watcherOrBitSet9.getClass();
+            java.lang.Class<?> wildcardClass10 = watcherOrBitSet9.getClass();
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -108,7 +108,7 @@ public class RegressionTest0 {
         try {
             org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet12 = watchManager0.triggerWatch("hi!", eventType6, (long) ' ', (java.util.List<org.apache.zookeeper.data.ACL>) aCLList9, watcherOrBitSet11);
             org.junit.Assert.fail("Expected exception of type java.lang.StringIndexOutOfBoundsException; message: Range [0, -1) out of bounds for length 3");
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (java.lang.StringIndexOutOfBoundsException e) {
             // Expected exception.
         }
         org.junit.Assert.assertTrue("'" + boolean4 + "' != '" + false + "'", boolean4 == false);
@@ -161,7 +161,7 @@ public class RegressionTest0 {
         try {
             org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet51 = watchManager0.triggerWatch("hi!", eventType14, (long) (short) 0, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList46);
             org.junit.Assert.fail("Expected exception of type java.lang.StringIndexOutOfBoundsException; message: Range [0, -1) out of bounds for length 3");
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (java.lang.StringIndexOutOfBoundsException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -208,7 +208,7 @@ public class RegressionTest0 {
         try {
             boolean boolean19 = watchManager0.addWatch("0 connections watching 0 paths\nTotal watches:0", watcher17, watcherMode18);
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"org.apache.zookeeper.server.watch.WatcherMode.ordinal()\" because \"mode\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary5);
@@ -286,7 +286,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatchManager watchManager0 = new org.apache.zookeeper.server.watch.WatchManager();
         org.apache.zookeeper.server.watch.WatchesSummary watchesSummary1 = watchManager0.getWatchesSummary();
         int int2 = watchManager0.getRecursiveWatchQty();
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap3 = watchManager0.getWatch2Paths();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap3 = watchManager0.getWatch2Paths();
         org.apache.zookeeper.Watcher.Event.EventType eventType5 = null;
         org.apache.zookeeper.data.ACL[] aCLArray7 = new org.apache.zookeeper.data.ACL[] {};
         java.util.ArrayList<org.apache.zookeeper.data.ACL> aCLList8 = new java.util.ArrayList<org.apache.zookeeper.data.ACL>();
@@ -295,7 +295,7 @@ public class RegressionTest0 {
         try {
             org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet10 = watchManager0.triggerWatch("0 connections watching 0 paths\nTotal watches:0", eventType5, (long) 'a', (java.util.List<org.apache.zookeeper.data.ACL>) aCLList8);
             org.junit.Assert.fail("Expected exception of type java.lang.StringIndexOutOfBoundsException; message: Range [0, -1) out of bounds for length 46");
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (java.lang.StringIndexOutOfBoundsException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -325,7 +325,7 @@ public class RegressionTest0 {
         watchManager0.removeWatcher(watcher15);
         org.apache.zookeeper.Watcher watcher18 = null;
         boolean boolean19 = watchManager0.containsWatcher("", watcher18);
-        Class<?> wildcardClass20 = watchManager0.getClass();
+        java.lang.Class<?> wildcardClass20 = watchManager0.getClass();
         org.junit.Assert.assertNotNull(watchesSummary5);
         org.junit.Assert.assertNotNull(aCLArray9);
         org.junit.Assert.assertArrayEquals(aCLArray9, new org.apache.zookeeper.data.ACL[] {});
@@ -371,7 +371,7 @@ public class RegressionTest0 {
         try {
             org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet39 = watchManager0.triggerWatch("0 connections watching 0 paths\nTotal watches:0", eventType3, (long) (short) 0, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList33);
             org.junit.Assert.fail("Expected exception of type java.lang.StringIndexOutOfBoundsException; message: Range [0, -1) out of bounds for length 46");
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (java.lang.StringIndexOutOfBoundsException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary10);
@@ -408,7 +408,7 @@ public class RegressionTest0 {
         try {
             org.apache.zookeeper.server.watch.WatchesReport watchesReport14 = watchManager0.getWatches();
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"org.apache.zookeeper.server.ServerCnxn.getSessionId()\" because the return value of \"java.util.Map$Entry.getKey()\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -428,7 +428,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher3 = null;
         boolean boolean4 = watchManager0.containsWatcher("", watcher3);
         org.apache.zookeeper.server.watch.WatchesPathReport watchesPathReport5 = watchManager0.getWatchesByPath();
-        String str6 = watchManager0.toString();
+        java.lang.String str6 = watchManager0.toString();
         org.junit.Assert.assertTrue("'" + boolean4 + "' != '" + false + "'", boolean4 == false);
         org.junit.Assert.assertNotNull(watchesPathReport5);
         org.junit.Assert.assertEquals("'" + str6 + "' != '" + "0 connections watching 0 paths\nTotal watches:0" + "'", str6, "0 connections watching 0 paths\nTotal watches:0");
@@ -476,7 +476,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher11 = null;
         boolean boolean12 = watchManager0.addWatch("hi!", watcher11);
         watchManager0.shutdown();
-        Class<?> wildcardClass14 = watchManager0.getClass();
+        java.lang.Class<?> wildcardClass14 = watchManager0.getClass();
         org.junit.Assert.assertNotNull(watchesSummary1);
         org.junit.Assert.assertNotNull(aCLArray5);
         org.junit.Assert.assertArrayEquals(aCLArray5, new org.apache.zookeeper.data.ACL[] {});
@@ -508,7 +508,7 @@ public class RegressionTest0 {
         try {
             org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet19 = watchManager0.triggerWatch("0 connections watching 0 paths\nTotal watches:0", eventType7, 1L, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList15);
             org.junit.Assert.fail("Expected exception of type java.lang.StringIndexOutOfBoundsException; message: Range [0, -1) out of bounds for length 46");
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (java.lang.StringIndexOutOfBoundsException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -533,7 +533,7 @@ public class RegressionTest0 {
         try {
             boolean boolean6 = watchManager0.addWatch("", watcher4, watcherMode5);
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"org.apache.zookeeper.server.watch.WatcherMode.ordinal()\" because \"mode\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertTrue("'" + int2 + "' != '" + 0 + "'", int2 == 0);
@@ -547,7 +547,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatchesSummary watchesSummary1 = watchManager0.getWatchesSummary();
         org.apache.zookeeper.Watcher watcher3 = null;
         boolean boolean4 = watchManager0.addWatch("", watcher3);
-        Class<?> wildcardClass5 = watchManager0.getClass();
+        java.lang.Class<?> wildcardClass5 = watchManager0.getClass();
         org.junit.Assert.assertNotNull(watchesSummary1);
         org.junit.Assert.assertTrue("'" + boolean4 + "' != '" + true + "'", boolean4 == true);
         org.junit.Assert.assertNotNull(wildcardClass5);
@@ -599,7 +599,7 @@ public class RegressionTest0 {
         try {
             org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet53 = watchManager0.triggerWatch("hi!", eventType18, (long) (short) 100, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList46, watcherOrBitSet52);
             org.junit.Assert.fail("Expected exception of type java.lang.StringIndexOutOfBoundsException; message: Range [0, -1) out of bounds for length 3");
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (java.lang.StringIndexOutOfBoundsException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary5);
@@ -637,7 +637,7 @@ public class RegressionTest0 {
         try {
             boolean boolean6 = watchManager0.addWatch("0 connections watching 0 paths\nTotal watches:0", watcher4, watcherMode5);
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"org.apache.zookeeper.server.watch.WatcherMode.ordinal()\" because \"mode\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertTrue("'" + int2 + "' != '" + 0 + "'", int2 == 0);
@@ -666,7 +666,7 @@ public class RegressionTest0 {
         try {
             boolean boolean19 = watchManager0.addWatch("0 connections watching 0 paths\nTotal watches:0", watcher17, watcherMode18);
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"org.apache.zookeeper.server.watch.WatcherMode.ordinal()\" because \"mode\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -686,7 +686,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatchesSummary watchesSummary1 = watchManager0.getWatchesSummary();
         org.apache.zookeeper.Watcher watcher3 = null;
         boolean boolean4 = watchManager0.addWatch("", watcher3);
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap5 = watchManager0.getWatch2Paths();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap5 = watchManager0.getWatch2Paths();
         org.junit.Assert.assertNotNull(watchesSummary1);
         org.junit.Assert.assertTrue("'" + boolean4 + "' != '" + true + "'", boolean4 == true);
         org.junit.Assert.assertNotNull(watcherMap5);
@@ -720,7 +720,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet31 = watchManager22.triggerWatch("", eventType25, 0L, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList28, watcherOrBitSet30);
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet32 = watchManager18.triggerWatch("", eventType20, (long) (-1), (java.util.List<org.apache.zookeeper.data.ACL>) aCLList28);
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet33 = watchManager0.triggerWatch("", eventType16, 0L, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList28);
-        Class<?> wildcardClass34 = watchManager0.getClass();
+        java.lang.Class<?> wildcardClass34 = watchManager0.getClass();
         org.junit.Assert.assertNotNull(watchesSummary5);
         org.junit.Assert.assertNotNull(aCLArray9);
         org.junit.Assert.assertArrayEquals(aCLArray9, new org.apache.zookeeper.data.ACL[] {});
@@ -763,7 +763,7 @@ public class RegressionTest0 {
         try {
             boolean boolean24 = watchManager0.addWatch("", watcher22, watcherMode23);
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"org.apache.zookeeper.server.watch.WatcherMode.ordinal()\" because \"mode\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary5);
@@ -796,7 +796,7 @@ public class RegressionTest0 {
         try {
             boolean boolean13 = watchManager0.addWatch("hi!", watcher11, watcherMode12);
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"org.apache.zookeeper.server.watch.WatcherMode.ordinal()\" because \"mode\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -811,7 +811,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatchManager watchManager0 = new org.apache.zookeeper.server.watch.WatchManager();
         org.apache.zookeeper.server.watch.WatchesSummary watchesSummary1 = watchManager0.getWatchesSummary();
         int int2 = watchManager0.getRecursiveWatchQty();
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap3 = watchManager0.getWatch2Paths();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap3 = watchManager0.getWatch2Paths();
         org.apache.zookeeper.server.watch.WatchesReport watchesReport4 = watchManager0.getWatches();
         org.apache.zookeeper.Watcher watcher6 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode7 = null;
@@ -819,7 +819,7 @@ public class RegressionTest0 {
         try {
             boolean boolean8 = watchManager0.addWatch("hi!", watcher6, watcherMode7);
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"org.apache.zookeeper.server.watch.WatcherMode.ordinal()\" because \"mode\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -846,7 +846,7 @@ public class RegressionTest0 {
         try {
             org.apache.zookeeper.server.watch.WatchesReport watchesReport13 = watchManager0.getWatches();
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"org.apache.zookeeper.server.ServerCnxn.getSessionId()\" because the return value of \"java.util.Map$Entry.getKey()\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -872,7 +872,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher11 = null;
         boolean boolean12 = watchManager0.containsWatcher("hi!", watcher11);
         org.apache.zookeeper.server.watch.WatchesSummary watchesSummary13 = watchManager0.getWatchesSummary();
-        Class<?> wildcardClass14 = watchManager0.getClass();
+        java.lang.Class<?> wildcardClass14 = watchManager0.getClass();
         org.junit.Assert.assertNotNull(watchesSummary1);
         org.junit.Assert.assertNotNull(aCLArray5);
         org.junit.Assert.assertArrayEquals(aCLArray5, new org.apache.zookeeper.data.ACL[] {});
@@ -900,9 +900,9 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet14 = watchManager0.triggerWatch("", eventType2, (long) (-1), (java.util.List<org.apache.zookeeper.data.ACL>) aCLList10);
         // The following exception was thrown during execution in test generation
         try {
-            Class<?> wildcardClass15 = watcherOrBitSet14.getClass();
+            java.lang.Class<?> wildcardClass15 = watcherOrBitSet14.getClass();
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary5);
@@ -965,7 +965,7 @@ public class RegressionTest0 {
         try {
             org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet41 = watchManager0.triggerWatch("1 connections watching 1 paths\nTotal watches:1", eventType36, (long) (byte) 10, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList39);
             org.junit.Assert.fail("Expected exception of type java.lang.StringIndexOutOfBoundsException; message: Range [0, -1) out of bounds for length 46");
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (java.lang.StringIndexOutOfBoundsException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -1005,7 +1005,7 @@ public class RegressionTest0 {
         try {
             boolean boolean13 = watchManager0.addWatch("0 connections watching 0 paths\nTotal watches:0", watcher11, watcherMode12);
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"org.apache.zookeeper.server.watch.WatcherMode.ordinal()\" because \"mode\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -1038,7 +1038,7 @@ public class RegressionTest0 {
         try {
             boolean boolean23 = watchManager0.addWatch("1 connections watching 1 paths\nTotal watches:1", watcher21, watcherMode22);
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"org.apache.zookeeper.server.watch.WatcherMode.ordinal()\" because \"mode\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary5);
@@ -1066,7 +1066,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet13 = watchManager4.triggerWatch("", eventType7, 0L, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList10, watcherOrBitSet12);
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet14 = watchManager0.triggerWatch("", eventType2, (long) (-1), (java.util.List<org.apache.zookeeper.data.ACL>) aCLList10);
         int int15 = watchManager0.getRecursiveWatchQty();
-        String str16 = watchManager0.toString();
+        java.lang.String str16 = watchManager0.toString();
         watchManager0.shutdown();
         org.junit.Assert.assertNotNull(watchesSummary5);
         org.junit.Assert.assertNotNull(aCLArray9);
@@ -1087,7 +1087,7 @@ public class RegressionTest0 {
         int int2 = watchManager0.getRecursiveWatchQty();
         org.apache.zookeeper.Watcher watcher3 = null;
         watchManager0.removeWatcher(watcher3);
-        Class<?> wildcardClass5 = watchManager0.getClass();
+        java.lang.Class<?> wildcardClass5 = watchManager0.getClass();
         org.junit.Assert.assertNotNull(watchesSummary1);
         org.junit.Assert.assertTrue("'" + int2 + "' != '" + 0 + "'", int2 == 0);
         org.junit.Assert.assertNotNull(wildcardClass5);
@@ -1100,7 +1100,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatchManager watchManager0 = new org.apache.zookeeper.server.watch.WatchManager();
         org.apache.zookeeper.server.watch.WatchesSummary watchesSummary1 = watchManager0.getWatchesSummary();
         int int2 = watchManager0.getRecursiveWatchQty();
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap3 = watchManager0.getWatch2Paths();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap3 = watchManager0.getWatch2Paths();
         org.apache.zookeeper.server.watch.WatchesReport watchesReport4 = watchManager0.getWatches();
         watchManager0.shutdown();
         int int6 = watchManager0.getRecursiveWatchQty();
@@ -1117,7 +1117,7 @@ public class RegressionTest0 {
         try {
             org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet20 = watchManager0.triggerWatch("1 connections watching 1 paths\nTotal watches:1", eventType8, 0L, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList16);
             org.junit.Assert.fail("Expected exception of type java.lang.StringIndexOutOfBoundsException; message: Range [0, -1) out of bounds for length 46");
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (java.lang.StringIndexOutOfBoundsException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -1162,7 +1162,7 @@ public class RegressionTest0 {
         try {
             org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet30 = watchManager0.triggerWatch("hi!", eventType8, (-1L), (java.util.List<org.apache.zookeeper.data.ACL>) aCLList24);
             org.junit.Assert.fail("Expected exception of type java.lang.StringIndexOutOfBoundsException; message: Range [0, -1) out of bounds for length 3");
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (java.lang.StringIndexOutOfBoundsException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -1196,7 +1196,7 @@ public class RegressionTest0 {
         try {
             watchManager0.dumpWatches(printWriter13, true);
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"java.io.PrintWriter.println(String)\" because \"pwriter\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -1227,7 +1227,7 @@ public class RegressionTest0 {
         try {
             boolean boolean16 = watchManager0.addWatch("hi!", watcher14, watcherMode15);
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"org.apache.zookeeper.server.watch.WatcherMode.ordinal()\" because \"mode\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -1246,7 +1246,7 @@ public class RegressionTest0 {
         watchManager0.shutdown();
         org.apache.zookeeper.Watcher watcher3 = null;
         boolean boolean4 = watchManager0.containsWatcher("", watcher3);
-        String str5 = watchManager0.toString();
+        java.lang.String str5 = watchManager0.toString();
         org.apache.zookeeper.Watcher watcher7 = null;
         boolean boolean8 = watchManager0.containsWatcher("", watcher7);
         org.apache.zookeeper.Watcher watcher10 = null;
@@ -1257,7 +1257,7 @@ public class RegressionTest0 {
         try {
             boolean boolean15 = watchManager0.addWatch("", watcher13, watcherMode14);
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"org.apache.zookeeper.server.watch.WatcherMode.ordinal()\" because \"mode\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertTrue("'" + boolean4 + "' != '" + false + "'", boolean4 == false);
@@ -1281,10 +1281,10 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher11 = null;
         boolean boolean12 = watchManager0.addWatch("hi!", watcher11);
         watchManager0.shutdown();
-        String str14 = watchManager0.toString();
+        java.lang.String str14 = watchManager0.toString();
         org.apache.zookeeper.Watcher watcher16 = null;
         boolean boolean17 = watchManager0.containsWatcher("", watcher16);
-        Class<?> wildcardClass18 = watchManager0.getClass();
+        java.lang.Class<?> wildcardClass18 = watchManager0.getClass();
         org.junit.Assert.assertNotNull(watchesSummary1);
         org.junit.Assert.assertNotNull(aCLArray5);
         org.junit.Assert.assertArrayEquals(aCLArray5, new org.apache.zookeeper.data.ACL[] {});
@@ -1307,7 +1307,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher6 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode7 = null;
         boolean boolean8 = watchManager0.removeWatcher("", watcher6, watcherMode7);
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap9 = watchManager0.getWatch2Paths();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap9 = watchManager0.getWatch2Paths();
         int int10 = watchManager0.size();
         int int11 = watchManager0.size();
         org.apache.zookeeper.Watcher watcher13 = null;
@@ -1384,7 +1384,7 @@ public class RegressionTest0 {
         try {
             org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet26 = watchManager0.triggerWatch("hi!", eventType8, (long) 100, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList20, watcherOrBitSet25);
             org.junit.Assert.fail("Expected exception of type java.lang.StringIndexOutOfBoundsException; message: Range [0, -1) out of bounds for length 3");
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (java.lang.StringIndexOutOfBoundsException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -1421,7 +1421,7 @@ public class RegressionTest0 {
         try {
             boolean boolean20 = watchManager0.addWatch("1 connections watching 1 paths\nTotal watches:1", watcher18, watcherMode19);
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"org.apache.zookeeper.server.watch.WatcherMode.ordinal()\" because \"mode\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -1450,7 +1450,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet13 = watchManager4.triggerWatch("", eventType7, 0L, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList10, watcherOrBitSet12);
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet14 = watchManager0.triggerWatch("", eventType2, (long) (-1), (java.util.List<org.apache.zookeeper.data.ACL>) aCLList10);
         int int15 = watchManager0.getRecursiveWatchQty();
-        String str16 = watchManager0.toString();
+        java.lang.String str16 = watchManager0.toString();
         java.io.PrintWriter printWriter17 = null;
         watchManager0.dumpWatches(printWriter17, false);
         org.junit.Assert.assertNotNull(watchesSummary5);
@@ -1496,9 +1496,9 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet36 = watchManager0.triggerWatch("", eventType18, (long) (byte) 1, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList30, watcherOrBitSet35);
         // The following exception was thrown during execution in test generation
         try {
-            Class<?> wildcardClass37 = watcherOrBitSet36.getClass();
+            java.lang.Class<?> wildcardClass37 = watcherOrBitSet36.getClass();
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary5);
@@ -1523,7 +1523,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatchManager watchManager0 = new org.apache.zookeeper.server.watch.WatchManager();
         org.apache.zookeeper.server.watch.WatchesSummary watchesSummary1 = watchManager0.getWatchesSummary();
         int int2 = watchManager0.size();
-        Class<?> wildcardClass3 = watchManager0.getClass();
+        java.lang.Class<?> wildcardClass3 = watchManager0.getClass();
         org.junit.Assert.assertNotNull(watchesSummary1);
         org.junit.Assert.assertTrue("'" + int2 + "' != '" + 0 + "'", int2 == 0);
         org.junit.Assert.assertNotNull(wildcardClass3);
@@ -1537,7 +1537,7 @@ public class RegressionTest0 {
         watchManager0.shutdown();
         org.apache.zookeeper.Watcher watcher3 = null;
         boolean boolean4 = watchManager0.containsWatcher("", watcher3);
-        Class<?> wildcardClass5 = watchManager0.getClass();
+        java.lang.Class<?> wildcardClass5 = watchManager0.getClass();
         org.junit.Assert.assertTrue("'" + boolean4 + "' != '" + false + "'", boolean4 == false);
         org.junit.Assert.assertNotNull(wildcardClass5);
     }
@@ -1551,7 +1551,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher3 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode4 = null;
         boolean boolean5 = watchManager0.removeWatcher("0 connections watching 0 paths\nTotal watches:0", watcher3, watcherMode4);
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap6 = watchManager0.getWatch2Paths();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap6 = watchManager0.getWatch2Paths();
         org.apache.zookeeper.Watcher.Event.EventType eventType8 = null;
         org.apache.zookeeper.server.watch.WatchManager watchManager10 = new org.apache.zookeeper.server.watch.WatchManager();
         org.apache.zookeeper.Watcher.Event.EventType eventType12 = null;
@@ -1585,7 +1585,7 @@ public class RegressionTest0 {
         try {
             org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet48 = watchManager0.triggerWatch("0 connections watching 0 paths\nTotal watches:0", eventType8, (long) (byte) 0, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList40, watcherOrBitSet47);
             org.junit.Assert.fail("Expected exception of type java.lang.StringIndexOutOfBoundsException; message: Range [0, -1) out of bounds for length 46");
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (java.lang.StringIndexOutOfBoundsException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -1613,7 +1613,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatchManager watchManager0 = new org.apache.zookeeper.server.watch.WatchManager();
         watchManager0.shutdown();
         int int2 = watchManager0.getRecursiveWatchQty();
-        String str3 = watchManager0.toString();
+        java.lang.String str3 = watchManager0.toString();
         org.apache.zookeeper.Watcher.Event.EventType eventType5 = null;
         org.apache.zookeeper.server.watch.WatchManager watchManager7 = new org.apache.zookeeper.server.watch.WatchManager();
         watchManager7.shutdown();
@@ -1635,7 +1635,7 @@ public class RegressionTest0 {
         try {
             org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet28 = watchManager0.triggerWatch("0 connections watching 0 paths\nTotal watches:0", eventType5, (long) ' ', (java.util.List<org.apache.zookeeper.data.ACL>) aCLList21, watcherOrBitSet27);
             org.junit.Assert.fail("Expected exception of type java.lang.StringIndexOutOfBoundsException; message: Range [0, -1) out of bounds for length 46");
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (java.lang.StringIndexOutOfBoundsException e) {
             // Expected exception.
         }
         org.junit.Assert.assertTrue("'" + int2 + "' != '" + 0 + "'", int2 == 0);
@@ -1667,7 +1667,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatchesSummary watchesSummary15 = watchManager0.getWatchesSummary();
         watchManager0.shutdown();
         org.apache.zookeeper.server.watch.WatchesReport watchesReport17 = watchManager0.getWatches();
-        Class<?> wildcardClass18 = watchManager0.getClass();
+        java.lang.Class<?> wildcardClass18 = watchManager0.getClass();
         org.junit.Assert.assertNotNull(watchesSummary5);
         org.junit.Assert.assertNotNull(aCLArray9);
         org.junit.Assert.assertArrayEquals(aCLArray9, new org.apache.zookeeper.data.ACL[] {});
@@ -1697,7 +1697,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher15 = null;
         watchManager0.removeWatcher(watcher15);
         org.apache.zookeeper.server.watch.WatchesPathReport watchesPathReport17 = watchManager0.getWatchesByPath();
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap18 = watchManager0.getWatch2Paths();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap18 = watchManager0.getWatch2Paths();
         org.junit.Assert.assertNotNull(watchesSummary5);
         org.junit.Assert.assertNotNull(aCLArray9);
         org.junit.Assert.assertArrayEquals(aCLArray9, new org.apache.zookeeper.data.ACL[] {});
@@ -1723,8 +1723,8 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet12 = null;
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet13 = watchManager4.triggerWatch("", eventType7, 0L, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList10, watcherOrBitSet12);
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet14 = watchManager0.triggerWatch("", eventType2, (long) (-1), (java.util.List<org.apache.zookeeper.data.ACL>) aCLList10);
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap15 = watchManager0.getWatch2Paths();
-        Class<?> wildcardClass16 = watchManager0.getClass();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap15 = watchManager0.getWatch2Paths();
+        java.lang.Class<?> wildcardClass16 = watchManager0.getClass();
         org.junit.Assert.assertNotNull(watchesSummary5);
         org.junit.Assert.assertNotNull(aCLArray9);
         org.junit.Assert.assertArrayEquals(aCLArray9, new org.apache.zookeeper.data.ACL[] {});
@@ -1787,7 +1787,7 @@ public class RegressionTest0 {
         try {
             org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet61 = watchManager0.triggerWatch("hi!", eventType22, 10L, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList54);
             org.junit.Assert.fail("Expected exception of type java.lang.StringIndexOutOfBoundsException; message: Range [0, -1) out of bounds for length 3");
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (java.lang.StringIndexOutOfBoundsException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary5);
@@ -1854,7 +1854,7 @@ public class RegressionTest0 {
         try {
             org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet45 = watchManager0.triggerWatch("1 connections watching 1 paths\nTotal watches:1", eventType8, (long) (byte) 10, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList38, watcherOrBitSet44);
             org.junit.Assert.fail("Expected exception of type java.lang.StringIndexOutOfBoundsException; message: Range [0, -1) out of bounds for length 46");
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (java.lang.StringIndexOutOfBoundsException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -1885,7 +1885,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher3 = null;
         watchManager0.removeWatcher(watcher3);
         watchManager0.shutdown();
-        Class<?> wildcardClass6 = watchManager0.getClass();
+        java.lang.Class<?> wildcardClass6 = watchManager0.getClass();
         org.junit.Assert.assertNotNull(watchesSummary1);
         org.junit.Assert.assertTrue("'" + int2 + "' != '" + 0 + "'", int2 == 0);
         org.junit.Assert.assertNotNull(wildcardClass6);
@@ -1925,7 +1925,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher11 = null;
         boolean boolean12 = watchManager0.containsWatcher("hi!", watcher11);
         watchManager0.shutdown();
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap14 = watchManager0.getWatch2Paths();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap14 = watchManager0.getWatch2Paths();
         org.junit.Assert.assertNotNull(watchesSummary1);
         org.junit.Assert.assertNotNull(aCLArray5);
         org.junit.Assert.assertArrayEquals(aCLArray5, new org.apache.zookeeper.data.ACL[] {});
@@ -1951,7 +1951,7 @@ public class RegressionTest0 {
         try {
             watchManager0.dumpWatches(printWriter9, false);
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"java.io.PrintWriter.print(String)\" because \"pwriter\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -2038,7 +2038,7 @@ public class RegressionTest0 {
         int int15 = watchManager0.getRecursiveWatchQty();
         org.apache.zookeeper.Watcher watcher17 = null;
         boolean boolean18 = watchManager0.containsWatcher("", watcher17);
-        String str19 = watchManager0.toString();
+        java.lang.String str19 = watchManager0.toString();
         int int20 = watchManager0.getRecursiveWatchQty();
         org.junit.Assert.assertNotNull(watchesSummary5);
         org.junit.Assert.assertNotNull(aCLArray9);
@@ -2139,7 +2139,7 @@ public class RegressionTest0 {
         try {
             org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet47 = watchManager0.triggerWatch("hi!", eventType41, (long) 2, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList44, watcherOrBitSet46);
             org.junit.Assert.fail("Expected exception of type java.lang.StringIndexOutOfBoundsException; message: Range [0, -1) out of bounds for length 3");
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (java.lang.StringIndexOutOfBoundsException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary5);
@@ -2208,7 +2208,7 @@ public class RegressionTest0 {
         try {
             org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet23 = watchManager0.triggerWatch("hi!", eventType17, (long) 1, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList20, watcherOrBitSet22);
             org.junit.Assert.fail("Expected exception of type java.lang.StringIndexOutOfBoundsException; message: Range [0, -1) out of bounds for length 3");
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (java.lang.StringIndexOutOfBoundsException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -2238,8 +2238,8 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet12 = null;
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet13 = watchManager4.triggerWatch("", eventType7, 0L, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList10, watcherOrBitSet12);
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet14 = watchManager0.triggerWatch("", eventType2, (long) (-1), (java.util.List<org.apache.zookeeper.data.ACL>) aCLList10);
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap15 = watchManager0.getWatch2Paths();
-        Class<?> wildcardClass16 = watcherMap15.getClass();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap15 = watchManager0.getWatch2Paths();
+        java.lang.Class<?> wildcardClass16 = watcherMap15.getClass();
         org.junit.Assert.assertNotNull(watchesSummary5);
         org.junit.Assert.assertNotNull(aCLArray9);
         org.junit.Assert.assertArrayEquals(aCLArray9, new org.apache.zookeeper.data.ACL[] {});
@@ -2291,7 +2291,7 @@ public class RegressionTest0 {
         try {
             org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet45 = watchManager0.triggerWatch("1 connections watching 1 paths\nTotal watches:1", eventType5, (long) '#', (java.util.List<org.apache.zookeeper.data.ACL>) aCLList37, watcherOrBitSet44);
             org.junit.Assert.fail("Expected exception of type java.lang.StringIndexOutOfBoundsException; message: Range [0, -1) out of bounds for length 46");
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (java.lang.StringIndexOutOfBoundsException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -2327,7 +2327,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher11 = null;
         boolean boolean12 = watchManager0.containsWatcher("hi!", watcher11);
         org.apache.zookeeper.server.watch.WatchesPathReport watchesPathReport13 = watchManager0.getWatchesByPath();
-        String str14 = watchManager0.toString();
+        java.lang.String str14 = watchManager0.toString();
         watchManager0.shutdown();
         org.apache.zookeeper.Watcher watcher17 = null;
         boolean boolean18 = watchManager0.removeWatcher("hi!", watcher17);
@@ -2363,7 +2363,7 @@ public class RegressionTest0 {
         try {
             org.apache.zookeeper.server.watch.WatchesPathReport watchesPathReport17 = watchManager0.getWatchesByPath();
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"org.apache.zookeeper.server.ServerCnxn.getSessionId()\" because \"watcher\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -2428,7 +2428,7 @@ public class RegressionTest0 {
         try {
             org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet61 = watchManager0.triggerWatch("0 connections watching 0 paths\nTotal watches:0", eventType38, 10L, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList54, watcherOrBitSet60);
             org.junit.Assert.fail("Expected exception of type java.lang.StringIndexOutOfBoundsException; message: Range [0, -1) out of bounds for length 46");
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (java.lang.StringIndexOutOfBoundsException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary5);
@@ -2495,7 +2495,7 @@ public class RegressionTest0 {
         try {
             org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet44 = watchManager0.triggerWatch("1 connections watching 1 paths\nTotal watches:1", eventType22, (long) (short) 100, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList38);
             org.junit.Assert.fail("Expected exception of type java.lang.StringIndexOutOfBoundsException; message: Range [0, -1) out of bounds for length 46");
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (java.lang.StringIndexOutOfBoundsException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary5);
@@ -2535,7 +2535,7 @@ public class RegressionTest0 {
         try {
             watchManager0.dumpWatches(printWriter14, true);
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"java.io.PrintWriter.println(String)\" because \"pwriter\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -2557,7 +2557,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher6 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode7 = null;
         boolean boolean8 = watchManager0.removeWatcher("", watcher6, watcherMode7);
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap9 = watchManager0.getWatch2Paths();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap9 = watchManager0.getWatch2Paths();
         int int10 = watchManager0.size();
         int int11 = watchManager0.size();
         watchManager0.shutdown();
@@ -2642,7 +2642,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher11 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode12 = null;
         boolean boolean13 = watchManager0.containsWatcher("hi!", watcher11, watcherMode12);
-        Class<?> wildcardClass14 = watchManager0.getClass();
+        java.lang.Class<?> wildcardClass14 = watchManager0.getClass();
         org.junit.Assert.assertNotNull(watchesSummary1);
         org.junit.Assert.assertTrue("'" + int2 + "' != '" + 0 + "'", int2 == 0);
         org.junit.Assert.assertTrue("'" + boolean6 + "' != '" + false + "'", boolean6 == false);
@@ -2739,8 +2739,8 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher6 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode7 = null;
         boolean boolean8 = watchManager0.removeWatcher("", watcher6, watcherMode7);
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap9 = watchManager0.getWatch2Paths();
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap10 = watchManager0.getWatch2Paths();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap9 = watchManager0.getWatch2Paths();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap10 = watchManager0.getWatch2Paths();
         org.junit.Assert.assertTrue("'" + boolean4 + "' != '" + false + "'", boolean4 == false);
         org.junit.Assert.assertTrue("'" + boolean8 + "' != '" + false + "'", boolean8 == false);
         org.junit.Assert.assertNotNull(watcherMap9);
@@ -2884,7 +2884,7 @@ public class RegressionTest0 {
         try {
             boolean boolean28 = watchManager0.addWatch("0 connections watching 0 paths\nTotal watches:0", watcher26, watcherMode27);
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"org.apache.zookeeper.server.watch.WatcherMode.ordinal()\" because \"mode\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -2911,7 +2911,7 @@ public class RegressionTest0 {
         boolean boolean7 = java.util.Collections.addAll((java.util.Collection<org.apache.zookeeper.data.ACL>) aCLList6, aCLArray5);
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet8 = null;
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet9 = watchManager0.triggerWatch("", eventType3, 0L, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList6, watcherOrBitSet8);
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap10 = watchManager0.getWatch2Paths();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap10 = watchManager0.getWatch2Paths();
         org.apache.zookeeper.server.watch.WatchesReport watchesReport11 = watchManager0.getWatches();
         org.junit.Assert.assertNotNull(watchesSummary1);
         org.junit.Assert.assertNotNull(aCLArray5);
@@ -2973,7 +2973,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatchesPathReport watchesPathReport17 = watchManager0.getWatchesByPath();
         org.apache.zookeeper.Watcher watcher19 = null;
         boolean boolean20 = watchManager0.removeWatcher("", watcher19);
-        String str21 = watchManager0.toString();
+        java.lang.String str21 = watchManager0.toString();
         org.apache.zookeeper.Watcher watcher23 = null;
         boolean boolean24 = watchManager0.addWatch("0 connections watching 0 paths\nTotal watches:0", watcher23);
         org.junit.Assert.assertNotNull(watchesSummary5);
@@ -3038,7 +3038,7 @@ public class RegressionTest0 {
         try {
             boolean boolean8 = watchManager0.addWatch("", watcher6, watcherMode7);
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"org.apache.zookeeper.server.watch.WatcherMode.ordinal()\" because \"mode\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertTrue("'" + boolean3 + "' != '" + true + "'", boolean3 == true);
@@ -3072,7 +3072,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher11 = null;
         boolean boolean12 = watchManager0.addWatch("hi!", watcher11);
         watchManager0.shutdown();
-        String str14 = watchManager0.toString();
+        java.lang.String str14 = watchManager0.toString();
         org.apache.zookeeper.Watcher watcher16 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode17 = null;
         boolean boolean18 = watchManager0.removeWatcher("1 connections watching 1 paths\nTotal watches:1", watcher16, watcherMode17);
@@ -3103,7 +3103,7 @@ public class RegressionTest0 {
         try {
             boolean boolean12 = watchManager0.addWatch("1 connections watching 1 paths\nTotal watches:1", watcher10, watcherMode11);
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"org.apache.zookeeper.server.watch.WatcherMode.ordinal()\" because \"mode\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -3142,7 +3142,7 @@ public class RegressionTest0 {
         int int34 = watchManager0.size();
         org.apache.zookeeper.server.watch.WatchesReport watchesReport35 = watchManager0.getWatches();
         watchManager0.shutdown();
-        Class<?> wildcardClass37 = watchManager0.getClass();
+        java.lang.Class<?> wildcardClass37 = watchManager0.getClass();
         org.junit.Assert.assertNotNull(watchesSummary5);
         org.junit.Assert.assertNotNull(aCLArray9);
         org.junit.Assert.assertArrayEquals(aCLArray9, new org.apache.zookeeper.data.ACL[] {});
@@ -3194,7 +3194,7 @@ public class RegressionTest0 {
         try {
             org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet34 = watchManager0.triggerWatch("hi!", eventType10, (long) '4', (java.util.List<org.apache.zookeeper.data.ACL>) aCLList27, watcherOrBitSet33);
             org.junit.Assert.fail("Expected exception of type java.lang.StringIndexOutOfBoundsException; message: Range [0, -1) out of bounds for length 3");
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (java.lang.StringIndexOutOfBoundsException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -3260,10 +3260,10 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet29 = watchManager20.triggerWatch("", eventType23, 0L, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList26, watcherOrBitSet28);
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet30 = watchManager16.triggerWatch("", eventType18, (long) (-1), (java.util.List<org.apache.zookeeper.data.ACL>) aCLList26);
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet31 = watchManager0.triggerWatch("", eventType14, (long) (byte) -1, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList26);
-        String str32 = watchManager0.toString();
+        java.lang.String str32 = watchManager0.toString();
         org.apache.zookeeper.Watcher watcher34 = null;
         boolean boolean35 = watchManager0.containsWatcher("", watcher34);
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap36 = watchManager0.getWatch2Paths();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap36 = watchManager0.getWatch2Paths();
         org.junit.Assert.assertNotNull(watchesSummary1);
         org.junit.Assert.assertNotNull(aCLArray5);
         org.junit.Assert.assertArrayEquals(aCLArray5, new org.apache.zookeeper.data.ACL[] {});
@@ -3322,9 +3322,9 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher6 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode7 = null;
         boolean boolean8 = watchManager0.removeWatcher("", watcher6, watcherMode7);
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap9 = watchManager0.getWatch2Paths();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap9 = watchManager0.getWatch2Paths();
         int int10 = watchManager0.size();
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap11 = watchManager0.getWatch2Paths();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap11 = watchManager0.getWatch2Paths();
         int int12 = watchManager0.size();
         org.junit.Assert.assertTrue("'" + boolean4 + "' != '" + false + "'", boolean4 == false);
         org.junit.Assert.assertTrue("'" + boolean8 + "' != '" + false + "'", boolean8 == false);
@@ -3347,7 +3347,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher7 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode8 = null;
         boolean boolean9 = watchManager0.containsWatcher("hi!", watcher7, watcherMode8);
-        String str10 = watchManager0.toString();
+        java.lang.String str10 = watchManager0.toString();
         org.junit.Assert.assertNotNull(watchesSummary1);
         org.junit.Assert.assertTrue("'" + int2 + "' != '" + 0 + "'", int2 == 0);
         org.junit.Assert.assertTrue("'" + boolean9 + "' != '" + false + "'", boolean9 == false);
@@ -3383,7 +3383,7 @@ public class RegressionTest0 {
         try {
             boolean boolean29 = watchManager0.addWatch("1 connections watching 1 paths\nTotal watches:1", watcher27, watcherMode28);
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"org.apache.zookeeper.server.watch.WatcherMode.ordinal()\" because \"mode\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -3407,7 +3407,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher3 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode4 = null;
         boolean boolean5 = watchManager0.removeWatcher("0 connections watching 0 paths\nTotal watches:0", watcher3, watcherMode4);
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap6 = watchManager0.getWatch2Paths();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap6 = watchManager0.getWatch2Paths();
         org.apache.zookeeper.Watcher watcher8 = null;
         boolean boolean9 = watchManager0.containsWatcher("hi!", watcher8);
         org.apache.zookeeper.Watcher watcher11 = null;
@@ -3436,7 +3436,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher12 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode13 = null;
         boolean boolean14 = watchManager0.containsWatcher("0 connections watching 0 paths\nTotal watches:0", watcher12, watcherMode13);
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap15 = watchManager0.getWatch2Paths();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap15 = watchManager0.getWatch2Paths();
         org.junit.Assert.assertNotNull(watchesSummary1);
         org.junit.Assert.assertTrue("'" + boolean5 + "' != '" + false + "'", boolean5 == false);
         org.junit.Assert.assertTrue("'" + boolean9 + "' != '" + false + "'", boolean9 == false);
@@ -3514,7 +3514,7 @@ public class RegressionTest0 {
         try {
             org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet43 = watchManager0.triggerWatch("0 connections watching 0 paths\nTotal watches:0", eventType25, (long) (-1), (java.util.List<org.apache.zookeeper.data.ACL>) aCLList37, watcherOrBitSet42);
             org.junit.Assert.fail("Expected exception of type java.lang.StringIndexOutOfBoundsException; message: Range [0, -1) out of bounds for length 46");
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (java.lang.StringIndexOutOfBoundsException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary5);
@@ -3541,7 +3541,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatchManager watchManager0 = new org.apache.zookeeper.server.watch.WatchManager();
         org.apache.zookeeper.server.watch.WatchesSummary watchesSummary1 = watchManager0.getWatchesSummary();
         int int2 = watchManager0.getRecursiveWatchQty();
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap3 = watchManager0.getWatch2Paths();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap3 = watchManager0.getWatch2Paths();
         org.apache.zookeeper.server.watch.WatchesReport watchesReport4 = watchManager0.getWatches();
         watchManager0.shutdown();
         watchManager0.shutdown();
@@ -3576,14 +3576,14 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatchesPathReport watchesPathReport17 = watchManager0.getWatchesByPath();
         org.apache.zookeeper.Watcher watcher19 = null;
         boolean boolean20 = watchManager0.removeWatcher("", watcher19);
-        String str21 = watchManager0.toString();
+        java.lang.String str21 = watchManager0.toString();
         org.apache.zookeeper.Watcher watcher23 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode24 = null;
         // The following exception was thrown during execution in test generation
         try {
             boolean boolean25 = watchManager0.addWatch("hi!", watcher23, watcherMode24);
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"org.apache.zookeeper.server.watch.WatcherMode.ordinal()\" because \"mode\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary5);
@@ -3779,7 +3779,7 @@ public class RegressionTest0 {
         try {
             boolean boolean17 = watchManager0.addWatch("hi!", watcher15, watcherMode16);
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"org.apache.zookeeper.server.watch.WatcherMode.ordinal()\" because \"mode\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -3805,14 +3805,14 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher11 = null;
         boolean boolean12 = watchManager0.addWatch("hi!", watcher11);
         watchManager0.shutdown();
-        String str14 = watchManager0.toString();
+        java.lang.String str14 = watchManager0.toString();
         org.apache.zookeeper.Watcher watcher16 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode17 = null;
         // The following exception was thrown during execution in test generation
         try {
             boolean boolean18 = watchManager0.addWatch("", watcher16, watcherMode17);
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"org.apache.zookeeper.server.watch.WatcherMode.ordinal()\" because \"mode\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -3893,7 +3893,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet32 = null;
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet33 = watchManager24.triggerWatch("", eventType27, 0L, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList30, watcherOrBitSet32);
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet34 = watchManager0.triggerWatch("", eventType22, 0L, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList30);
-        String str35 = watchManager0.toString();
+        java.lang.String str35 = watchManager0.toString();
         org.apache.zookeeper.Watcher watcher37 = null;
         boolean boolean38 = watchManager0.addWatch("", watcher37);
         org.apache.zookeeper.Watcher watcher40 = null;
@@ -3946,7 +3946,7 @@ public class RegressionTest0 {
         try {
             boolean boolean28 = watchManager0.addWatch("1 connections watching 1 paths\nTotal watches:1", watcher26, watcherMode27);
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"org.apache.zookeeper.server.watch.WatcherMode.ordinal()\" because \"mode\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary5);
@@ -4059,10 +4059,10 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher11 = null;
         boolean boolean12 = watchManager0.containsWatcher("hi!", watcher11);
         org.apache.zookeeper.server.watch.WatchesPathReport watchesPathReport13 = watchManager0.getWatchesByPath();
-        String str14 = watchManager0.toString();
+        java.lang.String str14 = watchManager0.toString();
         watchManager0.shutdown();
         org.apache.zookeeper.server.watch.WatchesReport watchesReport16 = watchManager0.getWatches();
-        Class<?> wildcardClass17 = watchManager0.getClass();
+        java.lang.Class<?> wildcardClass17 = watchManager0.getClass();
         org.junit.Assert.assertNotNull(watchesSummary1);
         org.junit.Assert.assertNotNull(aCLArray5);
         org.junit.Assert.assertArrayEquals(aCLArray5, new org.apache.zookeeper.data.ACL[] {});
@@ -4136,7 +4136,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet33 = watchManager24.triggerWatch("", eventType27, 0L, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList30, watcherOrBitSet32);
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet34 = watchManager0.triggerWatch("", eventType22, 0L, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList30);
         int int35 = watchManager0.getRecursiveWatchQty();
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap36 = watchManager0.getWatch2Paths();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap36 = watchManager0.getWatch2Paths();
         int int37 = watchManager0.size();
         org.junit.Assert.assertNotNull(watchesSummary1);
         org.junit.Assert.assertNotNull(watchesSummary10);
@@ -4175,7 +4175,7 @@ public class RegressionTest0 {
         try {
             boolean boolean13 = watchManager0.addWatch("hi!", watcher11, watcherMode12);
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"org.apache.zookeeper.server.watch.WatcherMode.ordinal()\" because \"mode\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -4204,7 +4204,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatchesPathReport watchesPathReport17 = watchManager0.getWatchesByPath();
         org.apache.zookeeper.Watcher watcher19 = null;
         boolean boolean20 = watchManager0.removeWatcher("", watcher19);
-        String str21 = watchManager0.toString();
+        java.lang.String str21 = watchManager0.toString();
         watchManager0.shutdown();
         org.apache.zookeeper.Watcher watcher23 = null;
         watchManager0.removeWatcher(watcher23);
@@ -4233,7 +4233,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet9 = watchManager0.triggerWatch("", eventType3, 0L, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList6, watcherOrBitSet8);
         org.apache.zookeeper.Watcher watcher11 = null;
         boolean boolean12 = watchManager0.addWatch("hi!", watcher11);
-        String str13 = watchManager0.toString();
+        java.lang.String str13 = watchManager0.toString();
         org.apache.zookeeper.Watcher watcher15 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode16 = null;
         boolean boolean17 = watchManager0.containsWatcher("", watcher15, watcherMode16);
@@ -4353,7 +4353,7 @@ public class RegressionTest0 {
         try {
             org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet83 = watchManager0.triggerWatch("hi!", eventType17, (long) 1, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList76);
             org.junit.Assert.fail("Expected exception of type java.lang.StringIndexOutOfBoundsException; message: Range [0, -1) out of bounds for length 3");
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (java.lang.StringIndexOutOfBoundsException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary5);
@@ -4458,7 +4458,7 @@ public class RegressionTest0 {
         try {
             org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet30 = watchManager0.triggerWatch("0 connections watching 0 paths\nTotal watches:0", eventType25, (long) (short) 1, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList28);
             org.junit.Assert.fail("Expected exception of type java.lang.StringIndexOutOfBoundsException; message: Range [0, -1) out of bounds for length 46");
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (java.lang.StringIndexOutOfBoundsException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary5);
@@ -4495,7 +4495,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet19 = watchManager5.triggerWatch("", eventType7, (long) (-1), (java.util.List<org.apache.zookeeper.data.ACL>) aCLList15);
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet20 = watchManager0.triggerWatch("", eventType3, (long) (short) 0, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList15);
         int int21 = watchManager0.getRecursiveWatchQty();
-        Class<?> wildcardClass22 = watchManager0.getClass();
+        java.lang.Class<?> wildcardClass22 = watchManager0.getClass();
         org.junit.Assert.assertNotNull(watchesSummary1);
         org.junit.Assert.assertNotNull(watchesSummary10);
         org.junit.Assert.assertNotNull(aCLArray14);
@@ -4521,7 +4521,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher7 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode8 = null;
         boolean boolean9 = watchManager0.removeWatcher("", watcher7, watcherMode8);
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap10 = watchManager0.getWatch2Paths();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap10 = watchManager0.getWatch2Paths();
         org.apache.zookeeper.Watcher watcher12 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode13 = null;
         boolean boolean14 = watchManager0.removeWatcher("", watcher12, watcherMode13);
@@ -4552,7 +4552,7 @@ public class RegressionTest0 {
         watchManager0.shutdown();
         org.apache.zookeeper.Watcher watcher3 = null;
         boolean boolean4 = watchManager0.containsWatcher("", watcher3);
-        String str5 = watchManager0.toString();
+        java.lang.String str5 = watchManager0.toString();
         org.apache.zookeeper.Watcher watcher7 = null;
         boolean boolean8 = watchManager0.containsWatcher("", watcher7);
         org.apache.zookeeper.Watcher watcher10 = null;
@@ -4577,7 +4577,7 @@ public class RegressionTest0 {
         boolean boolean6 = watchManager0.containsWatcher("0 connections watching 0 paths\nTotal watches:0", watcher4, watcherMode5);
         org.apache.zookeeper.Watcher watcher8 = null;
         boolean boolean9 = watchManager0.removeWatcher("", watcher8);
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap10 = watchManager0.getWatch2Paths();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap10 = watchManager0.getWatch2Paths();
         org.junit.Assert.assertNotNull(watchesSummary1);
         org.junit.Assert.assertTrue("'" + int2 + "' != '" + 0 + "'", int2 == 0);
         org.junit.Assert.assertTrue("'" + boolean6 + "' != '" + false + "'", boolean6 == false);
@@ -4600,14 +4600,14 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher11 = null;
         boolean boolean12 = watchManager0.containsWatcher("hi!", watcher11);
         org.apache.zookeeper.server.watch.WatchesPathReport watchesPathReport13 = watchManager0.getWatchesByPath();
-        String str14 = watchManager0.toString();
+        java.lang.String str14 = watchManager0.toString();
         org.apache.zookeeper.Watcher watcher16 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode17 = null;
         // The following exception was thrown during execution in test generation
         try {
             boolean boolean18 = watchManager0.addWatch("1 connections watching 1 paths\nTotal watches:1", watcher16, watcherMode17);
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"org.apache.zookeeper.server.watch.WatcherMode.ordinal()\" because \"mode\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -4660,7 +4660,7 @@ public class RegressionTest0 {
         try {
             org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet45 = watchManager0.triggerWatch("0 connections watching 0 paths\nTotal watches:0", eventType10, (long) '4', (java.util.List<org.apache.zookeeper.data.ACL>) aCLList38, watcherOrBitSet44);
             org.junit.Assert.fail("Expected exception of type java.lang.StringIndexOutOfBoundsException; message: Range [0, -1) out of bounds for length 46");
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (java.lang.StringIndexOutOfBoundsException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -4711,7 +4711,7 @@ public class RegressionTest0 {
         watchManager0.shutdown();
         org.apache.zookeeper.Watcher watcher3 = null;
         boolean boolean4 = watchManager0.containsWatcher("", watcher3);
-        String str5 = watchManager0.toString();
+        java.lang.String str5 = watchManager0.toString();
         org.apache.zookeeper.server.watch.WatchesReport watchesReport6 = watchManager0.getWatches();
         org.apache.zookeeper.Watcher watcher8 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode9 = null;
@@ -4719,7 +4719,7 @@ public class RegressionTest0 {
         try {
             boolean boolean10 = watchManager0.addWatch("0 connections watching 0 paths\nTotal watches:0", watcher8, watcherMode9);
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"org.apache.zookeeper.server.watch.WatcherMode.ordinal()\" because \"mode\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertTrue("'" + boolean4 + "' != '" + false + "'", boolean4 == false);
@@ -4801,7 +4801,7 @@ public class RegressionTest0 {
         try {
             org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet65 = watchManager0.triggerWatch("hi!", eventType25, (long) (short) 10, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList57, watcherOrBitSet64);
             org.junit.Assert.fail("Expected exception of type java.lang.StringIndexOutOfBoundsException; message: Range [0, -1) out of bounds for length 3");
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (java.lang.StringIndexOutOfBoundsException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary5);
@@ -4852,7 +4852,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher24 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode25 = null;
         boolean boolean26 = watchManager0.removeWatcher("1 connections watching 1 paths\nTotal watches:1", watcher24, watcherMode25);
-        String str27 = watchManager0.toString();
+        java.lang.String str27 = watchManager0.toString();
         org.junit.Assert.assertNotNull(watchesSummary5);
         org.junit.Assert.assertNotNull(aCLArray9);
         org.junit.Assert.assertArrayEquals(aCLArray9, new org.apache.zookeeper.data.ACL[] {});
@@ -4912,7 +4912,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher4 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode5 = null;
         boolean boolean6 = watchManager0.removeWatcher("0 connections watching 0 paths\nTotal watches:0", watcher4, watcherMode5);
-        Class<?> wildcardClass7 = watchManager0.getClass();
+        java.lang.Class<?> wildcardClass7 = watchManager0.getClass();
         org.junit.Assert.assertNotNull(watchesSummary1);
         org.junit.Assert.assertTrue("'" + int2 + "' != '" + 0 + "'", int2 == 0);
         org.junit.Assert.assertTrue("'" + boolean6 + "' != '" + false + "'", boolean6 == false);
@@ -4982,7 +4982,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet8 = null;
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet9 = watchManager0.triggerWatch("", eventType3, 0L, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList6, watcherOrBitSet8);
         watchManager0.shutdown();
-        String str11 = watchManager0.toString();
+        java.lang.String str11 = watchManager0.toString();
         org.junit.Assert.assertNotNull(watchesSummary1);
         org.junit.Assert.assertNotNull(aCLArray5);
         org.junit.Assert.assertArrayEquals(aCLArray5, new org.apache.zookeeper.data.ACL[] {});
@@ -5040,7 +5040,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher11 = null;
         boolean boolean12 = watchManager0.containsWatcher("hi!", watcher11);
         org.apache.zookeeper.server.watch.WatchesPathReport watchesPathReport13 = watchManager0.getWatchesByPath();
-        String str14 = watchManager0.toString();
+        java.lang.String str14 = watchManager0.toString();
         org.apache.zookeeper.Watcher watcher16 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode17 = null;
         boolean boolean18 = watchManager0.containsWatcher("hi!", watcher16, watcherMode17);
@@ -5120,7 +5120,7 @@ public class RegressionTest0 {
         boolean boolean4 = watchManager0.addWatch("", watcher3);
         org.apache.zookeeper.Watcher watcher6 = null;
         boolean boolean7 = watchManager0.removeWatcher("hi!", watcher6);
-        String str8 = watchManager0.toString();
+        java.lang.String str8 = watchManager0.toString();
         org.junit.Assert.assertNotNull(watchesSummary1);
         org.junit.Assert.assertTrue("'" + boolean4 + "' != '" + true + "'", boolean4 == true);
         org.junit.Assert.assertTrue("'" + boolean7 + "' != '" + false + "'", boolean7 == false);
@@ -5171,7 +5171,7 @@ public class RegressionTest0 {
         try {
             org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet50 = watchManager0.triggerWatch("1 connections watching 1 paths\nTotal watches:1", eventType10, (long) 0, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList42, watcherOrBitSet49);
             org.junit.Assert.fail("Expected exception of type java.lang.StringIndexOutOfBoundsException; message: Range [0, -1) out of bounds for length 46");
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (java.lang.StringIndexOutOfBoundsException e) {
             // Expected exception.
         }
         org.junit.Assert.assertTrue("'" + boolean4 + "' != '" + false + "'", boolean4 == false);
@@ -5199,7 +5199,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatchManager watchManager0 = new org.apache.zookeeper.server.watch.WatchManager();
         org.apache.zookeeper.server.watch.WatchesSummary watchesSummary1 = watchManager0.getWatchesSummary();
         int int2 = watchManager0.getRecursiveWatchQty();
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap3 = watchManager0.getWatch2Paths();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap3 = watchManager0.getWatch2Paths();
         org.apache.zookeeper.server.watch.WatchesSummary watchesSummary4 = watchManager0.getWatchesSummary();
         org.apache.zookeeper.server.watch.WatchesPathReport watchesPathReport5 = watchManager0.getWatchesByPath();
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -5239,7 +5239,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet33 = watchManager0.triggerWatch("", eventType16, 0L, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList28);
         int int34 = watchManager0.size();
         org.apache.zookeeper.server.watch.WatchesReport watchesReport35 = watchManager0.getWatches();
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap36 = watchManager0.getWatch2Paths();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap36 = watchManager0.getWatch2Paths();
         org.junit.Assert.assertNotNull(watchesSummary5);
         org.junit.Assert.assertNotNull(aCLArray9);
         org.junit.Assert.assertArrayEquals(aCLArray9, new org.apache.zookeeper.data.ACL[] {});
@@ -5291,7 +5291,7 @@ public class RegressionTest0 {
         watchManager0.shutdown();
         org.apache.zookeeper.Watcher watcher38 = null;
         boolean boolean39 = watchManager0.removeWatcher("", watcher38);
-        Class<?> wildcardClass40 = watchManager0.getClass();
+        java.lang.Class<?> wildcardClass40 = watchManager0.getClass();
         org.junit.Assert.assertNotNull(watchesSummary5);
         org.junit.Assert.assertNotNull(aCLArray9);
         org.junit.Assert.assertArrayEquals(aCLArray9, new org.apache.zookeeper.data.ACL[] {});
@@ -5334,12 +5334,12 @@ public class RegressionTest0 {
         watchManager0.shutdown();
         org.apache.zookeeper.Watcher watcher3 = null;
         boolean boolean4 = watchManager0.containsWatcher("", watcher3);
-        String str5 = watchManager0.toString();
+        java.lang.String str5 = watchManager0.toString();
         org.apache.zookeeper.Watcher watcher7 = null;
         boolean boolean8 = watchManager0.containsWatcher("", watcher7);
         org.apache.zookeeper.Watcher watcher10 = null;
         boolean boolean11 = watchManager0.removeWatcher("hi!", watcher10);
-        String str12 = watchManager0.toString();
+        java.lang.String str12 = watchManager0.toString();
         org.junit.Assert.assertTrue("'" + boolean4 + "' != '" + false + "'", boolean4 == false);
         org.junit.Assert.assertEquals("'" + str5 + "' != '" + "0 connections watching 0 paths\nTotal watches:0" + "'", str5, "0 connections watching 0 paths\nTotal watches:0");
         org.junit.Assert.assertTrue("'" + boolean8 + "' != '" + false + "'", boolean8 == false);
@@ -5374,10 +5374,10 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet29 = watchManager20.triggerWatch("", eventType23, 0L, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList26, watcherOrBitSet28);
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet30 = watchManager16.triggerWatch("", eventType18, (long) (-1), (java.util.List<org.apache.zookeeper.data.ACL>) aCLList26);
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet31 = watchManager0.triggerWatch("", eventType14, (long) (byte) -1, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList26);
-        String str32 = watchManager0.toString();
+        java.lang.String str32 = watchManager0.toString();
         org.apache.zookeeper.Watcher watcher34 = null;
         boolean boolean35 = watchManager0.containsWatcher("", watcher34);
-        Class<?> wildcardClass36 = watchManager0.getClass();
+        java.lang.Class<?> wildcardClass36 = watchManager0.getClass();
         org.junit.Assert.assertNotNull(watchesSummary1);
         org.junit.Assert.assertNotNull(aCLArray5);
         org.junit.Assert.assertArrayEquals(aCLArray5, new org.apache.zookeeper.data.ACL[] {});
@@ -5446,7 +5446,7 @@ public class RegressionTest0 {
         try {
             boolean boolean25 = watchManager0.addWatch("0 connections watching 0 paths\nTotal watches:0", watcher23, watcherMode24);
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"org.apache.zookeeper.server.watch.WatcherMode.ordinal()\" because \"mode\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -5475,14 +5475,14 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher11 = null;
         boolean boolean12 = watchManager0.addWatch("hi!", watcher11);
         watchManager0.shutdown();
-        String str14 = watchManager0.toString();
+        java.lang.String str14 = watchManager0.toString();
         org.apache.zookeeper.Watcher watcher16 = null;
         boolean boolean17 = watchManager0.containsWatcher("", watcher16);
         // The following exception was thrown during execution in test generation
         try {
             org.apache.zookeeper.server.watch.WatchesPathReport watchesPathReport18 = watchManager0.getWatchesByPath();
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"org.apache.zookeeper.server.ServerCnxn.getSessionId()\" because \"watcher\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -5540,7 +5540,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatcherMode watcherMode7 = null;
         boolean boolean8 = watchManager0.removeWatcher("", watcher6, watcherMode7);
         int int9 = watchManager0.getRecursiveWatchQty();
-        Class<?> wildcardClass10 = watchManager0.getClass();
+        java.lang.Class<?> wildcardClass10 = watchManager0.getClass();
         org.junit.Assert.assertTrue("'" + boolean4 + "' != '" + false + "'", boolean4 == false);
         org.junit.Assert.assertTrue("'" + boolean8 + "' != '" + false + "'", boolean8 == false);
         org.junit.Assert.assertTrue("'" + int9 + "' != '" + 0 + "'", int9 == 0);
@@ -5596,7 +5596,7 @@ public class RegressionTest0 {
         try {
             org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet58 = watchManager0.triggerWatch("hi!", eventType41, (long) 0, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList53);
             org.junit.Assert.fail("Expected exception of type java.lang.StringIndexOutOfBoundsException; message: Range [0, -1) out of bounds for length 3");
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (java.lang.StringIndexOutOfBoundsException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary5);
@@ -5637,7 +5637,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet13 = watchManager4.triggerWatch("", eventType7, 0L, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList10, watcherOrBitSet12);
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet14 = watchManager0.triggerWatch("", eventType2, (long) (-1), (java.util.List<org.apache.zookeeper.data.ACL>) aCLList10);
         int int15 = watchManager0.getRecursiveWatchQty();
-        Class<?> wildcardClass16 = watchManager0.getClass();
+        java.lang.Class<?> wildcardClass16 = watchManager0.getClass();
         org.junit.Assert.assertNotNull(watchesSummary5);
         org.junit.Assert.assertNotNull(aCLArray9);
         org.junit.Assert.assertArrayEquals(aCLArray9, new org.apache.zookeeper.data.ACL[] {});
@@ -5655,8 +5655,8 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatchManager watchManager0 = new org.apache.zookeeper.server.watch.WatchManager();
         org.apache.zookeeper.server.watch.WatchesSummary watchesSummary1 = watchManager0.getWatchesSummary();
         int int2 = watchManager0.getRecursiveWatchQty();
-        String str3 = watchManager0.toString();
-        String str4 = watchManager0.toString();
+        java.lang.String str3 = watchManager0.toString();
+        java.lang.String str4 = watchManager0.toString();
         int int5 = watchManager0.getRecursiveWatchQty();
         org.apache.zookeeper.Watcher watcher7 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode8 = null;
@@ -5664,7 +5664,7 @@ public class RegressionTest0 {
         try {
             boolean boolean9 = watchManager0.addWatch("", watcher7, watcherMode8);
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"org.apache.zookeeper.server.watch.WatcherMode.ordinal()\" because \"mode\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -5695,7 +5695,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatcherMode watcherMode19 = null;
         boolean boolean20 = watchManager0.removeWatcher("0 connections watching 0 paths\nTotal watches:0", watcher18, watcherMode19);
         watchManager0.shutdown();
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap22 = watchManager0.getWatch2Paths();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap22 = watchManager0.getWatch2Paths();
         org.junit.Assert.assertNotNull(watchesSummary5);
         org.junit.Assert.assertNotNull(aCLArray9);
         org.junit.Assert.assertArrayEquals(aCLArray9, new org.apache.zookeeper.data.ACL[] {});
@@ -5740,7 +5740,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet13 = watchManager4.triggerWatch("", eventType7, 0L, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList10, watcherOrBitSet12);
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet14 = watchManager0.triggerWatch("", eventType2, (long) (-1), (java.util.List<org.apache.zookeeper.data.ACL>) aCLList10);
         int int15 = watchManager0.getRecursiveWatchQty();
-        String str16 = watchManager0.toString();
+        java.lang.String str16 = watchManager0.toString();
         org.apache.zookeeper.Watcher watcher18 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode19 = null;
         boolean boolean20 = watchManager0.removeWatcher("hi!", watcher18, watcherMode19);
@@ -5762,7 +5762,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatchManager watchManager0 = new org.apache.zookeeper.server.watch.WatchManager();
         org.apache.zookeeper.server.watch.WatchesSummary watchesSummary1 = watchManager0.getWatchesSummary();
         int int2 = watchManager0.getRecursiveWatchQty();
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap3 = watchManager0.getWatch2Paths();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap3 = watchManager0.getWatch2Paths();
         org.apache.zookeeper.server.watch.WatchesReport watchesReport4 = watchManager0.getWatches();
         watchManager0.shutdown();
         int int6 = watchManager0.getRecursiveWatchQty();
@@ -5772,7 +5772,7 @@ public class RegressionTest0 {
         try {
             boolean boolean10 = watchManager0.addWatch("", watcher8, watcherMode9);
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"org.apache.zookeeper.server.watch.WatcherMode.ordinal()\" because \"mode\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -5792,8 +5792,8 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher4 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode5 = null;
         boolean boolean6 = watchManager0.removeWatcher("0 connections watching 0 paths\nTotal watches:0", watcher4, watcherMode5);
-        String str7 = watchManager0.toString();
-        String str8 = watchManager0.toString();
+        java.lang.String str7 = watchManager0.toString();
+        java.lang.String str8 = watchManager0.toString();
         org.apache.zookeeper.server.watch.WatchesReport watchesReport9 = watchManager0.getWatches();
         org.apache.zookeeper.Watcher watcher11 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode12 = null;
@@ -5947,7 +5947,7 @@ public class RegressionTest0 {
         try {
             org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet72 = watchManager0.triggerWatch("0 connections watching 0 paths\nTotal watches:0", eventType24, (long) (short) 0, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList65);
             org.junit.Assert.fail("Expected exception of type java.lang.StringIndexOutOfBoundsException; message: Range [0, -1) out of bounds for length 46");
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (java.lang.StringIndexOutOfBoundsException e) {
             // Expected exception.
         }
         org.junit.Assert.assertTrue("'" + boolean4 + "' != '" + false + "'", boolean4 == false);
@@ -5998,7 +5998,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet20 = watchManager0.triggerWatch("", eventType3, (long) (short) 0, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList15);
         org.apache.zookeeper.Watcher watcher22 = null;
         boolean boolean23 = watchManager0.removeWatcher("hi!", watcher22);
-        String str24 = watchManager0.toString();
+        java.lang.String str24 = watchManager0.toString();
         int int25 = watchManager0.size();
         org.apache.zookeeper.Watcher watcher27 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode28 = null;
@@ -6034,8 +6034,8 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet9 = watchManager0.triggerWatch("", eventType3, 0L, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList6, watcherOrBitSet8);
         org.apache.zookeeper.Watcher watcher11 = null;
         boolean boolean12 = watchManager0.addWatch("hi!", watcher11);
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap13 = watchManager0.getWatch2Paths();
-        String str14 = watchManager0.toString();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap13 = watchManager0.getWatch2Paths();
+        java.lang.String str14 = watchManager0.toString();
         org.junit.Assert.assertNotNull(watchesSummary1);
         org.junit.Assert.assertNotNull(aCLArray5);
         org.junit.Assert.assertArrayEquals(aCLArray5, new org.apache.zookeeper.data.ACL[] {});
@@ -6053,8 +6053,8 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatchManager watchManager0 = new org.apache.zookeeper.server.watch.WatchManager();
         org.apache.zookeeper.server.watch.WatchesSummary watchesSummary1 = watchManager0.getWatchesSummary();
         int int2 = watchManager0.getRecursiveWatchQty();
-        String str3 = watchManager0.toString();
-        String str4 = watchManager0.toString();
+        java.lang.String str3 = watchManager0.toString();
+        java.lang.String str4 = watchManager0.toString();
         org.apache.zookeeper.Watcher watcher6 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode7 = null;
         boolean boolean8 = watchManager0.containsWatcher("hi!", watcher6, watcherMode7);
@@ -6118,9 +6118,9 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet34 = watchManager0.triggerWatch("", eventType22, 0L, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList30);
         // The following exception was thrown during execution in test generation
         try {
-            Class<?> wildcardClass35 = watcherOrBitSet34.getClass();
+            java.lang.Class<?> wildcardClass35 = watcherOrBitSet34.getClass();
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -6169,15 +6169,15 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet33 = watchManager24.triggerWatch("", eventType27, 0L, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList30, watcherOrBitSet32);
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet34 = watchManager0.triggerWatch("", eventType22, 0L, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList30);
         int int35 = watchManager0.getRecursiveWatchQty();
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap36 = watchManager0.getWatch2Paths();
-        String str37 = watchManager0.toString();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap36 = watchManager0.getWatch2Paths();
+        java.lang.String str37 = watchManager0.toString();
         org.apache.zookeeper.Watcher.Event.EventType eventType39 = null;
         java.util.List<org.apache.zookeeper.data.ACL> aCLList41 = null;
         // The following exception was thrown during execution in test generation
         try {
             org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet42 = watchManager0.triggerWatch("1 connections watching 1 paths\nTotal watches:1", eventType39, (long) (short) -1, aCLList41);
             org.junit.Assert.fail("Expected exception of type java.lang.StringIndexOutOfBoundsException; message: Range [0, -1) out of bounds for length 46");
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (java.lang.StringIndexOutOfBoundsException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -6210,7 +6210,7 @@ public class RegressionTest0 {
         watchManager0.removeWatcher(watcher3);
         watchManager0.shutdown();
         org.apache.zookeeper.server.watch.WatchesPathReport watchesPathReport6 = watchManager0.getWatchesByPath();
-        Class<?> wildcardClass7 = watchesPathReport6.getClass();
+        java.lang.Class<?> wildcardClass7 = watchesPathReport6.getClass();
         org.junit.Assert.assertNotNull(watchesSummary1);
         org.junit.Assert.assertTrue("'" + int2 + "' != '" + 0 + "'", int2 == 0);
         org.junit.Assert.assertNotNull(watchesPathReport6);
@@ -6267,7 +6267,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher15 = null;
         watchManager0.removeWatcher(watcher15);
         org.apache.zookeeper.server.watch.WatchesPathReport watchesPathReport17 = watchManager0.getWatchesByPath();
-        String str18 = watchManager0.toString();
+        java.lang.String str18 = watchManager0.toString();
         org.junit.Assert.assertNotNull(watchesSummary5);
         org.junit.Assert.assertNotNull(aCLArray9);
         org.junit.Assert.assertArrayEquals(aCLArray9, new org.apache.zookeeper.data.ACL[] {});
@@ -6296,14 +6296,14 @@ public class RegressionTest0 {
         java.io.PrintWriter printWriter14 = null;
         watchManager0.dumpWatches(printWriter14, true);
         int int17 = watchManager0.getRecursiveWatchQty();
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap18 = watchManager0.getWatch2Paths();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap18 = watchManager0.getWatch2Paths();
         org.apache.zookeeper.Watcher watcher20 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode21 = null;
         // The following exception was thrown during execution in test generation
         try {
             boolean boolean22 = watchManager0.addWatch("hi!", watcher20, watcherMode21);
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"org.apache.zookeeper.server.watch.WatcherMode.ordinal()\" because \"mode\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -6333,11 +6333,11 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet13 = watchManager4.triggerWatch("", eventType7, 0L, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList10, watcherOrBitSet12);
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet14 = watchManager0.triggerWatch("", eventType2, (long) (-1), (java.util.List<org.apache.zookeeper.data.ACL>) aCLList10);
         int int15 = watchManager0.getRecursiveWatchQty();
-        String str16 = watchManager0.toString();
+        java.lang.String str16 = watchManager0.toString();
         org.apache.zookeeper.Watcher watcher17 = null;
         watchManager0.removeWatcher(watcher17);
         int int19 = watchManager0.size();
-        String str20 = watchManager0.toString();
+        java.lang.String str20 = watchManager0.toString();
         org.junit.Assert.assertNotNull(watchesSummary5);
         org.junit.Assert.assertNotNull(aCLArray9);
         org.junit.Assert.assertArrayEquals(aCLArray9, new org.apache.zookeeper.data.ACL[] {});
@@ -6397,12 +6397,12 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet9 = watchManager0.triggerWatch("", eventType3, 0L, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList6, watcherOrBitSet8);
         org.apache.zookeeper.Watcher watcher11 = null;
         boolean boolean12 = watchManager0.addWatch("hi!", watcher11);
-        String str13 = watchManager0.toString();
+        java.lang.String str13 = watchManager0.toString();
         // The following exception was thrown during execution in test generation
         try {
             org.apache.zookeeper.server.watch.WatchesReport watchesReport14 = watchManager0.getWatches();
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"org.apache.zookeeper.server.ServerCnxn.getSessionId()\" because the return value of \"java.util.Map$Entry.getKey()\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -6556,7 +6556,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher11 = null;
         boolean boolean12 = watchManager0.containsWatcher("hi!", watcher11);
         org.apache.zookeeper.server.watch.WatchesPathReport watchesPathReport13 = watchManager0.getWatchesByPath();
-        String str14 = watchManager0.toString();
+        java.lang.String str14 = watchManager0.toString();
         watchManager0.shutdown();
         int int16 = watchManager0.size();
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -6585,8 +6585,8 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher11 = null;
         boolean boolean12 = watchManager0.containsWatcher("hi!", watcher11);
         org.apache.zookeeper.server.watch.WatchesPathReport watchesPathReport13 = watchManager0.getWatchesByPath();
-        String str14 = watchManager0.toString();
-        Class<?> wildcardClass15 = watchManager0.getClass();
+        java.lang.String str14 = watchManager0.toString();
+        java.lang.Class<?> wildcardClass15 = watchManager0.getClass();
         org.junit.Assert.assertNotNull(watchesSummary1);
         org.junit.Assert.assertNotNull(aCLArray5);
         org.junit.Assert.assertArrayEquals(aCLArray5, new org.apache.zookeeper.data.ACL[] {});
@@ -6635,7 +6635,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatchManager watchManager0 = new org.apache.zookeeper.server.watch.WatchManager();
         org.apache.zookeeper.server.watch.WatchesSummary watchesSummary1 = watchManager0.getWatchesSummary();
         int int2 = watchManager0.getRecursiveWatchQty();
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap3 = watchManager0.getWatch2Paths();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap3 = watchManager0.getWatch2Paths();
         org.apache.zookeeper.server.watch.WatchesReport watchesReport4 = watchManager0.getWatches();
         watchManager0.shutdown();
         int int6 = watchManager0.getRecursiveWatchQty();
@@ -6671,7 +6671,7 @@ public class RegressionTest0 {
         try {
             org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet48 = watchManager0.triggerWatch("0 connections watching 0 paths\nTotal watches:0", eventType11, (long) (byte) 1, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList43);
             org.junit.Assert.fail("Expected exception of type java.lang.StringIndexOutOfBoundsException; message: Range [0, -1) out of bounds for length 46");
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (java.lang.StringIndexOutOfBoundsException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -6736,8 +6736,8 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher7 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode8 = null;
         boolean boolean9 = watchManager0.removeWatcher("", watcher7, watcherMode8);
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap10 = watchManager0.getWatch2Paths();
-        Class<?> wildcardClass11 = watcherMap10.getClass();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap10 = watchManager0.getWatch2Paths();
+        java.lang.Class<?> wildcardClass11 = watcherMap10.getClass();
         org.junit.Assert.assertNotNull(watchesSummary1);
         org.junit.Assert.assertTrue("'" + int2 + "' != '" + 0 + "'", int2 == 0);
         org.junit.Assert.assertTrue("'" + boolean9 + "' != '" + false + "'", boolean9 == false);
@@ -6771,7 +6771,7 @@ public class RegressionTest0 {
         java.io.PrintWriter printWriter26 = null;
         watchManager0.dumpWatches(printWriter26, true);
         org.apache.zookeeper.server.watch.WatchesPathReport watchesPathReport29 = watchManager0.getWatchesByPath();
-        Class<?> wildcardClass30 = watchesPathReport29.getClass();
+        java.lang.Class<?> wildcardClass30 = watchesPathReport29.getClass();
         org.junit.Assert.assertNotNull(watchesSummary1);
         org.junit.Assert.assertNotNull(watchesSummary10);
         org.junit.Assert.assertNotNull(aCLArray14);
@@ -6841,7 +6841,7 @@ public class RegressionTest0 {
         boolean boolean18 = watchManager0.removeWatcher("", watcher16, watcherMode17);
         org.apache.zookeeper.Watcher watcher20 = null;
         boolean boolean21 = watchManager0.removeWatcher("", watcher20);
-        String str22 = watchManager0.toString();
+        java.lang.String str22 = watchManager0.toString();
         org.junit.Assert.assertNotNull(watchesSummary1);
         org.junit.Assert.assertTrue("'" + int2 + "' != '" + 0 + "'", int2 == 0);
         org.junit.Assert.assertTrue("'" + boolean6 + "' != '" + false + "'", boolean6 == false);
@@ -6860,7 +6860,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatchManager watchManager0 = new org.apache.zookeeper.server.watch.WatchManager();
         watchManager0.shutdown();
         int int2 = watchManager0.getRecursiveWatchQty();
-        String str3 = watchManager0.toString();
+        java.lang.String str3 = watchManager0.toString();
         org.apache.zookeeper.Watcher.Event.EventType eventType5 = null;
         org.apache.zookeeper.server.watch.WatchManager watchManager7 = new org.apache.zookeeper.server.watch.WatchManager();
         org.apache.zookeeper.server.watch.WatchesSummary watchesSummary8 = watchManager7.getWatchesSummary();
@@ -6927,8 +6927,8 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatcherMode watcherMode20 = null;
         boolean boolean21 = watchManager0.removeWatcher("1 connections watching 1 paths\nTotal watches:1", watcher19, watcherMode20);
         int int22 = watchManager0.size();
-        String str23 = watchManager0.toString();
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap24 = watchManager0.getWatch2Paths();
+        java.lang.String str23 = watchManager0.toString();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap24 = watchManager0.getWatch2Paths();
         org.junit.Assert.assertNotNull(watchesSummary1);
         org.junit.Assert.assertNotNull(aCLArray5);
         org.junit.Assert.assertArrayEquals(aCLArray5, new org.apache.zookeeper.data.ACL[] {});
@@ -6954,9 +6954,9 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher6 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode7 = null;
         boolean boolean8 = watchManager0.removeWatcher("", watcher6, watcherMode7);
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap9 = watchManager0.getWatch2Paths();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap9 = watchManager0.getWatch2Paths();
         int int10 = watchManager0.size();
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap11 = watchManager0.getWatch2Paths();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap11 = watchManager0.getWatch2Paths();
         org.apache.zookeeper.Watcher watcher12 = null;
         watchManager0.removeWatcher(watcher12);
         org.junit.Assert.assertTrue("'" + boolean4 + "' != '" + false + "'", boolean4 == false);
@@ -7083,7 +7083,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher18 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode19 = null;
         boolean boolean20 = watchManager0.removeWatcher("0 connections watching 0 paths\nTotal watches:0", watcher18, watcherMode19);
-        String str21 = watchManager0.toString();
+        java.lang.String str21 = watchManager0.toString();
         org.apache.zookeeper.Watcher.Event.EventType eventType23 = null;
         org.apache.zookeeper.server.watch.WatchManager watchManager25 = new org.apache.zookeeper.server.watch.WatchManager();
         org.apache.zookeeper.server.watch.WatchesSummary watchesSummary26 = watchManager25.getWatchesSummary();
@@ -7123,7 +7123,7 @@ public class RegressionTest0 {
         try {
             org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet71 = watchManager0.triggerWatch("1 connections watching 1 paths\nTotal watches:1", eventType23, (long) 'a', (java.util.List<org.apache.zookeeper.data.ACL>) aCLList64);
             org.junit.Assert.fail("Expected exception of type java.lang.StringIndexOutOfBoundsException; message: Range [0, -1) out of bounds for length 46");
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (java.lang.StringIndexOutOfBoundsException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary5);
@@ -7209,10 +7209,10 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet32 = null;
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet33 = watchManager24.triggerWatch("", eventType27, 0L, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList30, watcherOrBitSet32);
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet34 = watchManager0.triggerWatch("", eventType22, 0L, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList30);
-        String str35 = watchManager0.toString();
+        java.lang.String str35 = watchManager0.toString();
         org.apache.zookeeper.Watcher watcher37 = null;
         boolean boolean38 = watchManager0.addWatch("", watcher37);
-        Class<?> wildcardClass39 = watchManager0.getClass();
+        java.lang.Class<?> wildcardClass39 = watchManager0.getClass();
         org.junit.Assert.assertNotNull(watchesSummary1);
         org.junit.Assert.assertNotNull(watchesSummary10);
         org.junit.Assert.assertNotNull(aCLArray14);
@@ -7252,7 +7252,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatchesPathReport watchesPathReport17 = watchManager0.getWatchesByPath();
         watchManager0.shutdown();
         org.apache.zookeeper.server.watch.WatchesSummary watchesSummary19 = watchManager0.getWatchesSummary();
-        String str20 = watchManager0.toString();
+        java.lang.String str20 = watchManager0.toString();
         int int21 = watchManager0.size();
         org.junit.Assert.assertNotNull(watchesSummary5);
         org.junit.Assert.assertNotNull(aCLArray9);
@@ -7284,7 +7284,7 @@ public class RegressionTest0 {
         try {
             boolean boolean13 = watchManager0.addWatch("1 connections watching 1 paths\nTotal watches:1", watcher11, watcherMode12);
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"org.apache.zookeeper.server.watch.WatcherMode.ordinal()\" because \"mode\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertTrue("'" + boolean4 + "' != '" + false + "'", boolean4 == false);
@@ -7298,8 +7298,8 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatchManager watchManager0 = new org.apache.zookeeper.server.watch.WatchManager();
         org.apache.zookeeper.server.watch.WatchesSummary watchesSummary1 = watchManager0.getWatchesSummary();
         int int2 = watchManager0.getRecursiveWatchQty();
-        String str3 = watchManager0.toString();
-        String str4 = watchManager0.toString();
+        java.lang.String str3 = watchManager0.toString();
+        java.lang.String str4 = watchManager0.toString();
         org.apache.zookeeper.Watcher watcher6 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode7 = null;
         boolean boolean8 = watchManager0.removeWatcher("0 connections watching 0 paths\nTotal watches:0", watcher6, watcherMode7);
@@ -7351,13 +7351,13 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet9 = watchManager0.triggerWatch("", eventType3, 0L, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList6, watcherOrBitSet8);
         org.apache.zookeeper.Watcher watcher11 = null;
         boolean boolean12 = watchManager0.addWatch("hi!", watcher11);
-        String str13 = watchManager0.toString();
+        java.lang.String str13 = watchManager0.toString();
         java.io.PrintWriter printWriter14 = null;
         // The following exception was thrown during execution in test generation
         try {
             watchManager0.dumpWatches(printWriter14, true);
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"java.io.PrintWriter.println(String)\" because \"pwriter\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -7421,13 +7421,13 @@ public class RegressionTest0 {
         watchManager0.shutdown();
         org.apache.zookeeper.Watcher watcher3 = null;
         boolean boolean4 = watchManager0.containsWatcher("", watcher3);
-        String str5 = watchManager0.toString();
+        java.lang.String str5 = watchManager0.toString();
         org.apache.zookeeper.Watcher watcher7 = null;
         boolean boolean8 = watchManager0.containsWatcher("", watcher7);
         org.apache.zookeeper.Watcher watcher10 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode11 = null;
         boolean boolean12 = watchManager0.containsWatcher("hi!", watcher10, watcherMode11);
-        Class<?> wildcardClass13 = watchManager0.getClass();
+        java.lang.Class<?> wildcardClass13 = watchManager0.getClass();
         org.junit.Assert.assertTrue("'" + boolean4 + "' != '" + false + "'", boolean4 == false);
         org.junit.Assert.assertEquals("'" + str5 + "' != '" + "0 connections watching 0 paths\nTotal watches:0" + "'", str5, "0 connections watching 0 paths\nTotal watches:0");
         org.junit.Assert.assertTrue("'" + boolean8 + "' != '" + false + "'", boolean8 == false);
@@ -7445,7 +7445,7 @@ public class RegressionTest0 {
         int int4 = watchManager0.getRecursiveWatchQty();
         org.apache.zookeeper.Watcher watcher5 = null;
         watchManager0.removeWatcher(watcher5);
-        Class<?> wildcardClass7 = watchManager0.getClass();
+        java.lang.Class<?> wildcardClass7 = watchManager0.getClass();
         org.junit.Assert.assertTrue("'" + boolean3 + "' != '" + true + "'", boolean3 == true);
         org.junit.Assert.assertTrue("'" + int4 + "' != '" + 0 + "'", int4 == 0);
         org.junit.Assert.assertNotNull(wildcardClass7);
@@ -7462,7 +7462,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher6 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode7 = null;
         boolean boolean8 = watchManager0.removeWatcher("", watcher6, watcherMode7);
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap9 = watchManager0.getWatch2Paths();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap9 = watchManager0.getWatch2Paths();
         int int10 = watchManager0.size();
         org.apache.zookeeper.Watcher watcher12 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode13 = null;
@@ -7490,11 +7490,11 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet13 = watchManager4.triggerWatch("", eventType7, 0L, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList10, watcherOrBitSet12);
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet14 = watchManager0.triggerWatch("", eventType2, (long) (-1), (java.util.List<org.apache.zookeeper.data.ACL>) aCLList10);
         int int15 = watchManager0.getRecursiveWatchQty();
-        String str16 = watchManager0.toString();
+        java.lang.String str16 = watchManager0.toString();
         org.apache.zookeeper.Watcher watcher17 = null;
         watchManager0.removeWatcher(watcher17);
         int int19 = watchManager0.size();
-        Class<?> wildcardClass20 = watchManager0.getClass();
+        java.lang.Class<?> wildcardClass20 = watchManager0.getClass();
         org.junit.Assert.assertNotNull(watchesSummary5);
         org.junit.Assert.assertNotNull(aCLArray9);
         org.junit.Assert.assertArrayEquals(aCLArray9, new org.apache.zookeeper.data.ACL[] {});
@@ -7514,7 +7514,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatchManager watchManager0 = new org.apache.zookeeper.server.watch.WatchManager();
         watchManager0.shutdown();
         int int2 = watchManager0.getRecursiveWatchQty();
-        String str3 = watchManager0.toString();
+        java.lang.String str3 = watchManager0.toString();
         watchManager0.shutdown();
         org.apache.zookeeper.Watcher watcher6 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode7 = null;
@@ -7577,10 +7577,10 @@ public class RegressionTest0 {
         watchManager0.shutdown();
         org.apache.zookeeper.Watcher watcher3 = null;
         boolean boolean4 = watchManager0.containsWatcher("", watcher3);
-        String str5 = watchManager0.toString();
+        java.lang.String str5 = watchManager0.toString();
         org.apache.zookeeper.server.watch.WatchesReport watchesReport6 = watchManager0.getWatches();
         org.apache.zookeeper.server.watch.WatchesReport watchesReport7 = watchManager0.getWatches();
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap8 = watchManager0.getWatch2Paths();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap8 = watchManager0.getWatch2Paths();
         org.junit.Assert.assertTrue("'" + boolean4 + "' != '" + false + "'", boolean4 == false);
         org.junit.Assert.assertEquals("'" + str5 + "' != '" + "0 connections watching 0 paths\nTotal watches:0" + "'", str5, "0 connections watching 0 paths\nTotal watches:0");
         org.junit.Assert.assertNotNull(watchesReport6);
@@ -7598,9 +7598,9 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher4 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode5 = null;
         boolean boolean6 = watchManager0.removeWatcher("0 connections watching 0 paths\nTotal watches:0", watcher4, watcherMode5);
-        String str7 = watchManager0.toString();
-        String str8 = watchManager0.toString();
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap9 = watchManager0.getWatch2Paths();
+        java.lang.String str7 = watchManager0.toString();
+        java.lang.String str8 = watchManager0.toString();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap9 = watchManager0.getWatch2Paths();
         org.junit.Assert.assertNotNull(watchesSummary1);
         org.junit.Assert.assertTrue("'" + int2 + "' != '" + 0 + "'", int2 == 0);
         org.junit.Assert.assertTrue("'" + boolean6 + "' != '" + false + "'", boolean6 == false);
@@ -7630,7 +7630,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet20 = watchManager0.triggerWatch("", eventType3, (long) (short) 0, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList15);
         org.apache.zookeeper.Watcher watcher22 = null;
         boolean boolean23 = watchManager0.removeWatcher("hi!", watcher22);
-        String str24 = watchManager0.toString();
+        java.lang.String str24 = watchManager0.toString();
         int int25 = watchManager0.size();
         org.apache.zookeeper.Watcher watcher27 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode28 = null;
@@ -7674,7 +7674,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher23 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode24 = null;
         boolean boolean25 = watchManager0.containsWatcher("0 connections watching 0 paths\nTotal watches:0", watcher23, watcherMode24);
-        String str26 = watchManager0.toString();
+        java.lang.String str26 = watchManager0.toString();
         org.apache.zookeeper.server.watch.WatchesReport watchesReport27 = watchManager0.getWatches();
         org.junit.Assert.assertNotNull(watchesSummary1);
         org.junit.Assert.assertNotNull(watchesSummary10);
@@ -7825,7 +7825,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher37 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode38 = null;
         boolean boolean39 = watchManager0.removeWatcher("1 connections watching 1 paths\nTotal watches:1", watcher37, watcherMode38);
-        String str40 = watchManager0.toString();
+        java.lang.String str40 = watchManager0.toString();
         org.junit.Assert.assertNotNull(watchesSummary1);
         org.junit.Assert.assertNotNull(watchesSummary10);
         org.junit.Assert.assertNotNull(aCLArray14);
@@ -7901,7 +7901,7 @@ public class RegressionTest0 {
         try {
             boolean boolean13 = watchManager0.addWatch("", watcher11, watcherMode12);
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"org.apache.zookeeper.server.watch.WatcherMode.ordinal()\" because \"mode\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertTrue("'" + int2 + "' != '" + 0 + "'", int2 == 0);
@@ -8012,8 +8012,8 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatchManager watchManager0 = new org.apache.zookeeper.server.watch.WatchManager();
         org.apache.zookeeper.server.watch.WatchesSummary watchesSummary1 = watchManager0.getWatchesSummary();
         int int2 = watchManager0.getRecursiveWatchQty();
-        String str3 = watchManager0.toString();
-        String str4 = watchManager0.toString();
+        java.lang.String str3 = watchManager0.toString();
+        java.lang.String str4 = watchManager0.toString();
         int int5 = watchManager0.getRecursiveWatchQty();
         watchManager0.shutdown();
         int int7 = watchManager0.size();
@@ -8063,7 +8063,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher8 = null;
         boolean boolean9 = watchManager0.removeWatcher("", watcher8);
         org.apache.zookeeper.server.watch.WatchesPathReport watchesPathReport10 = watchManager0.getWatchesByPath();
-        Class<?> wildcardClass11 = watchManager0.getClass();
+        java.lang.Class<?> wildcardClass11 = watchManager0.getClass();
         org.junit.Assert.assertNotNull(watchesSummary1);
         org.junit.Assert.assertTrue("'" + int2 + "' != '" + 0 + "'", int2 == 0);
         org.junit.Assert.assertTrue("'" + boolean6 + "' != '" + false + "'", boolean6 == false);
@@ -8082,8 +8082,8 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher4 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode5 = null;
         boolean boolean6 = watchManager0.removeWatcher("0 connections watching 0 paths\nTotal watches:0", watcher4, watcherMode5);
-        String str7 = watchManager0.toString();
-        String str8 = watchManager0.toString();
+        java.lang.String str7 = watchManager0.toString();
+        java.lang.String str8 = watchManager0.toString();
         org.apache.zookeeper.server.watch.WatchesReport watchesReport9 = watchManager0.getWatches();
         org.apache.zookeeper.Watcher.Event.EventType eventType11 = null;
         org.apache.zookeeper.server.watch.WatchManager watchManager13 = new org.apache.zookeeper.server.watch.WatchManager();
@@ -8106,7 +8106,7 @@ public class RegressionTest0 {
         try {
             org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet35 = watchManager0.triggerWatch("0 connections watching 0 paths\nTotal watches:0", eventType11, (long) (short) -1, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList28, watcherOrBitSet34);
             org.junit.Assert.fail("Expected exception of type java.lang.StringIndexOutOfBoundsException; message: Range [0, -1) out of bounds for length 46");
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (java.lang.StringIndexOutOfBoundsException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -8158,7 +8158,7 @@ public class RegressionTest0 {
         watchManager0.shutdown();
         org.apache.zookeeper.Watcher watcher3 = null;
         boolean boolean4 = watchManager0.containsWatcher("", watcher3);
-        String str5 = watchManager0.toString();
+        java.lang.String str5 = watchManager0.toString();
         org.apache.zookeeper.server.watch.WatchesReport watchesReport6 = watchManager0.getWatches();
         org.apache.zookeeper.server.watch.WatchesReport watchesReport7 = watchManager0.getWatches();
         org.apache.zookeeper.Watcher watcher9 = null;
@@ -8167,7 +8167,7 @@ public class RegressionTest0 {
         try {
             boolean boolean11 = watchManager0.addWatch("1 connections watching 1 paths\nTotal watches:1", watcher9, watcherMode10);
             org.junit.Assert.fail("Expected exception of type java.lang.NullPointerException; message: Cannot invoke \"org.apache.zookeeper.server.watch.WatcherMode.ordinal()\" because \"mode\" is null");
-        } catch (NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
             // Expected exception.
         }
         org.junit.Assert.assertTrue("'" + boolean4 + "' != '" + false + "'", boolean4 == false);
@@ -8185,7 +8185,7 @@ public class RegressionTest0 {
         int int2 = watchManager0.getRecursiveWatchQty();
         org.apache.zookeeper.Watcher watcher4 = null;
         boolean boolean5 = watchManager0.addWatch("0 connections watching 0 paths\nTotal watches:0", watcher4);
-        Class<?> wildcardClass6 = watchManager0.getClass();
+        java.lang.Class<?> wildcardClass6 = watchManager0.getClass();
         org.junit.Assert.assertNotNull(watchesSummary1);
         org.junit.Assert.assertTrue("'" + int2 + "' != '" + 0 + "'", int2 == 0);
         org.junit.Assert.assertTrue("'" + boolean5 + "' != '" + true + "'", boolean5 == true);
@@ -8207,7 +8207,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher11 = null;
         boolean boolean12 = watchManager0.containsWatcher("hi!", watcher11);
         org.apache.zookeeper.server.watch.WatchesPathReport watchesPathReport13 = watchManager0.getWatchesByPath();
-        String str14 = watchManager0.toString();
+        java.lang.String str14 = watchManager0.toString();
         int int15 = watchManager0.size();
         org.apache.zookeeper.Watcher watcher17 = null;
         boolean boolean18 = watchManager0.removeWatcher("hi!", watcher17);
@@ -8233,8 +8233,8 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatchesPathReport watchesPathReport3 = watchManager0.getWatchesByPath();
         org.apache.zookeeper.Watcher watcher5 = null;
         boolean boolean6 = watchManager0.removeWatcher("hi!", watcher5);
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap7 = watchManager0.getWatch2Paths();
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap8 = watchManager0.getWatch2Paths();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap7 = watchManager0.getWatch2Paths();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap8 = watchManager0.getWatch2Paths();
         org.junit.Assert.assertNotNull(watchesSummary1);
         org.junit.Assert.assertTrue("'" + int2 + "' != '" + 0 + "'", int2 == 0);
         org.junit.Assert.assertNotNull(watchesPathReport3);
@@ -8270,7 +8270,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet29 = watchManager20.triggerWatch("", eventType23, 0L, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList26, watcherOrBitSet28);
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet30 = watchManager16.triggerWatch("", eventType18, (long) (-1), (java.util.List<org.apache.zookeeper.data.ACL>) aCLList26);
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet31 = watchManager0.triggerWatch("", eventType14, (long) (byte) -1, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList26);
-        String str32 = watchManager0.toString();
+        java.lang.String str32 = watchManager0.toString();
         org.apache.zookeeper.Watcher watcher34 = null;
         boolean boolean35 = watchManager0.containsWatcher("1 connections watching 1 paths\nTotal watches:1", watcher34);
         org.apache.zookeeper.Watcher watcher37 = null;
@@ -8320,7 +8320,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher28 = null;
         boolean boolean29 = watchManager17.addWatch("hi!", watcher28);
         watchManager17.shutdown();
-        String str31 = watchManager17.toString();
+        java.lang.String str31 = watchManager17.toString();
         org.apache.zookeeper.Watcher.Event.EventType eventType33 = null;
         org.apache.zookeeper.data.ACL[] aCLArray35 = new org.apache.zookeeper.data.ACL[] {};
         java.util.ArrayList<org.apache.zookeeper.data.ACL> aCLList36 = new java.util.ArrayList<org.apache.zookeeper.data.ACL>();
@@ -8332,7 +8332,7 @@ public class RegressionTest0 {
         try {
             org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet41 = watchManager0.triggerWatch("0 connections watching 0 paths\nTotal watches:0", eventType15, (long) 100, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList36, watcherOrBitSet40);
             org.junit.Assert.fail("Expected exception of type java.lang.StringIndexOutOfBoundsException; message: Range [0, -1) out of bounds for length 46");
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (java.lang.StringIndexOutOfBoundsException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -8366,7 +8366,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatchesPathReport watchesPathReport5 = watchManager0.getWatchesByPath();
         org.apache.zookeeper.server.watch.WatchesSummary watchesSummary6 = watchManager0.getWatchesSummary();
         int int7 = watchManager0.size();
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap8 = watchManager0.getWatch2Paths();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap8 = watchManager0.getWatch2Paths();
         int int9 = watchManager0.getRecursiveWatchQty();
         org.junit.Assert.assertTrue("'" + boolean4 + "' != '" + false + "'", boolean4 == false);
         org.junit.Assert.assertNotNull(watchesPathReport5);
@@ -8431,7 +8431,7 @@ public class RegressionTest0 {
         watchManager0.shutdown();
         org.apache.zookeeper.Watcher watcher3 = null;
         boolean boolean4 = watchManager0.containsWatcher("", watcher3);
-        String str5 = watchManager0.toString();
+        java.lang.String str5 = watchManager0.toString();
         org.apache.zookeeper.Watcher watcher7 = null;
         boolean boolean8 = watchManager0.containsWatcher("", watcher7);
         org.apache.zookeeper.Watcher watcher10 = null;
@@ -8474,7 +8474,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet20 = watchManager0.triggerWatch("", eventType3, (long) (short) 0, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList15);
         org.apache.zookeeper.Watcher watcher22 = null;
         boolean boolean23 = watchManager0.removeWatcher("hi!", watcher22);
-        String str24 = watchManager0.toString();
+        java.lang.String str24 = watchManager0.toString();
         int int25 = watchManager0.size();
         org.apache.zookeeper.server.watch.WatchesSummary watchesSummary26 = watchManager0.getWatchesSummary();
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -8506,7 +8506,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet12 = null;
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet13 = watchManager4.triggerWatch("", eventType7, 0L, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList10, watcherOrBitSet12);
         org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet14 = watchManager0.triggerWatch("", eventType2, (long) (-1), (java.util.List<org.apache.zookeeper.data.ACL>) aCLList10);
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap15 = watchManager0.getWatch2Paths();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap15 = watchManager0.getWatch2Paths();
         org.apache.zookeeper.Watcher watcher17 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode18 = null;
         boolean boolean19 = watchManager0.containsWatcher("", watcher17, watcherMode18);
@@ -8663,7 +8663,7 @@ public class RegressionTest0 {
         try {
             org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet95 = watchManager0.triggerWatch("0 connections watching 0 paths\nTotal watches:0", eventType31, (long) (short) 100, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList87);
             org.junit.Assert.fail("Expected exception of type java.lang.StringIndexOutOfBoundsException; message: Range [0, -1) out of bounds for length 46");
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (java.lang.StringIndexOutOfBoundsException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -8709,8 +8709,8 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatchManager watchManager0 = new org.apache.zookeeper.server.watch.WatchManager();
         org.apache.zookeeper.server.watch.WatchesSummary watchesSummary1 = watchManager0.getWatchesSummary();
         int int2 = watchManager0.getRecursiveWatchQty();
-        String str3 = watchManager0.toString();
-        String str4 = watchManager0.toString();
+        java.lang.String str3 = watchManager0.toString();
+        java.lang.String str4 = watchManager0.toString();
         org.apache.zookeeper.Watcher.Event.EventType eventType6 = null;
         org.apache.zookeeper.server.watch.WatchManager watchManager8 = new org.apache.zookeeper.server.watch.WatchManager();
         org.apache.zookeeper.Watcher.Event.EventType eventType10 = null;
@@ -8744,7 +8744,7 @@ public class RegressionTest0 {
         try {
             org.apache.zookeeper.server.watch.WatcherOrBitSet watcherOrBitSet46 = watchManager0.triggerWatch("1 connections watching 1 paths\nTotal watches:1", eventType6, (long) (byte) 0, (java.util.List<org.apache.zookeeper.data.ACL>) aCLList38, watcherOrBitSet45);
             org.junit.Assert.fail("Expected exception of type java.lang.StringIndexOutOfBoundsException; message: Range [0, -1) out of bounds for length 46");
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (java.lang.StringIndexOutOfBoundsException e) {
             // Expected exception.
         }
         org.junit.Assert.assertNotNull(watchesSummary1);
@@ -8915,8 +8915,8 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher12 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode13 = null;
         boolean boolean14 = watchManager0.containsWatcher("0 connections watching 0 paths\nTotal watches:0", watcher12, watcherMode13);
-        String str15 = watchManager0.toString();
-        Class<?> wildcardClass16 = watchManager0.getClass();
+        java.lang.String str15 = watchManager0.toString();
+        java.lang.Class<?> wildcardClass16 = watchManager0.getClass();
         org.junit.Assert.assertNotNull(watchesSummary1);
         org.junit.Assert.assertTrue("'" + boolean5 + "' != '" + false + "'", boolean5 == false);
         org.junit.Assert.assertTrue("'" + boolean9 + "' != '" + false + "'", boolean9 == false);
@@ -8972,7 +8972,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatchesSummary watchesSummary15 = watchManager0.getWatchesSummary();
         watchManager0.shutdown();
         org.apache.zookeeper.server.watch.WatchesReport watchesReport17 = watchManager0.getWatches();
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap18 = watchManager0.getWatch2Paths();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap18 = watchManager0.getWatch2Paths();
         org.apache.zookeeper.server.watch.WatchesReport watchesReport19 = watchManager0.getWatches();
         org.junit.Assert.assertNotNull(watchesSummary5);
         org.junit.Assert.assertNotNull(aCLArray9);
@@ -9056,7 +9056,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher24 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode25 = null;
         boolean boolean26 = watchManager0.removeWatcher("1 connections watching 1 paths\nTotal watches:1", watcher24, watcherMode25);
-        String str27 = watchManager0.toString();
+        java.lang.String str27 = watchManager0.toString();
         int int28 = watchManager0.size();
         org.junit.Assert.assertNotNull(watchesSummary5);
         org.junit.Assert.assertNotNull(aCLArray9);
@@ -9191,7 +9191,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatcherMode watcherMode19 = null;
         boolean boolean20 = watchManager0.removeWatcher("0 connections watching 0 paths\nTotal watches:0", watcher18, watcherMode19);
         watchManager0.shutdown();
-        Class<?> wildcardClass22 = watchManager0.getClass();
+        java.lang.Class<?> wildcardClass22 = watchManager0.getClass();
         org.junit.Assert.assertNotNull(watchesSummary5);
         org.junit.Assert.assertNotNull(aCLArray9);
         org.junit.Assert.assertArrayEquals(aCLArray9, new org.apache.zookeeper.data.ACL[] {});
@@ -9248,7 +9248,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher4 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode5 = null;
         boolean boolean6 = watchManager0.removeWatcher("0 connections watching 0 paths\nTotal watches:0", watcher4, watcherMode5);
-        String str7 = watchManager0.toString();
+        java.lang.String str7 = watchManager0.toString();
         java.io.PrintWriter printWriter8 = null;
         watchManager0.dumpWatches(printWriter8, true);
         int int11 = watchManager0.size();
@@ -9270,7 +9270,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.Watcher watcher6 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode7 = null;
         boolean boolean8 = watchManager0.removeWatcher("", watcher6, watcherMode7);
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap9 = watchManager0.getWatch2Paths();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap9 = watchManager0.getWatch2Paths();
         int int10 = watchManager0.size();
         java.io.PrintWriter printWriter11 = null;
         watchManager0.dumpWatches(printWriter11, true);
@@ -9298,7 +9298,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatchesSummary watchesSummary15 = watchManager0.getWatchesSummary();
         org.apache.zookeeper.Watcher watcher17 = null;
         boolean boolean18 = watchManager0.removeWatcher("", watcher17);
-        String str19 = watchManager0.toString();
+        java.lang.String str19 = watchManager0.toString();
         org.apache.zookeeper.Watcher watcher21 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode22 = null;
         boolean boolean23 = watchManager0.removeWatcher("0 connections watching 0 paths\nTotal watches:0", watcher21, watcherMode22);
@@ -9345,7 +9345,7 @@ public class RegressionTest0 {
         watchManager0.shutdown();
         org.apache.zookeeper.Watcher watcher3 = null;
         boolean boolean4 = watchManager0.containsWatcher("", watcher3);
-        String str5 = watchManager0.toString();
+        java.lang.String str5 = watchManager0.toString();
         org.apache.zookeeper.server.watch.WatchesReport watchesReport6 = watchManager0.getWatches();
         org.apache.zookeeper.server.watch.WatchesReport watchesReport7 = watchManager0.getWatches();
         org.apache.zookeeper.Watcher.Event.EventType eventType9 = null;
@@ -9405,7 +9405,7 @@ public class RegressionTest0 {
         boolean boolean5 = watchManager0.removeWatcher("0 connections watching 0 paths\nTotal watches:0", watcher3, watcherMode4);
         org.apache.zookeeper.Watcher watcher7 = null;
         boolean boolean8 = watchManager0.containsWatcher("", watcher7);
-        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap9 = watchManager0.getWatch2Paths();
+        java.util.Map<org.apache.zookeeper.Watcher, java.util.Map<java.lang.String, org.apache.zookeeper.server.watch.WatchStats>> watcherMap9 = watchManager0.getWatch2Paths();
         org.junit.Assert.assertNotNull(watchesSummary1);
         org.junit.Assert.assertTrue("'" + boolean5 + "' != '" + false + "'", boolean5 == false);
         org.junit.Assert.assertTrue("'" + boolean8 + "' != '" + false + "'", boolean8 == false);
@@ -9462,7 +9462,7 @@ public class RegressionTest0 {
         org.apache.zookeeper.server.watch.WatcherMode watcherMode20 = null;
         boolean boolean21 = watchManager0.removeWatcher("1 connections watching 1 paths\nTotal watches:1", watcher19, watcherMode20);
         int int22 = watchManager0.size();
-        String str23 = watchManager0.toString();
+        java.lang.String str23 = watchManager0.toString();
         org.apache.zookeeper.Watcher watcher25 = null;
         org.apache.zookeeper.server.watch.WatcherMode watcherMode26 = null;
         boolean boolean27 = watchManager0.removeWatcher("", watcher25, watcherMode26);
