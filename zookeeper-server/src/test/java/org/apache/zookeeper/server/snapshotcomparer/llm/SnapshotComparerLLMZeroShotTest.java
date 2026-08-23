@@ -181,7 +181,7 @@ public class SnapshotComparerLLMZeroShotTest {
 
     }
 
-    @Ignore
+    /* Allucination by LLM
     @Test
     public void identicalSnapshotsProduceSummaryButNoDeltaLinesWithoutDebug() throws Exception {
         File leftSnapshot = snapshot(
@@ -217,6 +217,47 @@ public class SnapshotComparerLLMZeroShotTest {
         assertFalse(result.stdout, result.stdout.contains("found in both trees. Delta:"));
 
     }
+    */
+
+    @Test
+    public void identicalSnapshotsProduceSummaryButNoDeltaLinesWithoutDebug() throws Exception {
+        File leftSnapshot = snapshot(
+                "leftIdentical",
+                node("/a", 3),
+                node("/a/b", 4),
+                node("/c", 5));
+        File rightSnapshot = snapshot(
+                "rightIdentical",
+                node("/a", 3),
+                node("/a/b", 4),
+                node("/c", 5));
+
+        RunResult result = runMain(
+                new String[] {
+                        "--left", leftSnapshot.getAbsolutePath(),
+                        "--right", rightSnapshot.getAbsolutePath(),
+                        "--bytes", "0",
+                        "--nodes", "0"
+                },
+                "");
+
+        assertTrue(result.stderr, result.stderr.isEmpty());
+
+        // --- VALORI SANITIZZATI (CORRETTI) ---
+        // L'LLM si aspettava 4, ma DataTree crea nodi di default (es. /zookeeper) portando il totale a 7
+        assertTrue(result.stdout, result.stdout.contains("Node count: 7"));
+        assertTrue(result.stdout, result.stdout.contains("Total size: 12"));
+        assertTrue(result.stdout, result.stdout.contains("Max depth: 3"));
+        assertTrue(result.stdout, result.stdout.contains("Count of nodes at depth 0: 1"));
+        assertTrue(result.stdout, result.stdout.contains("Count of nodes at depth 1: 3")); // L'LLM si aspettava 2
+        assertTrue(result.stdout, result.stdout.contains("Count of nodes at depth 2: 3")); // L'LLM si aspettava 1
+
+        assertTrue(result.stdout, result.stdout.contains("All layers compared."));
+
+        assertFalse(result.stdout, result.stdout.contains("found only"));
+        assertFalse(result.stdout, result.stdout.contains("found in both trees. Delta:"));
+    }
+
     @Test
     public void nonNumericThresholdIsReportedAsNumberFormatFailureAfterSuccessfulOptionParsing() throws Exception {
         File leftSnapshot = snapshot("leftBadThreshold", node("/a", 1));
