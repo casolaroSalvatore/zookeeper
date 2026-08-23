@@ -7,7 +7,8 @@ package org.apache.zookeeper.server.snapshotcomparer.evosuite.snapshotcomparerfa
 
 import org.junit.Test;
 import static org.junit.Assert.*;
-
+import static org.evosuite.runtime.EvoAssertions.*;
+import java.util.NoSuchElementException;
 import org.apache.zookeeper.server.SnapshotComparerTestFacade;
 import org.evosuite.runtime.EvoRunner;
 import org.evosuite.runtime.EvoRunnerParameters;
