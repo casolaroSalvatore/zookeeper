@@ -208,8 +208,8 @@ public class RegressionTestAfterFacadeTest0 {
     public void test024() throws Throwable {
         if (debug)
             System.out.format("%n%s%n", "SnapshotComparerFacadeRandoopTest0.test024");
-        Object obj0 = new Object();
-        Class<?> wildcardClass1 = obj0.getClass();
+        java.lang.Object obj0 = new java.lang.Object();
+        java.lang.Class<?> wildcardClass1 = obj0.getClass();
         org.junit.Assert.assertNotNull(wildcardClass1);
     }
 

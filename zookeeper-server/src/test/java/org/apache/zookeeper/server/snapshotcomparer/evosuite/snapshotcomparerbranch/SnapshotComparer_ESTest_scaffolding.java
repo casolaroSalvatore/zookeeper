@@ -19,7 +19,7 @@ public class SnapshotComparer_ESTest_scaffolding {
   @org.junit.Rule
   public org.evosuite.runtime.vnet.NonFunctionalRequirementRule nfr = new org.evosuite.runtime.vnet.NonFunctionalRequirementRule();
 
-  private static final java.util.Properties defaultProperties = (java.util.Properties) System.getProperties().clone();
+  private static final java.util.Properties defaultProperties = (java.util.Properties) java.lang.System.getProperties().clone(); 
 
   private org.evosuite.runtime.thread.ThreadStopper threadStopper =  new org.evosuite.runtime.thread.ThreadStopper (org.evosuite.runtime.thread.KillSwitchHandler.getInstance(), 3000);
 
@@ -31,8 +31,8 @@ public class SnapshotComparer_ESTest_scaffolding {
     org.evosuite.runtime.RuntimeSettings.maxNumberOfThreads = 100; 
     org.evosuite.runtime.RuntimeSettings.maxNumberOfIterationsPerLoop = 10000; 
     org.evosuite.runtime.RuntimeSettings.mockSystemIn = true; 
-    org.evosuite.runtime.RuntimeSettings.sandboxMode = Sandbox.SandboxMode.RECOMMENDED;
-    Sandbox.initializeSecurityManagerForSUT();
+    org.evosuite.runtime.RuntimeSettings.sandboxMode = org.evosuite.runtime.sandbox.Sandbox.SandboxMode.RECOMMENDED; 
+    org.evosuite.runtime.sandbox.Sandbox.initializeSecurityManagerForSUT(); 
     org.evosuite.runtime.classhandling.JDKClassResetter.init();
     setSystemProperties();
     initializeClasses();
@@ -42,7 +42,7 @@ public class SnapshotComparer_ESTest_scaffolding {
   @AfterClass
   public static void clearEvoSuiteFramework(){ 
     Sandbox.resetDefaultSecurityManager(); 
-    System.setProperties((java.util.Properties) defaultProperties.clone());
+    java.lang.System.setProperties((java.util.Properties) defaultProperties.clone()); 
   } 
 
   @Before
@@ -50,7 +50,7 @@ public class SnapshotComparer_ESTest_scaffolding {
     threadStopper.storeCurrentThreads();
     threadStopper.startRecordingTime();
     org.evosuite.runtime.jvm.ShutdownHookHandler.getInstance().initHandler(); 
-    Sandbox.goingToExecuteSUTCode();
+    org.evosuite.runtime.sandbox.Sandbox.goingToExecuteSUTCode(); 
     setSystemProperties(); 
     org.evosuite.runtime.GuiSupport.setHeadless(); 
     org.evosuite.runtime.Runtime.getInstance().resetRuntime(); 
@@ -63,16 +63,16 @@ public class SnapshotComparer_ESTest_scaffolding {
     org.evosuite.runtime.jvm.ShutdownHookHandler.getInstance().safeExecuteAddedHooks(); 
     org.evosuite.runtime.classhandling.JDKClassResetter.reset(); 
     resetClasses(); 
-    Sandbox.doneWithExecutingSUTCode();
+    org.evosuite.runtime.sandbox.Sandbox.doneWithExecutingSUTCode(); 
     org.evosuite.runtime.agent.InstrumentingAgent.deactivate(); 
     org.evosuite.runtime.GuiSupport.restoreHeadlessMode(); 
   } 
 
   public static void setSystemProperties() {
  
-    System.setProperties((java.util.Properties) defaultProperties.clone());
-    System.setProperty("user.dir", "C:\\Users\\casol\\Desktop\\zookeeper-evosuite\\zookeeper-server");
-    System.setProperty("java.io.tmpdir", "C:\\Users\\casol\\AppData\\Local\\Temp\\");
+    java.lang.System.setProperties((java.util.Properties) defaultProperties.clone()); 
+    java.lang.System.setProperty("user.dir", "C:\\Users\\casol\\Desktop\\zookeeper-evosuite\\zookeeper-server"); 
+    java.lang.System.setProperty("java.io.tmpdir", "C:\\Users\\casol\\AppData\\Local\\Temp\\"); 
   }
 
   private static void initializeClasses() {
