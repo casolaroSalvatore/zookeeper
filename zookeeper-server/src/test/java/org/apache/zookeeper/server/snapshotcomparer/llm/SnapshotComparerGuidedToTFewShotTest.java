@@ -9,15 +9,12 @@ import static org.junit.Assert.fail;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,16 +22,24 @@ import org.apache.zookeeper.server.SnapshotComparer;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import org.apache.zookeeper.util.ServiceUtils;
+
 /**
  * Black-box tests for {@link SnapshotComparer}.
  *
- * <p>These tests exercise only publicly observable behavior through the public
- * {@code main(String[])} entry point. Each invocation runs in a separate JVM so
- * invalid command lines can request a system exit without terminating JUnit.
+ * <p>These tests exercise the publicly observable behavior exposed through
+ * {@code main(String[])} in the current JUnit JVM. The ZooKeeper system-exit
+ * procedure is temporarily replaced so invalid command lines can request an
+ * exit code without terminating JUnit.
+ *
+ * <p>Running SnapshotComparer in-process allows JaCoCo and PIT to observe the
+ * complete execution. Standard input, output, error, and the original
+ * system-exit procedure are restored after every invocation.
  *
  * <p>The tests intentionally do not use reflection, Unsafe, private nested
  * classes, or assumptions about snapshot serialization internals.
  */
+
 public class SnapshotComparerGuidedToTFewShotTest {
 
     private static final String FIXTURE_DIRECTORY =
@@ -66,8 +71,6 @@ public class SnapshotComparerGuidedToTFewShotTest {
      * fixtures without depending on their exact contents.
      */
     private static final String VERY_HIGH_THRESHOLD = "2147483647";
-
-    private static final long PROCESS_TIMEOUT_SECONDS = 30L;
 
     private static final Pattern DELTA_LINE = Pattern.compile(
             "Node (.+?) found in both trees\\. Delta: (-?\\d+) bytes, "
@@ -863,7 +866,7 @@ public class SnapshotComparerGuidedToTFewShotTest {
 
     /*
      * ----------------------------------------------------------------------
-     * Subprocess execution
+     * In-process execution
      * ----------------------------------------------------------------------
      */
 
@@ -875,73 +878,65 @@ public class SnapshotComparerGuidedToTFewShotTest {
     private static RunResult runSnapshotComparer(
             String[] applicationArgs,
             String standardInput) throws Exception {
-        List<String> command = new ArrayList<>();
-        command.add(javaExecutable());
-        command.add("-cp");
-        command.add(System.getProperty("java.class.path"));
-        command.add(SnapshotComparer.class.getName());
-        command.addAll(Arrays.asList(applicationArgs));
 
-        ProcessBuilder builder = new ProcessBuilder(command);
-        builder.redirectErrorStream(true);
+        synchronized (ServiceUtils.class) {
+            PrintStream originalOut = System.out;
+            PrintStream originalErr = System.err;
+            InputStream originalIn = System.in;
 
-        Process process = builder.start();
+            ByteArrayOutputStream capturedOutput =
+                    new ByteArrayOutputStream();
 
-        try (OutputStream input = process.getOutputStream()) {
-            if (standardInput != null && !standardInput.isEmpty()) {
-                input.write(standardInput.getBytes(StandardCharsets.UTF_8));
-                input.flush();
+            PrintStream capturedStream = new PrintStream(
+                    capturedOutput,
+                    true,
+                    StandardCharsets.UTF_8.name());
+
+            String effectiveInput =
+                    standardInput == null ? "" : standardInput;
+
+            int exitCode = 0;
+
+            try {
+                System.setIn(new ByteArrayInputStream(
+                        effectiveInput.getBytes(StandardCharsets.UTF_8)));
+
+                System.setOut(capturedStream);
+                System.setErr(capturedStream);
+
+                ServiceUtils.setSystemExitProcedure(
+                        code -> {
+                            throw new ExitRequestedException(code);
+                        });
+
+                SnapshotComparer.main(applicationArgs);
+
+            } catch (ExitRequestedException exitRequested) {
+                exitCode = exitRequested.exitCode;
+
+            } catch (Exception failure) {
+                exitCode = 1;
+                failure.printStackTrace(capturedStream);
+
+            } finally {
+                capturedStream.flush();
+
+                ServiceUtils.setSystemExitProcedure(
+                        ServiceUtils.SYSTEM_EXIT);
+
+                System.setIn(originalIn);
+                System.setOut(originalOut);
+                System.setErr(originalErr);
+
+                capturedStream.close();
             }
+
+            return new RunResult(
+                    exitCode,
+                    new String(
+                            capturedOutput.toByteArray(),
+                            StandardCharsets.UTF_8));
         }
-
-        OutputCollector collector = new OutputCollector(
-                process.getInputStream());
-        Thread collectorThread = new Thread(
-                collector,
-                "snapshot-comparer-output");
-        collectorThread.setDaemon(true);
-        collectorThread.start();
-
-        boolean completed = process.waitFor(
-                PROCESS_TIMEOUT_SECONDS,
-                TimeUnit.SECONDS);
-
-        if (!completed) {
-            process.destroyForcibly();
-            process.waitFor(5, TimeUnit.SECONDS);
-            collectorThread.join(TimeUnit.SECONDS.toMillis(5));
-            fail("SnapshotComparer process timed out.\nCommand: " + command);
-        }
-
-        collectorThread.join(TimeUnit.SECONDS.toMillis(5));
-        assertFalse(
-                "Output collector did not terminate",
-                collectorThread.isAlive());
-
-        if (collector.failure != null) {
-            throw collector.failure;
-        }
-
-        return new RunResult(process.exitValue(), collector.output());
-    }
-
-    private static String javaExecutable() {
-        String executableName = isWindows() ? "java.exe" : "java";
-        File executable = new File(
-                new File(System.getProperty("java.home"), "bin"),
-                executableName);
-
-        assertTrue(
-                "Java executable does not exist: " + executable,
-                executable.isFile());
-
-        return executable.getAbsolutePath();
-    }
-
-    private static boolean isWindows() {
-        return System.getProperty("os.name", "")
-                .toLowerCase(Locale.ROOT)
-                .contains("win");
     }
 
     private static String[] args(String... values) {
@@ -1031,6 +1026,20 @@ public class SnapshotComparerGuidedToTFewShotTest {
      * ----------------------------------------------------------------------
      */
 
+    private static final class ExitRequestedException
+            extends RuntimeException {
+
+        private static final long serialVersionUID = 1L;
+
+        private final int exitCode;
+
+        private ExitRequestedException(int exitCode) {
+            super("SnapshotComparer requested JVM exit with code "
+                    + exitCode);
+            this.exitCode = exitCode;
+        }
+    }
+
     private static final class RunResult {
         private final int exitCode;
         private final String output;
@@ -1060,34 +1069,4 @@ public class SnapshotComparerGuidedToTFewShotTest {
         }
     }
 
-    private static final class OutputCollector implements Runnable {
-        private final InputStream input;
-        private final ByteArrayOutputStream bytes =
-                new ByteArrayOutputStream();
-        private volatile IOException failure;
-
-        private OutputCollector(InputStream input) {
-            this.input = input;
-        }
-
-        @Override
-        public void run() {
-            byte[] buffer = new byte[4096];
-
-            try (InputStream stream = input) {
-                int count;
-                while ((count = stream.read(buffer)) != -1) {
-                    bytes.write(buffer, 0, count);
-                }
-            } catch (IOException e) {
-                failure = e;
-            }
-        }
-
-        private String output() {
-            return new String(
-                    bytes.toByteArray(),
-                    StandardCharsets.UTF_8);
-        }
-    }
 }
