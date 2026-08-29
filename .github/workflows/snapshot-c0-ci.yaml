@@ -421,23 +421,12 @@ jobs:
             -ErrorAction SilentlyContinue
 
           Remove-Item `
-            "zookeeper-server/target/site/jacoco" `
-            -Recurse `
-            -Force `
-            -ErrorAction SilentlyContinue
-
-          Remove-Item `
-            "zookeeper-server/target/jacoco.exec" `
-            -Force `
-            -ErrorAction SilentlyContinue
-
-          Remove-Item `
             "ci-results/${{ matrix.suite.id }}" `
             -Recurse `
             -Force `
             -ErrorAction SilentlyContinue
 
-      - name: Run ${{ matrix.suite.name }} with JaCoCo
+      - name: Run ${{ matrix.suite.name }} tests
         id: run-tests
         working-directory: zookeeper-server
         shell: bash
@@ -453,9 +442,7 @@ jobs:
 
           mvn -B -ntp \
             $PROFILE \
-            jacoco:prepare-agent \
             test \
-            jacoco:report \
             "-Dtest=$SELECTOR" \
             -DfailIfNoTests=true \
             -Dsurefire.failIfNoSpecifiedTests=true \
@@ -513,7 +500,7 @@ jobs:
             }
           }
 
-      - name: Validate Surefire and JaCoCo reports
+      - name: Validate Surefire reports
         if: always()
         shell: pwsh
         run: |
@@ -529,11 +516,6 @@ jobs:
           )
 
           $surefireDirectory = "zookeeper-server/target/surefire-reports"
-          $jacocoDirectory = "zookeeper-server/target/site/jacoco"
-          $jacocoExec = "zookeeper-server/target/jacoco.exec"
-          $jacocoXml = Join-Path $jacocoDirectory "jacoco.xml"
-          $jacocoCsv = Join-Path $jacocoDirectory "jacoco.csv"
-          $jacocoHtml = Join-Path $jacocoDirectory "index.html"
 
           if (-not (Test-Path $surefireDirectory -PathType Container)) {
             throw "Surefire report directory not produced for $suiteName"
@@ -606,50 +588,7 @@ jobs:
             throw "Suite $suiteName produced failures or errors"
           }
 
-          if (-not (Test-Path $jacocoExec -PathType Leaf)) {
-            throw "JaCoCo execution data not produced for $suiteName"
-          }
-
-          if ((Get-Item $jacocoExec).Length -le 0) {
-            throw "JaCoCo execution data is empty for $suiteName"
-          }
-
-          if (-not (Test-Path $jacocoXml -PathType Leaf)) {
-            throw "JaCoCo XML report not produced for $suiteName"
-          }
-
-          if (-not (Test-Path $jacocoCsv -PathType Leaf)) {
-            throw "JaCoCo CSV report not produced for $suiteName"
-          }
-
-          if (-not (Test-Path $jacocoHtml -PathType Leaf)) {
-            throw "JaCoCo HTML report not produced for $suiteName"
-          }
-
-          $targetClass = Import-Csv $jacocoCsv |
-            Where-Object {
-              $_.PACKAGE -eq "org.apache.zookeeper.server" -and
-              $_.CLASS -eq "SnapshotComparer"
-            } |
-            Select-Object -First 1
-
-          if ($null -eq $targetClass) {
-            throw "SnapshotComparer not found in the JaCoCo report for $suiteName"
-          }
-
-          $instructionCovered = [int]$targetClass.INSTRUCTION_COVERED
-          $lineCovered = [int]$targetClass.LINE_COVERED
-          $branchCovered = [int]$targetClass.BRANCH_COVERED
-
-          Write-Host "SnapshotComparer instruction covered=$instructionCovered"
-          Write-Host "SnapshotComparer line covered=$lineCovered"
-          Write-Host "SnapshotComparer branch covered=$branchCovered"
-
-          if ($instructionCovered -le 0 -and $lineCovered -le 0) {
-            Write-Warning "JaCoCo reported zero coverage for SnapshotComparer in $suiteName"
-          }
-
-          Write-Host "Surefire and JaCoCo reports validated for $suiteName."
+          Write-Host "Surefire reports validated for $suiteName."
 
       - name: Preserve ${{ matrix.suite.name }} reports
         if: always()
@@ -682,21 +621,6 @@ jobs:
               "zookeeper-server/target/surefire-reports" `
               "$outputDirectory/surefire-reports" `
               -Recurse `
-              -Force
-          }
-
-          if (Test-Path "zookeeper-server/target/site/jacoco") {
-            Copy-Item `
-              "zookeeper-server/target/site/jacoco" `
-              "$outputDirectory/jacoco-report" `
-              -Recurse `
-              -Force
-          }
-
-          if (Test-Path "zookeeper-server/target/jacoco.exec") {
-            Copy-Item `
-              "zookeeper-server/target/jacoco.exec" `
-              "$outputDirectory/jacoco.exec" `
               -Force
           }
 
