@@ -1,0 +1,719 @@
+name: SnapshotComparer C4 Experimental CI
+
+on:
+  push:
+    branches:
+      - "experiment/snapshot-c4"
+  pull_request:
+    branches:
+      - "experiment/snapshot-c4"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: snapshot-c4-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  snapshot-c4-tests:
+    name: SnapshotComparer - ${{ matrix.suite.name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    strategy:
+      fail-fast: false
+      matrix:
+        suite:
+          # ==========================================
+          # SUITE BLACKBOX (Condivisa)
+          # ==========================================
+          - name: BlackBox
+            id: blackbox
+            evosuite: false
+            profile: ""
+            selector: >-
+              org.apache.zookeeper.server.snapshotcomparer.blackbox.SnapshotComparerBlackBoxCFMutationTest,
+              org.apache.zookeeper.server.snapshotcomparer.blackbox.SnapshotComparerBlackBoxCFTest,
+              org.apache.zookeeper.server.snapshotcomparer.blackbox.SnapshotComparerBlackBoxTest
+            expected: >-
+              SnapshotComparerBlackBoxCFMutationTest,
+              SnapshotComparerBlackBoxCFTest,
+              SnapshotComparerBlackBoxTest
+
+          # ==========================================
+          # SUITE C0 (Base / Originale)
+          # ==========================================
+          - name: LLM Zero-Shot (C0)
+            id: llm-zero-shot-c0
+            evosuite: false
+            profile: ""
+            selector: >-
+              org.apache.zookeeper.server.snapshotcomparer.llm.SnapshotComparerLLMZeroShotTest
+            expected: >-
+              SnapshotComparerLLMZeroShotTest
+
+          - name: LLM Few-Shot (C0)
+            id: llm-few-shot-c0
+            evosuite: false
+            profile: ""
+            selector: >-
+              org.apache.zookeeper.server.snapshotcomparer.llm.SnapshotComparerLLMFewShotTest
+            expected: >-
+              SnapshotComparerLLMFewShotTest
+
+          - name: LLM GuidedToT Few-Shot (C0)
+            id: llm-guided-c0
+            evosuite: false
+            profile: ""
+            selector: >-
+              org.apache.zookeeper.server.snapshotcomparer.llm.SnapshotComparerGuidedToTFewShotTest
+            expected: >-
+              SnapshotComparerGuidedToTFewShotTest
+
+          - name: Randoop Direct (C0)
+            id: randoop-direct-c0
+            evosuite: false
+            profile: ""
+            selector: >-
+              org.apache.zookeeper.server.snapshotcomparer.randoop.beforefacade.RegressionTestBeforeFacadeTest,
+              org.apache.zookeeper.server.snapshotcomparer.randoop.beforefacade.RegressionTestBeforeFacadeTest0
+            expected: >-
+              RegressionTestBeforeFacadeTest,
+              RegressionTestBeforeFacadeTest0
+
+          - name: Randoop Facade (C0)
+            id: randoop-facade-c0
+            evosuite: false
+            profile: ""
+            selector: >-
+              org.apache.zookeeper.server.snapshotcomparer.randoop.afterfacade.RegressionTestAfterFacadeTest,
+              org.apache.zookeeper.server.snapshotcomparer.randoop.afterfacade.RegressionTestAfterFacadeTest0,
+              org.apache.zookeeper.server.snapshotcomparer.randoop.afterfacade.RegressionTestAfterFacadeTest1
+            expected: >-
+              RegressionTestAfterFacadeTest,
+              RegressionTestAfterFacadeTest0,
+              RegressionTestAfterFacadeTest1
+
+          - name: EvoSuite Direct (C0)
+            id: evosuite-direct-c0
+            evosuite: true
+            profile: "-Pevosuite-coverage"
+            selector: >-
+              org.apache.zookeeper.server.snapshotcomparer.evosuite.snapshotcomparerbranch.SnapshotComparer_ESTest
+            expected: >-
+              SnapshotComparer_ESTest
+
+          - name: EvoSuite Facade (C0)
+            id: evosuite-facade-c0
+            evosuite: true
+            profile: "-Pevosuite-coverage"
+            selector: >-
+              org.apache.zookeeper.server.snapshotcomparer.evosuite.snapshotcomparerfacadebranch.SnapshotComparerTestFacade_ESTest
+            expected: >-
+              SnapshotComparerTestFacade_ESTest
+
+          # ==========================================
+          # SUITE C4 (Variante)
+          # ==========================================
+          - name: LLM Zero-Shot (C4)
+            id: llm-zero-shot-c4
+            evosuite: false
+            profile: ""
+            selector: >-
+              org.apache.zookeeper.server.snapshotcomparer.variant_c4.llm.SnapshotComparerLLMZeroShotTest
+            expected: >-
+              SnapshotComparerLLMZeroShotTest
+
+          - name: LLM Few-Shot (C4)
+            id: llm-few-shot-c4
+            evosuite: false
+            profile: ""
+            selector: >-
+              org.apache.zookeeper.server.snapshotcomparer.variant_c4.llm.SnapshotComparerLLMFewShotTest
+            expected: >-
+              SnapshotComparerLLMFewShotTest
+
+          - name: LLM GuidedToT Few-Shot (C4)
+            id: llm-guided-c4
+            evosuite: false
+            profile: ""
+            selector: >-
+              org.apache.zookeeper.server.snapshotcomparer.variant_c4.llm.SnapshotComparerGuidedToTFewShotTest
+            expected: >-
+              SnapshotComparerGuidedToTFewShotTest
+
+          - name: Randoop Direct (C4)
+            id: randoop-direct-c4
+            evosuite: false
+            profile: ""
+            selector: >-
+              org.apache.zookeeper.server.snapshotcomparer.variant_c4.randoop.beforefacade.RegressionTestBeforeFacadeTest,
+              org.apache.zookeeper.server.snapshotcomparer.variant_c4.randoop.beforefacade.RegressionTestBeforeFacadeTest0
+            expected: >-
+              RegressionTestBeforeFacadeTest,
+              RegressionTestBeforeFacadeTest0
+
+          - name: Randoop Facade (C4)
+            id: randoop-facade-c4
+            evosuite: false
+            profile: ""
+            selector: >-
+              org.apache.zookeeper.server.snapshotcomparer.variant_c4.randoop.afterfacade.RegressionTestAfterFacadeTest,
+              org.apache.zookeeper.server.snapshotcomparer.variant_c4.randoop.afterfacade.RegressionTestAfterFacadeTest0,
+              org.apache.zookeeper.server.snapshotcomparer.variant_c4.randoop.afterfacade.RegressionTestAfterFacadeTest1
+            expected: >-
+              RegressionTestAfterFacadeTest,
+              RegressionTestAfterFacadeTest0,
+              RegressionTestAfterFacadeTest1
+
+          - name: EvoSuite Direct (C4)
+            id: evosuite-direct-c4
+            evosuite: true
+            profile: "-Pevosuite-coverage"
+            selector: >-
+              org.apache.zookeeper.server.snapshotcomparer.variant_c4.evosuite.snapshotcomparerbranch.SnapshotComparer_ESTest
+            expected: >-
+              SnapshotComparer_ESTest
+
+          - name: EvoSuite Facade (C4)
+            id: evosuite-facade-c4
+            evosuite: true
+            profile: "-Pevosuite-coverage"
+            selector: >-
+              org.apache.zookeeper.server.snapshotcomparer.variant_c4.evosuite.snapshotcomparerfacadebranch.SnapshotComparerTestFacade_ESTest
+            expected: >-
+              SnapshotComparerTestFacade_ESTest
+
+    steps:
+      - name: Checkout experiment/snapshot-c4
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Show execution context
+        shell: bash
+        run: |
+          echo "Repository: $GITHUB_REPOSITORY"
+          echo "Workflow: $GITHUB_WORKFLOW"
+          echo "Event: $GITHUB_EVENT_NAME"
+          echo "Ref: $GITHUB_REF"
+          echo "Ref name: $GITHUB_REF_NAME"
+          echo "Head ref: $GITHUB_HEAD_REF"
+          echo "SHA: $GITHUB_SHA"
+          echo "Suite: ${{ matrix.suite.name }}"
+          echo "Selector: ${{ matrix.suite.selector }}"
+          git rev-parse HEAD
+          java -version
+          mvn -version
+
+      - name: Verify expected branch
+        shell: bash
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            CURRENT_BRANCH="$GITHUB_HEAD_REF"
+          else
+            CURRENT_BRANCH="$GITHUB_REF_NAME"
+          fi
+
+          echo "Current branch: $CURRENT_BRANCH"
+
+          if [ "$CURRENT_BRANCH" != "experiment/snapshot-c4" ]; then
+            echo "Unexpected branch: $CURRENT_BRANCH"
+            exit 1
+          fi
+
+      - name: Verify bundled EvoSuite runtime
+        shell: bash
+        run: |
+          RUNTIME="tools/evosuite/evosuite-standalone-runtime-1.2.0.jar"
+
+          if [ ! -f "$RUNTIME" ]; then
+            echo "EvoSuite runtime not found: $RUNTIME"
+            exit 1
+          fi
+
+          ls -l "$RUNTIME"
+          sha256sum "$RUNTIME"
+
+      - name: Install EvoSuite 1.2.0 runtime
+        shell: bash
+        run: |
+          mvn -B -ntp \
+            org.apache.maven.plugins:maven-install-plugin:3.1.4:install-file \
+            -Dfile="tools/evosuite/evosuite-standalone-runtime-1.2.0.jar" \
+            -DgroupId=org.evosuite \
+            -DartifactId=evosuite-standalone-runtime \
+            -Dversion=1.2.0 \
+            -Dpackaging=jar \
+            -DgeneratePom=true
+
+      - name: Verify installed EvoSuite artifact
+        shell: bash
+        run: |
+          ARTIFACT="$HOME/.m2/repository/org/evosuite/evosuite-standalone-runtime/1.2.0/evosuite-standalone-runtime-1.2.0.jar"
+
+          if [ ! -f "$ARTIFACT" ]; then
+            echo "Installed EvoSuite artifact not found: $ARTIFACT"
+            exit 1
+          fi
+
+          ls -l "$ARTIFACT"
+
+      - name: Verify required fixtures
+        shell: pwsh
+        run: |
+          $fixtureDirectory = "zookeeper-server/src/test/resources/data/comparer"
+
+          $requiredFiles = @(
+            "corrupt_file.snap",
+            "left.snap",
+            "left_ephemeral.snap",
+            "left_mixed.snap",
+            "left_nodes.snap",
+            "left_payload.snap",
+            "right_ephemeral.snap",
+            "right_identical.snap",
+            "right_mixed.snap",
+            "right_nodes_changed.snap",
+            "right_payload_changed.snap",
+            "right_plus_1.gz",
+            "right_plus_1.snap"
+          )
+
+          if (-not (Test-Path $fixtureDirectory -PathType Container)) {
+            throw "Fixture directory not found: $fixtureDirectory"
+          }
+
+          foreach ($name in $requiredFiles) {
+            $path = Join-Path $fixtureDirectory $name
+
+            if (-not (Test-Path $path -PathType Leaf)) {
+              throw "Missing fixture: $path"
+            }
+
+            $file = Get-Item $path
+
+            if ($file.Length -le 0) {
+              throw "Fixture is empty: $path"
+            }
+
+            Write-Host "Fixture found: $path ($($file.Length) bytes)"
+          }
+
+          Write-Host "All required fixtures are present."
+
+      - name: Verify expected test sources
+        shell: pwsh
+        run: |
+          $sourceRoot = "zookeeper-server/src/test/java"
+
+          $selector = "${{ matrix.suite.selector }}"
+          $selector = $selector.Replace(" ", "").Replace("`r", "").Replace("`n", "")
+
+          $classes = @(
+            $selector -split "," |
+              ForEach-Object { $_.Trim() } |
+              Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+          )
+
+          if ($classes.Count -eq 0) {
+            throw "Empty test selector for suite ${{ matrix.suite.name }}"
+          }
+
+          foreach ($fqcn in $classes) {
+            $relativePath = $fqcn.Replace(".", "/") + ".java"
+            $sourcePath = Join-Path $sourceRoot $relativePath
+
+            if (-not (Test-Path $sourcePath -PathType Leaf)) {
+              throw "Expected test source not found: $sourcePath"
+            }
+
+            Write-Host "Found test source: $sourcePath"
+          }
+
+      - name: Verify EvoSuite scaffolding
+        if: matrix.suite.evosuite == true
+        shell: pwsh
+        run: |
+          $sourceRoot = "zookeeper-server/src/test/java"
+          $fqcn = "${{ matrix.suite.selector }}"
+          $fqcn = $fqcn.Replace(" ", "").Replace("`r", "").Replace("`n", "")
+
+          $testPath = Join-Path $sourceRoot ($fqcn.Replace(".", "/") + ".java")
+
+          if (-not (Test-Path $testPath -PathType Leaf)) {
+            throw "EvoSuite test source not found: $testPath"
+          }
+
+          $directory = Split-Path $testPath -Parent
+          $baseName = [System.IO.Path]::GetFileNameWithoutExtension($testPath)
+          $scaffoldingName = $baseName -replace "_ESTest$", "_ESTest_scaffolding"
+          $scaffoldingPath = Join-Path $directory ($scaffoldingName + ".java")
+
+          if (-not (Test-Path $scaffoldingPath -PathType Leaf)) {
+            throw "EvoSuite scaffolding source not found: $scaffoldingPath"
+          }
+
+          Write-Host "Found EvoSuite test: $testPath"
+          Write-Host "Found EvoSuite scaffolding: $scaffoldingPath"
+
+      - name: Locate non-portable paths
+        shell: bash
+        run: |
+          echo "Non-portable paths before CI normalization:"
+
+          grep -RIn \
+            --include="*.java" \
+            --include="*.xml" \
+            --include="*.properties" \
+            -E 'C:/Users/casol|C:\\Users\\casol' \
+            zookeeper-server/src \
+            zookeeper-server/pom.xml || true
+
+      - name: Configure portable fixture paths
+        shell: bash
+        run: |
+          FIXTURE_DIR="$GITHUB_WORKSPACE/zookeeper-server/src/test/resources/data/comparer"
+          OLD_FIXTURE_DIR_FORWARD="C:/Users/casol/Desktop/zookeeper/zookeeper-server/src/test/resources/data/comparer"
+          OLD_FIXTURE_DIR_BACKWARD='C:\Users\casol\Desktop\zookeeper\zookeeper-server\src\test\resources\data\comparer'
+
+          if [ ! -f "$FIXTURE_DIR/left.snap" ]; then
+            echo "Required fixture not found: $FIXTURE_DIR/left.snap"
+            exit 1
+          fi
+
+          echo "Portable fixture directory:"
+          echo "$FIXTURE_DIR"
+
+          while IFS= read -r -d '' FILE; do
+            sed -i \
+              "s|$OLD_FIXTURE_DIR_FORWARD|$FIXTURE_DIR|g" \
+              "$FILE"
+
+            sed -i \
+              "s|$OLD_FIXTURE_DIR_BACKWARD|$FIXTURE_DIR|g" \
+              "$FILE"
+          done < <(
+            find zookeeper-server/src \
+              -type f \
+              \( -name "*.java" -o -name "*.xml" -o -name "*.properties" \) \
+              -print0
+          )
+
+          echo "Checking for remaining Windows paths..."
+
+          REMAINING_PATHS=$(grep -RIn \
+            --include="*.java" \
+            --include="*.xml" \
+            --include="*.properties" \
+            -E 'C:/Users/casol|C:\\Users\\casol' \
+            zookeeper-server/src || true)
+
+          if [ -n "$REMAINING_PATHS" ]; then
+            echo "$REMAINING_PATHS"
+            echo "One or more non-portable paths are still present."
+            exit 1
+          fi
+
+          echo "All hard-coded Windows fixture paths were normalized."
+
+      - name: Disable EvoSuite virtual filesystem for facade
+        if: contains(matrix.suite.id, 'evosuite-facade')
+        shell: bash
+        run: |
+          # Determiniamo il percorso dinamicamente in base al selettore della matrix
+          SELECTOR=$(printf '%s' '${{ matrix.suite.selector }}' | tr -d '[:space:]')
+          RELATIVE_PATH="${SELECTOR//./\/}"
+          TEST_FILE="zookeeper-server/src/test/java/${RELATIVE_PATH}.java"
+          SCAFFOLDING_FILE="${TEST_FILE/_ESTest.java/_ESTest_scaffolding.java}"
+
+          if [ ! -f "$TEST_FILE" ]; then
+            echo "EvoSuite facade test not found: $TEST_FILE"
+            exit 1
+          fi
+
+          echo "EvoSuite VFS configuration before normalization:"
+          grep -n "useVFS" "$TEST_FILE" "$SCAFFOLDING_FILE" || true
+
+          sed -i \
+            's/useVFS[[:space:]]*=[[:space:]]*true/useVFS = false/g' \
+            "$TEST_FILE"
+
+          if [ -f "$SCAFFOLDING_FILE" ]; then
+            sed -i \
+              's/useVFS[[:space:]]*=[[:space:]]*true/useVFS = false/g' \
+              "$SCAFFOLDING_FILE"
+          fi
+
+          echo "EvoSuite VFS configuration after normalization:"
+          grep -n "useVFS" "$TEST_FILE" "$SCAFFOLDING_FILE" || true
+
+          if grep -q \
+            'useVFS[[:space:]]*=[[:space:]]*true' \
+            "$TEST_FILE" "$SCAFFOLDING_FILE" 2>/dev/null; then
+            echo "EvoSuite virtual filesystem is still enabled."
+            exit 1
+          fi
+
+      - name: Create compatibility fixture directory
+        shell: bash
+        run: |
+          FIXTURE_SOURCE="$GITHUB_WORKSPACE/zookeeper-server/src/test/resources/data/comparer"
+
+          LEGACY_DIRECTORY="$GITHUB_WORKSPACE/zookeeper-server/C:/Users/casol/Desktop/zookeeper/zookeeper-server/src/test/resources/data/comparer"
+
+          mkdir -p "$LEGACY_DIRECTORY"
+          cp -a "$FIXTURE_SOURCE/." "$LEGACY_DIRECTORY/"
+
+          if [ ! -f "$LEGACY_DIRECTORY/left.snap" ]; then
+            echo "Compatibility fixture directory was not created correctly."
+            exit 1
+          fi
+
+          echo "Compatibility fixture directory:"
+          echo "$LEGACY_DIRECTORY"
+          ls -la "$LEGACY_DIRECTORY"
+
+      - name: Build required reactor modules
+        shell: bash
+        run: |
+          mvn -B -ntp \
+            -pl zookeeper-server \
+            -am \
+            clean install \
+            -DskipTests \
+            -Dcheckstyle.skip=true \
+            -Dspotbugs.skip=true \
+            -Dmaven.javadoc.skip=true \
+            -Drat.skip=true
+
+      - name: Clean previous reports
+        shell: pwsh
+        run: |
+          Remove-Item `
+            "zookeeper-server/target/surefire-reports" `
+            -Recurse `
+            -Force `
+            -ErrorAction SilentlyContinue
+
+          Remove-Item `
+            "ci-results/${{ matrix.suite.id }}" `
+            -Recurse `
+            -Force `
+            -ErrorAction SilentlyContinue
+
+      - name: Run ${{ matrix.suite.name }} tests
+        id: run-tests
+        working-directory: zookeeper-server
+        shell: bash
+        run: |
+          SELECTOR=$(printf '%s' '${{ matrix.suite.selector }}' | tr -d '[:space:]')
+          PROFILE=$(printf '%s' '${{ matrix.suite.profile }}' | tr -d '[:space:]')
+          FIXTURE_DIR="$GITHUB_WORKSPACE/zookeeper-server/src/test/resources/data/comparer"
+
+          echo "Suite: ${{ matrix.suite.name }}"
+          echo "Selector: $SELECTOR"
+          echo "Profile: $PROFILE"
+          echo "Fixture directory: $FIXTURE_DIR"
+
+          mvn -B -ntp \
+            $PROFILE \
+            test \
+            "-Dtest=$SELECTOR" \
+            -DfailIfNoTests=true \
+            -Dsurefire.failIfNoSpecifiedTests=true \
+            -Dmaven.test.failure.ignore=false \
+            -DtestFailureIgnore=false \
+            -DsnapshotComparer.fixtureDir="$FIXTURE_DIR" \
+            -Dcheckstyle.skip=true \
+            -Dspotbugs.skip=true \
+            -Dmaven.javadoc.skip=true \
+            -Drat.skip=true
+
+      - name: Show Surefire summaries
+        if: always()
+        shell: pwsh
+        run: |
+          $reportDirectory = "zookeeper-server/target/surefire-reports"
+
+          if (-not (Test-Path $reportDirectory -PathType Container)) {
+            Write-Host "Surefire report directory was not produced."
+            exit 0
+          }
+
+          $reports = @(
+            Get-ChildItem `
+              $reportDirectory `
+              -Filter "TEST-*.xml" `
+              -File `
+              -ErrorAction SilentlyContinue
+          )
+
+          foreach ($report in $reports) {
+            [xml]$xml = Get-Content $report.FullName
+
+            if ($null -eq $xml.testsuite) {
+              continue
+            }
+
+            Write-Host (
+              "$($xml.testsuite.name): " +
+              "tests=$($xml.testsuite.tests), " +
+              "failures=$($xml.testsuite.failures), " +
+              "errors=$($xml.testsuite.errors), " +
+              "skipped=$($xml.testsuite.skipped)"
+            )
+
+            $errorNodes = @(
+              $xml.testsuite.testcase |
+                Where-Object { $null -ne $_.error } |
+                Select-Object -First 5
+            )
+
+            foreach ($testCase in $errorNodes) {
+              Write-Host "Error in test: $($testCase.name)"
+              Write-Host "$($testCase.error.message)"
+            }
+          }
+
+      - name: Validate Surefire reports
+        if: always()
+        shell: pwsh
+        run: |
+          $suiteName = "${{ matrix.suite.name }}"
+
+          $expectedText = "${{ matrix.suite.expected }}"
+          $expectedText = $expectedText.Replace(" ", "").Replace("`r", "").Replace("`n", "")
+
+          $expectedClasses = @(
+            $expectedText -split "," |
+              ForEach-Object { $_.Trim() } |
+              Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+          )
+
+          $surefireDirectory = "zookeeper-server/target/surefire-reports"
+
+          if (-not (Test-Path $surefireDirectory -PathType Container)) {
+            throw "Surefire report directory not produced for $suiteName"
+          }
+
+          $reports = @(
+            Get-ChildItem `
+              $surefireDirectory `
+              -Filter "TEST-*.xml" `
+              -File `
+              -ErrorAction SilentlyContinue
+          )
+
+          if ($reports.Count -eq 0) {
+            throw "No Surefire XML reports produced for $suiteName"
+          }
+
+          $executedSuites = @()
+          $totalTests = 0
+          $totalFailures = 0
+          $totalErrors = 0
+          $totalSkipped = 0
+
+          foreach ($report in $reports) {
+            [xml]$xml = Get-Content $report.FullName
+
+            if ($null -eq $xml.testsuite) {
+              continue
+            }
+
+            $executedSuites += [string]$xml.testsuite.name
+            $totalTests += [int]$xml.testsuite.tests
+            $totalFailures += [int]$xml.testsuite.failures
+            $totalErrors += [int]$xml.testsuite.errors
+            $totalSkipped += [int]$xml.testsuite.skipped
+          }
+
+          Write-Host "Executed suites:"
+
+          $executedSuites |
+            Sort-Object -Unique |
+            ForEach-Object {
+              Write-Host "  $_"
+            }
+
+          foreach ($expectedClass in $expectedClasses) {
+            $found = @(
+              $executedSuites |
+                Where-Object {
+                  $_ -eq $expectedClass -or
+                  $_ -like "*.$expectedClass"
+                }
+            ).Count -gt 0
+
+            if (-not $found) {
+              throw "Expected suite not found in Surefire reports: $expectedClass"
+            }
+          }
+
+          Write-Host "Tests=$totalTests"
+          Write-Host "Failures=$totalFailures"
+          Write-Host "Errors=$totalErrors"
+          Write-Host "Skipped=$totalSkipped"
+
+          if ($totalTests -le 0) {
+            throw "Zero tests executed for $suiteName"
+          }
+
+          if ($totalFailures -gt 0 -or $totalErrors -gt 0) {
+            throw "Suite $suiteName produced failures or errors"
+          }
+
+          Write-Host "Surefire reports validated for $suiteName."
+
+      - name: Preserve ${{ matrix.suite.name }} reports
+        if: always()
+        shell: pwsh
+        run: |
+          $outputDirectory = "ci-results/${{ matrix.suite.id }}"
+
+          New-Item `
+            -ItemType Directory `
+            -Force `
+            -Path $outputDirectory |
+            Out-Null
+
+          @"
+          Repository=$env:GITHUB_REPOSITORY
+          Workflow=$env:GITHUB_WORKFLOW
+          Event=$env:GITHUB_EVENT_NAME
+          Ref=$env:GITHUB_REF
+          RefName=$env:GITHUB_REF_NAME
+          HeadRef=$env:GITHUB_HEAD_REF
+          SHA=$env:GITHUB_SHA
+          Suite=${{ matrix.suite.name }}
+          Selector=${{ matrix.suite.selector }}
+          EvoSuite=${{ matrix.suite.evosuite }}
+          Profile=${{ matrix.suite.profile }}
+          "@ | Set-Content "$outputDirectory/metadata.txt"
+
+          if (Test-Path "zookeeper-server/target/surefire-reports") {
+            Copy-Item `
+              "zookeeper-server/target/surefire-reports" `
+              "$outputDirectory/surefire-reports" `
+              -Recurse `
+              -Force
+          }
+
+      - name: Upload ${{ matrix.suite.name }} results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: snapshot-c4-${{ matrix.suite.id }}-${{ github.sha }}
+          path: ci-results/${{ matrix.suite.id }}/
+          if-no-files-found: error
+          retention-days: 30
