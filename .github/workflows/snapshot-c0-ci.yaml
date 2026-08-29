@@ -240,7 +240,7 @@ jobs:
           $classes = @(
             $selector -split "," |
               ForEach-Object { $_.Trim() } |
-              Where-Object { -not :IsNullOrWhiteSpace($_) }
+              Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
           )
 
           if ($classes.Count -eq 0) {
@@ -525,7 +525,7 @@ jobs:
           $expectedClasses = @(
             $expectedText -split "," |
               ForEach-Object { $_.Trim() } |
-              Where-Object { -not :IsNullOrWhiteSpace($_) }
+              Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
           )
 
           $surefireDirectory = "zookeeper-server/target/surefire-reports"
