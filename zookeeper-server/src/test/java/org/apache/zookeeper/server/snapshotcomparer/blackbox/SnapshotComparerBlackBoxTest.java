@@ -315,7 +315,7 @@ public class SnapshotComparerBlackBoxTest {
         assertOutputContains(result, "Depth must be in range [0, 2]");
     }
 
-    // T54, testInteractive_InvalidAbsolutePath_PrintsError
+    // T55, testInteractive_InvalidAbsolutePath_PrintsError
     @Test
     public void testInteractive_InvalidAbsolutePath_PrintsError() throws Exception {
         assertCoreAssets();
