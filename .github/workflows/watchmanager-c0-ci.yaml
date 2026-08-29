@@ -1,0 +1,98 @@
+name: WatchManager C0 Experimental CI
+
+on:
+  push:
+    branches:
+      - "experiment/watchmanager-c0"
+  pull_request:
+    branches:
+      - "experiment/watchmanager-c0"
+  workflow_dispatch:
+
+concurrency:
+  group: watchmanager-c0-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  watchmanager-c0-tests:
+    name: WatchManager C0 - ${{ matrix.suite.name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    strategy:
+      fail-fast: false
+      matrix:
+        suite:
+          - name: BlackBox
+            id: blackbox
+            profile: ""
+            selector: >-
+              org.apache.zookeeper.server.watch.watchmanager.blackbox.WatchManagerBlackBoxTest,
+              org.apache.zookeeper.server.watch.watchmanager.blackbox.WatchManagerBlackBoxCFTest,
+              org.apache.zookeeper.server.watch.watchmanager.blackbox.WatchManagerBlackBoxCFMutationTest
+
+          - name: LLM
+            id: llm
+            profile: ""
+            selector: >-
+              org.apache.zookeeper.server.watch.WatchManagerLLMZeroShotTest,
+              org.apache.zookeeper.server.watch.WatchManagerLLMFewShotTest,
+              org.apache.zookeeper.server.watch.WatchManagerLLMGuidedToTFewShotTest
+
+          - name: Randoop
+            id: randoop
+            profile: ""
+            selector: >-
+              org.apache.zookeeper.server.watch.watchmanager.randoop.RegressionTest,
+              org.apache.zookeeper.server.watch.RegressionTest0
+
+          - name: EvoSuite
+            id: evosuite
+            profile: "-Pevosuite-coverage"
+            selector: >-
+              org.apache.zookeeper.server.watch.WatchManager_ESTest
+
+    steps:
+      - name: Checkout experiment/watchmanager-c0
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Install EvoSuite runtime (Local Dependency)
+        if: matrix.suite.id == 'evosuite'
+        run: |
+          mvn -B -ntp install:install-file \
+            -Dfile="tools/evosuite/evosuite-standalone-runtime-1.2.0.jar" \
+            -DgroupId=org.evosuite \
+            -DartifactId=evosuite-standalone-runtime \
+            -Dversion=1.2.0 \
+            -Dpackaging=jar
+
+      - name: Build Zookeeper Server (Skip Tests)
+        run: |
+          mvn -B -ntp -pl zookeeper-server -am clean install -DskipTests
+
+      - name: Run ${{ matrix.suite.name }} tests
+        working-directory: zookeeper-server
+        run: |
+          # Rimuove gli spazi dal selector per formattarlo per Maven
+          SELECTOR=$(echo '${{ matrix.suite.selector }}' | tr -d '[:space:]')
+          
+          mvn -B -ntp ${{ matrix.suite.profile }} test \
+            -Dtest=$SELECTOR \
+            -DfailIfNoTests=true
+
+      - name: Upload Surefire Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: watchmanager-c0-${{ matrix.suite.id }}-reports-${{ github.sha }}
+          path: zookeeper-server/target/surefire-reports/
+          retention-days: 14
