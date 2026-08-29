@@ -65,15 +65,16 @@ jobs:
           java-version: "17"
           cache: maven
 
+      # L'if è stato rimosso: EvoSuite runtime serve a Maven per compilare il progetto in TUTTI i job
       - name: Install EvoSuite runtime (Local Dependency)
-        if: matrix.suite.id == 'evosuite'
         run: |
           mvn -B -ntp install:install-file \
             -Dfile="tools/evosuite/evosuite-standalone-runtime-1.2.0.jar" \
             -DgroupId=org.evosuite \
             -DartifactId=evosuite-standalone-runtime \
             -Dversion=1.2.0 \
-            -Dpackaging=jar
+            -Dpackaging=jar \
+            -DgeneratePom=true
 
       - name: Build Zookeeper Server (Skip Tests)
         run: |
