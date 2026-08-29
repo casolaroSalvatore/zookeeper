@@ -13,14 +13,67 @@ permissions:
   contents: read
 
 concurrency:
-  group: snapshot-c0-${{ github.ref }}
+  group: snapshot-c0-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   snapshot-c0-standard:
-    name: SnapshotComparer C0 - BlackBox, Randoop and LLM
+    name: SnapshotComparer C0 - ${{ matrix.suite.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 90
+
+    strategy:
+      fail-fast: false
+      matrix:
+        suite:
+          - name: BlackBox
+            id: blackbox
+            selector: >-
+              org.apache.zookeeper.server.snapshotcomparer.blackbox.SnapshotComparerBlackBoxTest,
+              org.apache.zookeeper.server.snapshotcomparer.blackbox.SnapshotComparerBlackBoxCFTest,
+              org.apache.zookeeper.server.snapshotcomparer.blackbox.SnapshotComparerBlackBoxCFMutationTest
+            expected: >-
+              SnapshotComparerBlackBoxTest,
+              SnapshotComparerBlackBoxCFTest,
+              SnapshotComparerBlackBoxCFMutationTest
+
+          - name: Randoop Direct
+            id: randoop-direct
+            selector: >-
+              org.apache.zookeeper.server.snapshotcomparer.randoop.beforefacade.RegressionTestBeforeFacadeTest0
+            expected: >-
+              RegressionTestBeforeFacadeTest0
+
+          - name: Randoop Facade
+            id: randoop-facade
+            selector: >-
+              org.apache.zookeeper.server.snapshotcomparer.randoop.afterfacade.RegressionTestAfterFacadeTest0,
+              org.apache.zookeeper.server.snapshotcomparer.randoop.afterfacade.RegressionTestAfterFacadeTest1
+            expected: >-
+              RegressionTestAfterFacadeTest0,
+              RegressionTestAfterFacadeTest1
+
+          - name: LLM Zero-Shot
+            id: llm-zero-shot
+            selector: >-
+              org.apache.zookeeper.server.snapshotcomparer.llm.SnapshotComparerLLMZeroShotTest
+            expected: >-
+              SnapshotComparerLLMZeroShotTest
+
+          - name: LLM Few-Shot
+            id: llm-few-shot
+            selector: >-
+              org.apache.zookeeper.server.snapshotcomparer.llm.SnapshotComparerLLMFewShotTest
+            expected: >-
+              SnapshotComparerLLMFewShotTest
+
+          - name: LLM GuidedToT Few-Shot
+            id: llm-guided
+            selector: >-
+              org.apache.zookeeper.server.snapshotcomparer.llm.SnapshotComparerGuidedToTFewShotTest
+            expected: >-
+              SnapshotComparerGuidedToTFewShotTest
+
     steps:
       - name: Checkout experiment/snapshot-c0
         uses: actions/checkout@v6
@@ -34,45 +87,34 @@ jobs:
           java-version: "17"
           cache: maven
 
-      - name: Verify bundled EvoSuite runtime
-        shell: bash
-        run: |
-          test -f "tools/evosuite/evosuite-standalone-runtime-1.2.0.jar"
-          ls -l "tools/evosuite/evosuite-standalone-runtime-1.2.0.jar"
-
-      - name: Install EvoSuite 1.2.0 runtime
-        shell: bash
-        run: |
-          mvn -B -ntp org.apache.maven.plugins:maven-install-plugin:3.1.4:install-file \
-            -Dfile="tools/evosuite/evosuite-standalone-runtime-1.2.0.jar" \
-            -DgroupId=org.evosuite \
-            -DartifactId=evosuite-standalone-runtime \
-            -Dversion=1.2.0 \
-            -Dpackaging=jar \
-            -DgeneratePom=true
-
-      - name: Verify installed EvoSuite artifact
-        shell: bash
-        run: |
-          test -f "$HOME/.m2/repository/org/evosuite/evosuite-standalone-runtime/1.2.0/evosuite-standalone-runtime-1.2.0.jar"
-          ls -l "$HOME/.m2/repository/org/evosuite/evosuite-standalone-runtime/1.2.0/"
-
       - name: Show execution context
+        shell: bash
         run: |
           echo "Repository: $GITHUB_REPOSITORY"
+          echo "Workflow: $GITHUB_WORKFLOW"
           echo "Ref: $GITHUB_REF"
+          echo "Ref name: $GITHUB_REF_NAME"
           echo "SHA: $GITHUB_SHA"
+          echo "Suite: ${{ matrix.suite.name }}"
+          echo "Selector: ${{ matrix.suite.selector }}"
+          git branch --show-current
           git rev-parse HEAD
           java -version
           mvn -version
 
-      - name: Build required reactor modules
-        run: mvn -B -ntp -pl zookeeper-server -am clean install -DskipTests -Dcheckstyle.skip=true -Dspotbugs.skip=true -Dmaven.javadoc.skip=true -Drat.skip=true
+      - name: Verify expected branch
+        shell: bash
+        run: |
+          test "$GITHUB_REF_NAME" = "experiment/snapshot-c0" || {
+            echo "Unexpected branch: $GITHUB_REF_NAME"
+            exit 1
+          }
 
-      - name: Verify fixtures
+      - name: Verify required fixtures
         shell: pwsh
         run: |
           $fixtureDirectory = "zookeeper-server/src/test/resources/data/comparer"
+
           $expectedFiles = @(
             "corrupt_file.snap",
             "left.snap",
@@ -88,171 +130,255 @@ jobs:
             "right_plus_1.gz",
             "right_plus_1.snap"
           )
+
+          if (-not (Test-Path $fixtureDirectory -PathType Container)) {
+            throw "Fixture directory not found: $fixtureDirectory"
+          }
+
           foreach ($name in $expectedFiles) {
             $path = Join-Path $fixtureDirectory $name
+
             if (-not (Test-Path $path -PathType Leaf)) {
-              throw "Fixture mancante: $path"
+              throw "Missing fixture: $path"
             }
           }
-          Write-Host "Tutte le fixture richieste sono presenti."
 
-      - name: Run Black-Box tests with JaCoCo
+          Write-Host "All required fixtures are present."
+
+      - name: Verify expected test sources
+        shell: pwsh
+        run: |
+          $sourceRoot = "zookeeper-server/src/test/java"
+          $selector = "${{ matrix.suite.selector }}".Replace(" ", "").Replace("`r", "").Replace("`n", "")
+          $classes = @($selector -split "," | Where-Object { -not :IsNullOrWhiteSpace($_) })
+
+          if ($classes.Count -eq 0) {
+            throw "Empty test selector for suite ${{ matrix.suite.name }}"
+          }
+
+          foreach ($fqcn in $classes) {
+            $relativePath = $fqcn.Replace(".", "/") + ".java"
+            $sourcePath = Join-Path $sourceRoot $relativePath
+
+            if (-not (Test-Path $sourcePath -PathType Leaf)) {
+              throw "Expected test source not found: $sourcePath"
+            }
+
+            Write-Host "Found test source: $sourcePath"
+          }
+
+      - name: Build required reactor modules
+        shell: bash
+        run: |
+          mvn -B -ntp \
+            -pl zookeeper-server \
+            -am \
+            clean install \
+            -DskipTests \
+            -Dcheckstyle.skip=true \
+            -Dspotbugs.skip=true \
+            -Dmaven.javadoc.skip=true \
+            -Drat.skip=true
+
+      - name: Clean previous test and coverage reports
+        shell: pwsh
+        run: |
+          Remove-Item "zookeeper-server/target/surefire-reports" -Recurse -Force -ErrorAction SilentlyContinue
+          Remove-Item "zookeeper-server/target/site/jacoco" -Recurse -Force -ErrorAction SilentlyContinue
+          Remove-Item "zookeeper-server/target/jacoco.exec" -Force -ErrorAction SilentlyContinue
+
+      - name: Run ${{ matrix.suite.name }} with JaCoCo
+        id: run-tests
         working-directory: zookeeper-server
-        run: mvn -B -ntp jacoco:prepare-agent test jacoco:report "-Dtest=org.apache.zookeeper.server.snapshotcomparer.blackbox.SnapshotComparerBlackBoxTest,org.apache.zookeeper.server.snapshotcomparer.blackbox.SnapshotComparerBlackBoxCFTest,org.apache.zookeeper.server.snapshotcomparer.blackbox.SnapshotComparerBlackBoxCFMutationTest" -DfailIfNoTests=true -Dmaven.test.failure.ignore=false -DtestFailureIgnore=false -Dcheckstyle.skip=true -Dspotbugs.skip=true -Dmaven.javadoc.skip=true -Drat.skip=true
+        shell: bash
+        run: |
+          SELECTOR=$(printf '%s' '${{ matrix.suite.selector }}' | tr -d '[:space:]')
 
-      - name: Preserve Black-Box reports
+          mvn -B -ntp \
+            jacoco:prepare-agent \
+            test \
+            jacoco:report \
+            "-Dtest=$SELECTOR" \
+            -DfailIfNoTests=true \
+            -Dsurefire.failIfNoSpecifiedTests=true \
+            -Dmaven.test.failure.ignore=false \
+            -DtestFailureIgnore=false \
+            -DsnapshotComparer.fixtureDir="$GITHUB_WORKSPACE/zookeeper-server/src/test/resources/data/comparer" \
+            -Dcheckstyle.skip=true \
+            -Dspotbugs.skip=true \
+            -Dmaven.javadoc.skip=true \
+            -Drat.skip=true
+
+      - name: Validate Surefire and JaCoCo reports
         if: always()
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path "ci-results/blackbox" | Out-Null
-          if (Test-Path "zookeeper-server/target/surefire-reports") {
-            Copy-Item "zookeeper-server/target/surefire-reports" "ci-results/blackbox/surefire-reports" -Recurse -Force
-          }
-          if (Test-Path "zookeeper-server/target/site/jacoco") {
-            Copy-Item "zookeeper-server/target/site/jacoco" "ci-results/blackbox/jacoco-report" -Recurse -Force
-          }
-          if (Test-Path "zookeeper-server/target/jacoco.exec") {
-            Copy-Item "zookeeper-server/target/jacoco.exec" "ci-results/blackbox/jacoco.exec" -Force
+          $suiteName = "${{ matrix.suite.name }}"
+          $expectedText = "${{ matrix.suite.expected }}".Replace(" ", "").Replace("`r", "").Replace("`n", "")
+          $expectedClasses = @($expectedText -split "," | Where-Object { -not :IsNullOrWhiteSpace($_) })
+
+          $surefireDirectory = "zookeeper-server/target/surefire-reports"
+          $jacocoDirectory = "zookeeper-server/target/site/jacoco"
+          $jacocoExec = "zookeeper-server/target/jacoco.exec"
+          $jacocoXml = Join-Path $jacocoDirectory "jacoco.xml"
+          $jacocoCsv = Join-Path $jacocoDirectory "jacoco.csv"
+          $jacocoHtml = Join-Path $jacocoDirectory "index.html"
+
+          if (-not (Test-Path $surefireDirectory -PathType Container)) {
+            throw "Surefire report directory not produced for $suiteName"
           }
 
-      - name: Run Randoop direct tests with JaCoCo
-        working-directory: zookeeper-server
-        run: mvn -B -ntp jacoco:prepare-agent test jacoco:report "-Dtest=org.apache.zookeeper.server.snapshotcomparer.randoop.beforefacade.RegressionTestBeforeFacadeTest0" -DfailIfNoTests=true -Dmaven.test.failure.ignore=false -DtestFailureIgnore=false -Dcheckstyle.skip=true -Dspotbugs.skip=true -Dmaven.javadoc.skip=true -Drat.skip=true
+          $reports = @(Get-ChildItem $surefireDirectory -Filter "TEST-*.xml" -File -ErrorAction SilentlyContinue)
 
-      - name: Preserve Randoop direct reports
-        if: always()
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Force -Path "ci-results/randoop-direct" | Out-Null
-          if (Test-Path "zookeeper-server/target/surefire-reports") {
-            Copy-Item "zookeeper-server/target/surefire-reports" "ci-results/randoop-direct/surefire-reports" -Recurse -Force
-          }
-          if (Test-Path "zookeeper-server/target/site/jacoco") {
-            Copy-Item "zookeeper-server/target/site/jacoco" "ci-results/randoop-direct/jacoco-report" -Recurse -Force
-          }
-
-      - name: Run Randoop facade tests with JaCoCo
-        working-directory: zookeeper-server
-        run: mvn -B -ntp jacoco:prepare-agent test jacoco:report "-Dtest=org.apache.zookeeper.server.snapshotcomparer.randoop.afterfacade.RegressionTestAfterFacadeTest0,org.apache.zookeeper.server.snapshotcomparer.randoop.afterfacade.RegressionTestAfterFacadeTest1" -DfailIfNoTests=true -Dmaven.test.failure.ignore=false -DtestFailureIgnore=false -Dcheckstyle.skip=true -Dspotbugs.skip=true -Dmaven.javadoc.skip=true -Drat.skip=true
-
-      - name: Preserve Randoop facade reports
-        if: always()
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Force -Path "ci-results/randoop-facade" | Out-Null
-          if (Test-Path "zookeeper-server/target/surefire-reports") {
-            Copy-Item "zookeeper-server/target/surefire-reports" "ci-results/randoop-facade/surefire-reports" -Recurse -Force
-          }
-          if (Test-Path "zookeeper-server/target/site/jacoco") {
-            Copy-Item "zookeeper-server/target/site/jacoco" "ci-results/randoop-facade/jacoco-report" -Recurse -Force
-          }
-
-      - name: Run LLM Zero-Shot tests with JaCoCo
-        working-directory: zookeeper-server
-        run: mvn -B -ntp jacoco:prepare-agent test jacoco:report "-Dtest=org.apache.zookeeper.server.snapshotcomparer.llm.SnapshotComparerLLMZeroShotTest" -DfailIfNoTests=true -Dmaven.test.failure.ignore=false -DtestFailureIgnore=false -Dcheckstyle.skip=true -Dspotbugs.skip=true -Dmaven.javadoc.skip=true -Drat.skip=true
-
-      - name: Preserve LLM Zero-Shot reports
-        if: always()
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Force -Path "ci-results/llm-zero-shot" | Out-Null
-          if (Test-Path "zookeeper-server/target/surefire-reports") {
-            Copy-Item "zookeeper-server/target/surefire-reports" "ci-results/llm-zero-shot/surefire-reports" -Recurse -Force
-          }
-          if (Test-Path "zookeeper-server/target/site/jacoco") {
-            Copy-Item "zookeeper-server/target/site/jacoco" "ci-results/llm-zero-shot/jacoco-report" -Recurse -Force
-          }
-
-      - name: Run LLM Few-Shot tests with JaCoCo
-        working-directory: zookeeper-server
-        run: mvn -B -ntp jacoco:prepare-agent test jacoco:report "-Dtest=org.apache.zookeeper.server.snapshotcomparer.llm.SnapshotComparerLLMFewShotTest" -DfailIfNoTests=true -Dmaven.test.failure.ignore=false -DtestFailureIgnore=false -Dcheckstyle.skip=true -Dspotbugs.skip=true -Dmaven.javadoc.skip=true -Drat.skip=true
-
-      - name: Preserve LLM Few-Shot reports
-        if: always()
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Force -Path "ci-results/llm-few-shot" | Out-Null
-          if (Test-Path "zookeeper-server/target/surefire-reports") {
-            Copy-Item "zookeeper-server/target/surefire-reports" "ci-results/llm-few-shot/surefire-reports" -Recurse -Force
-          }
-          if (Test-Path "zookeeper-server/target/site/jacoco") {
-            Copy-Item "zookeeper-server/target/site/jacoco" "ci-results/llm-few-shot/jacoco-report" -Recurse -Force
-          }
-
-      - name: Run LLM GuidedToT Few-Shot tests with JaCoCo
-        working-directory: zookeeper-server
-        run: mvn -B -ntp jacoco:prepare-agent test jacoco:report "-Dtest=org.apache.zookeeper.server.snapshotcomparer.llm.SnapshotComparerGuidedToTFewShotTest" -DfailIfNoTests=true -Dmaven.test.failure.ignore=false -DtestFailureIgnore=false -Dcheckstyle.skip=true -Dspotbugs.skip=true -Dmaven.javadoc.skip=true -Drat.skip=true
-
-      - name: Preserve LLM GuidedToT reports
-        if: always()
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Force -Path "ci-results/llm-guided" | Out-Null
-          if (Test-Path "zookeeper-server/target/surefire-reports") {
-            Copy-Item "zookeeper-server/target/surefire-reports" "ci-results/llm-guided/surefire-reports" -Recurse -Force
-          }
-          if (Test-Path "zookeeper-server/target/site/jacoco") {
-            Copy-Item "zookeeper-server/target/site/jacoco" "ci-results/llm-guided/jacoco-report" -Recurse -Force
-          }
-
-      - name: Validate executed standard suites
-        shell: pwsh
-        run: |
-          $expected = @(
-            "SnapshotComparerBlackBoxTest",
-            "SnapshotComparerBlackBoxCFTest",
-            "SnapshotComparerBlackBoxCFMutationTest",
-            "RegressionTestBeforeFacadeTest0",
-            "RegressionTestAfterFacadeTest0",
-            "RegressionTestAfterFacadeTest1",
-            "SnapshotComparerLLMZeroShotTest",
-            "SnapshotComparerLLMFewShotTest",
-            "SnapshotComparerGuidedToTFewShotTest"
-          )
-          $reports = Get-ChildItem "ci-results" -Filter "TEST-*.xml" -File -Recurse
           if ($reports.Count -eq 0) {
-            throw "Nessun report Surefire prodotto."
+            throw "No Surefire XML reports produced for $suiteName"
           }
-          $executed = @($reports | ForEach-Object {
-            [xml]$xml = Get-Content $_.FullName
-            [string]$xml.testsuite.name
-          })
-          foreach ($className in $expected) {
-            if (-not ($executed | Where-Object { $_ -like "*.$className" -or $_ -eq $className })) {
-              throw "Suite attesa non rilevata nei report: $className"
-            }
-          }
-          $tests = 0
-          $failures = 0
-          $errors = 0
-          $skipped = 0
+
+          $executedSuites = @()
+          $totalTests = 0
+          $totalFailures = 0
+          $totalErrors = 0
+          $totalSkipped = 0
+
           foreach ($report in $reports) {
             [xml]$xml = Get-Content $report.FullName
-            $tests += [int]$xml.testsuite.tests
-            $failures += [int]$xml.testsuite.failures
-            $errors += [int]$xml.testsuite.errors
-            $skipped += [int]$xml.testsuite.skipped
-          }
-          Write-Host "Tests=$tests Failures=$failures Errors=$errors Skipped=$skipped"
-          if ($tests -le 0) {
-            throw "Sono stati eseguiti zero test."
-          }
-          if ($failures -gt 0 -or $errors -gt 0) {
-            throw "Sono presenti failure o errori."
+
+            if ($null -eq $xml.testsuite) {
+              continue
+            }
+
+            $executedSuites += [string]$xml.testsuite.name
+            $totalTests += [int]$xml.testsuite.tests
+            $totalFailures += [int]$xml.testsuite.failures
+            $totalErrors += [int]$xml.testsuite.errors
+            $totalSkipped += [int]$xml.testsuite.skipped
           }
 
-      - name: Upload standard test results
+          Write-Host "Executed suites:"
+          $executedSuites | Sort-Object -Unique | ForEach-Object {
+            Write-Host "  $_"
+          }
+
+          foreach ($expectedClass in $expectedClasses) {
+            $found = @(
+              $executedSuites | Where-Object {
+                $_ -eq $expectedClass -or $_ -like "*.$expectedClass"
+              }
+            ).Count -gt 0
+
+            if (-not $found) {
+              throw "Expected suite not found in Surefire reports: $expectedClass"
+            }
+          }
+
+          Write-Host "Tests=$totalTests"
+          Write-Host "Failures=$totalFailures"
+          Write-Host "Errors=$totalErrors"
+          Write-Host "Skipped=$totalSkipped"
+
+          if ($totalTests -le 0) {
+            throw "Zero tests executed for $suiteName"
+          }
+
+          if ($totalFailures -gt 0 -or $totalErrors -gt 0) {
+            throw "Suite $suiteName produced failures or errors"
+          }
+
+          if (-not (Test-Path $jacocoExec -PathType Leaf)) {
+            throw "JaCoCo execution data not produced for $suiteName"
+          }
+
+          if ((Get-Item $jacocoExec).Length -le 0) {
+            throw "JaCoCo execution data is empty for $suiteName"
+          }
+
+          if (-not (Test-Path $jacocoXml -PathType Leaf)) {
+            throw "JaCoCo XML report not produced for $suiteName"
+          }
+
+          if (-not (Test-Path $jacocoCsv -PathType Leaf)) {
+            throw "JaCoCo CSV report not produced for $suiteName"
+          }
+
+          if (-not (Test-Path $jacocoHtml -PathType Leaf)) {
+            throw "JaCoCo HTML report not produced for $suiteName"
+          }
+
+          Write-Host "Surefire and JaCoCo reports validated for $suiteName."
+
+      - name: Preserve ${{ matrix.suite.name }} reports
+        if: always()
+        shell: pwsh
+        run: |
+          $outputDirectory = "ci-results/${{ matrix.suite.id }}"
+
+          New-Item -ItemType Directory -Force -Path $outputDirectory | Out-Null
+
+          @"
+          Repository=$env:GITHUB_REPOSITORY
+          Workflow=$env:GITHUB_WORKFLOW
+          Ref=$env:GITHUB_REF
+          RefName=$env:GITHUB_REF_NAME
+          SHA=$env:GITHUB_SHA
+          Suite=${{ matrix.suite.name }}
+          Selector=${{ matrix.suite.selector }}
+          "@ | Set-Content "$outputDirectory/metadata.txt"
+
+          if (Test-Path "zookeeper-server/target/surefire-reports") {
+            Copy-Item `
+              "zookeeper-server/target/surefire-reports" `
+              "$outputDirectory/surefire-reports" `
+              -Recurse `
+              -Force
+          }
+
+          if (Test-Path "zookeeper-server/target/site/jacoco") {
+            Copy-Item `
+              "zookeeper-server/target/site/jacoco" `
+              "$outputDirectory/jacoco-report" `
+              -Recurse `
+              -Force
+          }
+
+          if (Test-Path "zookeeper-server/target/jacoco.exec") {
+            Copy-Item `
+              "zookeeper-server/target/jacoco.exec" `
+              "$outputDirectory/jacoco.exec" `
+              -Force
+          }
+
+      - name: Upload ${{ matrix.suite.name }} results
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: snapshot-c0-standard-${{ github.sha }}
-          path: ci-results/
+          name: snapshot-c0-${{ matrix.suite.id }}-${{ github.sha }}
+          path: ci-results/${{ matrix.suite.id }}/
           if-no-files-found: error
+          retention-days: 30
 
   snapshot-c0-evosuite:
-    name: SnapshotComparer C0 - EvoSuite
+    name: SnapshotComparer C0 - ${{ matrix.suite.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 90
+
+    strategy:
+      fail-fast: false
+      matrix:
+        suite:
+          - name: EvoSuite Direct
+            id: evosuite-direct
+            selector: >-
+              org.apache.zookeeper.server.snapshotcomparer.evosuite.snapshotcomparerbranch.SnapshotComparer_ESTest
+            expected: >-
+              SnapshotComparer_ESTest
+
+          - name: EvoSuite Facade
+            id: evosuite-facade
+            selector: >-
+              org.apache.zookeeper.server.snapshotcomparer.evosuite.snapshotcomparerfacadebranch.SnapshotComparerTestFacade_ESTest
+            expected: >-
+              SnapshotComparerTestFacade_ESTest
+
     steps:
       - name: Checkout experiment/snapshot-c0
         uses: actions/checkout@v6
@@ -266,6 +392,29 @@ jobs:
           java-version: "17"
           cache: maven
 
+      - name: Show execution context
+        shell: bash
+        run: |
+          echo "Repository: $GITHUB_REPOSITORY"
+          echo "Workflow: $GITHUB_WORKFLOW"
+          echo "Ref: $GITHUB_REF"
+          echo "Ref name: $GITHUB_REF_NAME"
+          echo "SHA: $GITHUB_SHA"
+          echo "Suite: ${{ matrix.suite.name }}"
+          echo "Selector: ${{ matrix.suite.selector }}"
+          git branch --show-current
+          git rev-parse HEAD
+          java -version
+          mvn -version
+
+      - name: Verify expected branch
+        shell: bash
+        run: |
+          test "$GITHUB_REF_NAME" = "experiment/snapshot-c0" || {
+            echo "Unexpected branch: $GITHUB_REF_NAME"
+            exit 1
+          }
+
       - name: Verify bundled EvoSuite runtime
         shell: bash
         run: |
@@ -275,7 +424,8 @@ jobs:
       - name: Install EvoSuite 1.2.0 runtime
         shell: bash
         run: |
-          mvn -B -ntp org.apache.maven.plugins:maven-install-plugin:3.1.4:install-file \
+          mvn -B -ntp \
+            org.apache.maven.plugins:maven-install-plugin:3.1.4:install-file \
             -Dfile="tools/evosuite/evosuite-standalone-runtime-1.2.0.jar" \
             -DgroupId=org.evosuite \
             -DartifactId=evosuite-standalone-runtime \
@@ -286,78 +436,272 @@ jobs:
       - name: Verify installed EvoSuite artifact
         shell: bash
         run: |
-          test -f "$HOME/.m2/repository/org/evosuite/evosuite-standalone-runtime/1.2.0/evosuite-standalone-runtime-1.2.0.jar"
-          ls -l "$HOME/.m2/repository/org/evosuite/evosuite-standalone-runtime/1.2.0/"
+          ARTIFACT="$HOME/.m2/repository/org/evosuite/evosuite-standalone-runtime/1.2.0/evosuite-standalone-runtime-1.2.0.jar"
+          test -f "$ARTIFACT"
+          ls -l "$ARTIFACT"
 
-      - name: Show execution context
+      - name: Verify EvoSuite test and scaffolding sources
+        shell: pwsh
         run: |
-          echo "Repository: $GITHUB_REPOSITORY"
-          echo "Ref: $GITHUB_REF"
-          echo "SHA: $GITHUB_SHA"
-          git rev-parse HEAD
-          java -version
-          mvn -version
+          $sourceRoot = "zookeeper-server/src/test/java"
+          $fqcn = "${{ matrix.suite.selector }}".Replace(" ", "").Replace("`r", "").Replace("`n", "")
+          $testPath = Join-Path $sourceRoot ($fqcn.Replace(".", "/") + ".java")
+
+          if (-not (Test-Path $testPath -PathType Leaf)) {
+            throw "EvoSuite test source not found: $testPath"
+          }
+
+          $directory = Split-Path $testPath -Parent
+          $baseName = [System.IO.Path]::GetFileNameWithoutExtension($testPath)
+          $scaffoldingName = $baseName -replace "_ESTest$", "_ESTest_scaffolding"
+          $scaffoldingPath = Join-Path $directory ($scaffoldingName + ".java")
+
+          if (-not (Test-Path $scaffoldingPath -PathType Leaf)) {
+            throw "EvoSuite scaffolding source not found: $scaffoldingPath"
+          }
+
+          Write-Host "Found EvoSuite test: $testPath"
+          Write-Host "Found EvoSuite scaffolding: $scaffoldingPath"
+
+      - name: Verify required fixtures
+        shell: pwsh
+        run: |
+          $fixtureDirectory = "zookeeper-server/src/test/resources/data/comparer"
+
+          if (-not (Test-Path $fixtureDirectory -PathType Container)) {
+            throw "Fixture directory not found: $fixtureDirectory"
+          }
+
+          $requiredFiles = @(
+            "corrupt_file.snap",
+            "left.snap",
+            "left_ephemeral.snap",
+            "left_mixed.snap",
+            "left_nodes.snap",
+            "left_payload.snap",
+            "right_ephemeral.snap",
+            "right_identical.snap",
+            "right_mixed.snap",
+            "right_nodes_changed.snap",
+            "right_payload_changed.snap",
+            "right_plus_1.gz",
+            "right_plus_1.snap"
+          )
+
+          foreach ($name in $requiredFiles) {
+            $path = Join-Path $fixtureDirectory $name
+
+            if (-not (Test-Path $path -PathType Leaf)) {
+              throw "Missing fixture: $path"
+            }
+          }
+
+          Write-Host "All required fixtures are present."
 
       - name: Build required reactor modules
-        run: mvn -B -ntp -pl zookeeper-server -am clean install -DskipTests -Dcheckstyle.skip=true -Dspotbugs.skip=true -Dmaven.javadoc.skip=true
+        shell: bash
+        run: |
+          mvn -B -ntp \
+            -pl zookeeper-server \
+            -am \
+            clean install \
+            -DskipTests \
+            -Dcheckstyle.skip=true \
+            -Dspotbugs.skip=true \
+            -Dmaven.javadoc.skip=true \
+            -Drat.skip=true
 
-      - name: Run EvoSuite direct tests with JaCoCo
+      - name: Clean previous EvoSuite and coverage reports
+        shell: pwsh
+        run: |
+          Remove-Item "zookeeper-server/target/surefire-reports" -Recurse -Force -ErrorAction SilentlyContinue
+          Remove-Item "zookeeper-server/target/site/jacoco" -Recurse -Force -ErrorAction SilentlyContinue
+          Remove-Item "zookeeper-server/target/jacoco.exec" -Force -ErrorAction SilentlyContinue
+
+      - name: Run ${{ matrix.suite.name }} with JaCoCo
+        id: run-evosuite
         working-directory: zookeeper-server
-        run: mvn -B -ntp -Pevosuite-coverage jacoco:prepare-agent test jacoco:report "-Dtest=org.apache.zookeeper.server.snapshotcomparer.evosuite.snapshotcomparerbranch.SnapshotComparer_ESTest" -DfailIfNoTests=true -Dmaven.test.failure.ignore=false -DtestFailureIgnore=false -Dcheckstyle.skip=true -Dspotbugs.skip=true -Dmaven.javadoc.skip=true -Drat.skip=true
+        shell: bash
+        run: |
+          SELECTOR=$(printf '%s' '${{ matrix.suite.selector }}' | tr -d '[:space:]')
 
-      - name: Preserve EvoSuite direct reports
+          mvn -B -ntp \
+            -Pevosuite-coverage \
+            jacoco:prepare-agent \
+            test \
+            jacoco:report \
+            "-Dtest=$SELECTOR" \
+            -DfailIfNoTests=true \
+            -Dsurefire.failIfNoSpecifiedTests=true \
+            -Dmaven.test.failure.ignore=false \
+            -DtestFailureIgnore=false \
+            -DsnapshotComparer.fixtureDir="$GITHUB_WORKSPACE/zookeeper-server/src/test/resources/data/comparer" \
+            -Dcheckstyle.skip=true \
+            -Dspotbugs.skip=true \
+            -Dmaven.javadoc.skip=true \
+            -Drat.skip=true
+
+      - name: Validate EvoSuite and JaCoCo reports
         if: always()
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path "ci-results/evosuite-direct" | Out-Null
-          if (Test-Path "zookeeper-server/target/surefire-reports") {
-            Copy-Item "zookeeper-server/target/surefire-reports" "ci-results/evosuite-direct/surefire-reports" -Recurse -Force
-          }
-          if (Test-Path "zookeeper-server/target/site/jacoco") {
-            Copy-Item "zookeeper-server/target/site/jacoco" "ci-results/evosuite-direct/jacoco-report" -Recurse -Force
+          $suiteName = "${{ matrix.suite.name }}"
+          $expectedClass = "${{ matrix.suite.expected }}".Trim()
+
+          $surefireDirectory = "zookeeper-server/target/surefire-reports"
+          $jacocoDirectory = "zookeeper-server/target/site/jacoco"
+          $jacocoExec = "zookeeper-server/target/jacoco.exec"
+          $jacocoXml = Join-Path $jacocoDirectory "jacoco.xml"
+          $jacocoCsv = Join-Path $jacocoDirectory "jacoco.csv"
+          $jacocoHtml = Join-Path $jacocoDirectory "index.html"
+
+          if (-not (Test-Path $surefireDirectory -PathType Container)) {
+            throw "Surefire report directory not produced for $suiteName"
           }
 
-      - name: Run EvoSuite facade tests with JaCoCo
-        working-directory: zookeeper-server
-        run: mvn -B -ntp -Pevosuite-coverage jacoco:prepare-agent test jacoco:report "-Dtest=org.apache.zookeeper.server.snapshotcomparer.evosuite.snapshotcomparerfacadebranch.SnapshotComparerTestFacade_ESTest" -DfailIfNoTests=true -Dmaven.test.failure.ignore=false -DtestFailureIgnore=false -Dcheckstyle.skip=true -Dspotbugs.skip=true -Dmaven.javadoc.skip=true -Drat.skip=true
+          $reports = @(Get-ChildItem $surefireDirectory -Filter "TEST-*.xml" -File -ErrorAction SilentlyContinue)
 
-      - name: Preserve EvoSuite facade reports
-        if: always()
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Force -Path "ci-results/evosuite-facade" | Out-Null
-          if (Test-Path "zookeeper-server/target/surefire-reports") {
-            Copy-Item "zookeeper-server/target/surefire-reports" "ci-results/evosuite-facade/surefire-reports" -Recurse -Force
-          }
-          if (Test-Path "zookeeper-server/target/site/jacoco") {
-            Copy-Item "zookeeper-server/target/site/jacoco" "ci-results/evosuite-facade/jacoco-report" -Recurse -Force
+          if ($reports.Count -eq 0) {
+            throw "No Surefire XML reports produced for $suiteName"
           }
 
-      - name: Validate EvoSuite reports
-        shell: pwsh
-        run: |
-          $reports = Get-ChildItem "ci-results" -Filter "TEST-*.xml" -File -Recurse
-          if ($reports.Count -lt 2) {
-            throw "Non sono stati prodotti i report di entrambe le suite EvoSuite."
-          }
-          $tests = 0
-          $failures = 0
-          $errors = 0
+          $executedSuites = @()
+          $totalTests = 0
+          $totalFailures = 0
+          $totalErrors = 0
+          $totalSkipped = 0
+
           foreach ($report in $reports) {
             [xml]$xml = Get-Content $report.FullName
-            $tests += [int]$xml.testsuite.tests
-            $failures += [int]$xml.testsuite.failures
-            $errors += [int]$xml.testsuite.errors
-          }
-          Write-Host "EvoSuite tests=$tests failures=$failures errors=$errors"
-          if ($tests -le 0 -or $failures -gt 0 -or $errors -gt 0) {
-            throw "Risultati EvoSuite non validi."
+
+            if ($null -eq $xml.testsuite) {
+              continue
+            }
+
+            $executedSuites += [string]$xml.testsuite.name
+            $totalTests += [int]$xml.testsuite.tests
+            $totalFailures += [int]$xml.testsuite.failures
+            $totalErrors += [int]$xml.testsuite.errors
+            $totalSkipped += [int]$xml.testsuite.skipped
           }
 
-      - name: Upload EvoSuite results
+          Write-Host "Executed EvoSuite suites:"
+          $executedSuites | Sort-Object -Unique | ForEach-Object {
+            Write-Host "  $_"
+          }
+
+          $expectedFound = @(
+            $executedSuites | Where-Object {
+              $_ -eq $expectedClass -or $_ -like "*.$expectedClass"
+            }
+          ).Count -gt 0
+
+          if (-not $expectedFound) {
+            throw "Expected EvoSuite class not found in Surefire reports: $expectedClass"
+          }
+
+          Write-Host "Tests=$totalTests"
+          Write-Host "Failures=$totalFailures"
+          Write-Host "Errors=$totalErrors"
+          Write-Host "Skipped=$totalSkipped"
+
+          if ($totalTests -le 0) {
+            throw "Zero EvoSuite tests executed for $suiteName"
+          }
+
+          if ($totalFailures -gt 0 -or $totalErrors -gt 0) {
+            throw "EvoSuite suite $suiteName produced failures or errors"
+          }
+
+          if (-not (Test-Path $jacocoExec -PathType Leaf)) {
+            throw "JaCoCo execution data not produced for $suiteName"
+          }
+
+          if ((Get-Item $jacocoExec).Length -le 0) {
+            throw "JaCoCo execution data is empty for $suiteName"
+          }
+
+          if (-not (Test-Path $jacocoXml -PathType Leaf)) {
+            throw "JaCoCo XML report not produced for $suiteName"
+          }
+
+          if (-not (Test-Path $jacocoCsv -PathType Leaf)) {
+            throw "JaCoCo CSV report not produced for $suiteName"
+          }
+
+          if (-not (Test-Path $jacocoHtml -PathType Leaf)) {
+            throw "JaCoCo HTML report not produced for $suiteName"
+          }
+
+          $targetClass = Import-Csv $jacocoCsv | Where-Object {
+            $_.PACKAGE -eq "org.apache.zookeeper.server" -and
+            $_.CLASS -eq "SnapshotComparer"
+          } | Select-Object -First 1
+
+          if ($null -eq $targetClass) {
+            throw "SnapshotComparer not found in the JaCoCo CSV report for $suiteName"
+          }
+
+          $instructionCovered = [int]$targetClass.INSTRUCTION_COVERED
+          $lineCovered = [int]$targetClass.LINE_COVERED
+          $branchCovered = [int]$targetClass.BRANCH_COVERED
+
+          Write-Host "SnapshotComparer instruction covered=$instructionCovered"
+          Write-Host "SnapshotComparer line covered=$lineCovered"
+          Write-Host "SnapshotComparer branch covered=$branchCovered"
+
+          if ($instructionCovered -le 0 -and $lineCovered -le 0) {
+            throw "JaCoCo reported zero coverage for SnapshotComparer in $suiteName"
+          }
+
+          Write-Host "EvoSuite and JaCoCo reports validated for $suiteName."
+
+      - name: Preserve ${{ matrix.suite.name }} reports
+        if: always()
+        shell: pwsh
+        run: |
+          $outputDirectory = "ci-results/${{ matrix.suite.id }}"
+
+          New-Item -ItemType Directory -Force -Path $outputDirectory | Out-Null
+
+          @"
+          Repository=$env:GITHUB_REPOSITORY
+          Workflow=$env:GITHUB_WORKFLOW
+          Ref=$env:GITHUB_REF
+          RefName=$env:GITHUB_REF_NAME
+          SHA=$env:GITHUB_SHA
+          Suite=${{ matrix.suite.name }}
+          Selector=${{ matrix.suite.selector }}
+          "@ | Set-Content "$outputDirectory/metadata.txt"
+
+          if (Test-Path "zookeeper-server/target/surefire-reports") {
+            Copy-Item `
+              "zookeeper-server/target/surefire-reports" `
+              "$outputDirectory/surefire-reports" `
+              -Recurse `
+              -Force
+          }
+
+          if (Test-Path "zookeeper-server/target/site/jacoco") {
+            Copy-Item `
+              "zookeeper-server/target/site/jacoco" `
+              "$outputDirectory/jacoco-report" `
+              -Recurse `
+              -Force
+          }
+
+          if (Test-Path "zookeeper-server/target/jacoco.exec") {
+            Copy-Item `
+              "zookeeper-server/target/jacoco.exec" `
+              "$outputDirectory/jacoco.exec" `
+              -Force
+          }
+
+      - name: Upload ${{ matrix.suite.name }} results
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: snapshot-c0-evosuite-${{ github.sha }}
-          path: ci-results/
+          name: snapshot-c0-${{ matrix.suite.id }}-${{ github.sha }}
+          path: ci-results/${{ matrix.suite.id }}/
           if-no-files-found: error
+          retention-days: 30
