@@ -150,7 +150,7 @@ jobs:
         run: |
           $sourceRoot = "zookeeper-server/src/test/java"
           $selector = "${{ matrix.suite.selector }}".Replace(" ", "").Replace("`r", "").Replace("`n", "")
-          $classes = @($selector -split "," | Where-Object { -not :IsNullOrWhiteSpace($_) })
+          $classes = @($selector -split "," | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
 
           if ($classes.Count -eq 0) {
             throw "Empty test selector for suite ${{ matrix.suite.name }}"
@@ -215,7 +215,7 @@ jobs:
         run: |
           $suiteName = "${{ matrix.suite.name }}"
           $expectedText = "${{ matrix.suite.expected }}".Replace(" ", "").Replace("`r", "").Replace("`n", "")
-          $expectedClasses = @($expectedText -split "," | Where-Object { -not :IsNullOrWhiteSpace($_) })
+          $expectedClasses = @($expectedText -split "," | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
 
           $surefireDirectory = "zookeeper-server/target/surefire-reports"
           $jacocoDirectory = "zookeeper-server/target/site/jacoco"
