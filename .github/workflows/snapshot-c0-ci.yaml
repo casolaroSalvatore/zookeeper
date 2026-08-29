@@ -21,7 +21,6 @@ jobs:
     name: SnapshotComparer C0 - BlackBox, Randoop and LLM
     runs-on: ubuntu-latest
     timeout-minutes: 90
-
     steps:
       - name: Checkout experiment/snapshot-c0
         uses: actions/checkout@v6
@@ -34,6 +33,29 @@ jobs:
           distribution: temurin
           java-version: "17"
           cache: maven
+
+      - name: Verify bundled EvoSuite runtime
+        shell: bash
+        run: |
+          test -f "tools/evosuite/evosuite-standalone-runtime-1.2.0.jar"
+          ls -l "tools/evosuite/evosuite-standalone-runtime-1.2.0.jar"
+
+      - name: Install EvoSuite 1.2.0 runtime
+        shell: bash
+        run: |
+          mvn -B -ntp org.apache.maven.plugins:maven-install-plugin:3.1.4:install-file \
+            -Dfile="tools/evosuite/evosuite-standalone-runtime-1.2.0.jar" \
+            -DgroupId=org.evosuite \
+            -DartifactId=evosuite-standalone-runtime \
+            -Dversion=1.2.0 \
+            -Dpackaging=jar \
+            -DgeneratePom=true
+
+      - name: Verify installed EvoSuite artifact
+        shell: bash
+        run: |
+          test -f "$HOME/.m2/repository/org/evosuite/evosuite-standalone-runtime/1.2.0/evosuite-standalone-runtime-1.2.0.jar"
+          ls -l "$HOME/.m2/repository/org/evosuite/evosuite-standalone-runtime/1.2.0/"
 
       - name: Show execution context
         run: |
@@ -231,7 +253,6 @@ jobs:
     name: SnapshotComparer C0 - EvoSuite
     runs-on: ubuntu-latest
     timeout-minutes: 90
-
     steps:
       - name: Checkout experiment/snapshot-c0
         uses: actions/checkout@v6
@@ -245,8 +266,40 @@ jobs:
           java-version: "17"
           cache: maven
 
+      - name: Verify bundled EvoSuite runtime
+        shell: bash
+        run: |
+          test -f "tools/evosuite/evosuite-standalone-runtime-1.2.0.jar"
+          ls -l "tools/evosuite/evosuite-standalone-runtime-1.2.0.jar"
+
+      - name: Install EvoSuite 1.2.0 runtime
+        shell: bash
+        run: |
+          mvn -B -ntp org.apache.maven.plugins:maven-install-plugin:3.1.4:install-file \
+            -Dfile="tools/evosuite/evosuite-standalone-runtime-1.2.0.jar" \
+            -DgroupId=org.evosuite \
+            -DartifactId=evosuite-standalone-runtime \
+            -Dversion=1.2.0 \
+            -Dpackaging=jar \
+            -DgeneratePom=true
+
+      - name: Verify installed EvoSuite artifact
+        shell: bash
+        run: |
+          test -f "$HOME/.m2/repository/org/evosuite/evosuite-standalone-runtime/1.2.0/evosuite-standalone-runtime-1.2.0.jar"
+          ls -l "$HOME/.m2/repository/org/evosuite/evosuite-standalone-runtime/1.2.0/"
+
+      - name: Show execution context
+        run: |
+          echo "Repository: $GITHUB_REPOSITORY"
+          echo "Ref: $GITHUB_REF"
+          echo "SHA: $GITHUB_SHA"
+          git rev-parse HEAD
+          java -version
+          mvn -version
+
       - name: Build required reactor modules
-        run: mvn -B -ntp -pl zookeeper-server -am clean install -DskipTests -Dcheckstyle.skip=true -Dspotbugs.skip=true -Dmaven.javadoc.skip=true -Drat.skip=true
+        run: mvn -B -ntp -pl zookeeper-server -am clean install -DskipTests -Dcheckstyle.skip=true -Dspotbugs.skip=true -Dmaven.javadoc.skip=true
 
       - name: Run EvoSuite direct tests with JaCoCo
         working-directory: zookeeper-server
