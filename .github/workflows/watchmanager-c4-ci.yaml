@@ -1,0 +1,138 @@
+name: WatchManager C4 Experimental CI
+
+on:
+  push:
+    branches:
+      - "experiment/watchmanager-c4"
+  pull_request:
+    branches:
+      - "experiment/watchmanager-c4"
+  workflow_dispatch:
+
+concurrency:
+  group: watchmanager-c4-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  watchmanager-c4-tests:
+    name: WatchManager - ${{ matrix.suite.name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    strategy:
+      fail-fast: false
+      matrix:
+        suite:
+          # ==========================================
+          # SUITE BLACKBOX (Condivisa)
+          # ==========================================
+          - name: BlackBox
+            id: blackbox
+            profile: ""
+            selector: >-
+              org.apache.zookeeper.server.watch.watchmanager.blackbox.WatchManagerBlackBoxTest,
+              org.apache.zookeeper.server.watch.watchmanager.blackbox.WatchManagerBlackBoxCFTest,
+              org.apache.zookeeper.server.watch.watchmanager.blackbox.WatchManagerBlackBoxCFMutationTest
+
+          # ==========================================
+          # SUITE C0 (Base / Originale)
+          # ==========================================
+          - name: LLM (C0)
+            id: llm-c0
+            profile: ""
+            selector: >-
+              org.apache.zookeeper.server.watch.WatchManagerLLMZeroShotTest,
+              org.apache.zookeeper.server.watch.WatchManagerLLMFewShotTest,
+              org.apache.zookeeper.server.watch.WatchManagerLLMGuidedToTFewShotTest
+
+          - name: Randoop (C0)
+            id: randoop-c0
+            profile: ""
+            selector: >-
+              org.apache.zookeeper.server.watch.watchmanager.randoop.RegressionTest,
+              org.apache.zookeeper.server.watch.RegressionTest0
+
+          - name: EvoSuite (C0)
+            id: evosuite-c0
+            profile: "-Pevosuite-coverage"
+            selector: >-
+              org.apache.zookeeper.server.watch.WatchManager_ESTest
+
+          # ==========================================
+          # SUITE C4 (Variante)
+          # ==========================================
+          - name: LLM (C4)
+            id: llm-c4
+            profile: ""
+            selector: >-
+              org.apache.zookeeper.server.watch.WatchManagerC4LLMZeroShotTest,
+              org.apache.zookeeper.server.watch.WatchManagerC4LLMFewShotTest,
+              org.apache.zookeeper.server.watch.WatchManagerC4LLMGuidedToTFewShotTest
+
+          - name: Randoop (C4)
+            id: randoop-c4
+            profile: ""
+            selector: >-
+              org.apache.zookeeper.server.watch.watchmanager.variant_c4.randoop.RegressionTest,
+              org.apache.zookeeper.server.watch.watchmanager.variant_c4.randoop.RegressionTest0
+
+          - name: EvoSuite (C4)
+            id: evosuite-c4
+            profile: "-Pevosuite-coverage"
+            selector: >-
+              org.apache.zookeeper.server.watch.WatchManagerC4_ESTest
+
+    steps:
+      - name: Checkout experiment/watchmanager-c4
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      # Installazione della dipendenza necessaria per compilare in tutti i job
+      - name: Install EvoSuite runtime (Local Dependency)
+        run: |
+          mvn -B -ntp install:install-file \
+            -Dfile="tools/evosuite/evosuite-standalone-runtime-1.2.0.jar" \
+            -DgroupId=org.evosuite \
+            -DartifactId=evosuite-standalone-runtime \
+            -Dversion=1.2.0 \
+            -Dpackaging=jar \
+            -DgeneratePom=true
+
+      - name: Build Zookeeper Server (Skip Tests)
+        run: |
+          mvn -B -ntp -pl zookeeper-server -am clean install -DskipTests
+
+      # Disabilita il Virtual File System di EvoSuite per tutti i file *ESTest* generati
+      - name: Disable EvoSuite virtual filesystem
+        if: contains(matrix.suite.id, 'evosuite')
+        shell: bash
+        run: |
+          find zookeeper-server/src/test/java/org/apache/zookeeper/server/watch \
+            -type f -name "*ESTest*.java" \
+            -exec sed -i 's/useVFS[[:space:]]*=[[:space:]]*true/useVFS = false/g' {} +
+
+      - name: Run ${{ matrix.suite.name }} tests
+        working-directory: zookeeper-server
+        run: |
+          # Rimuove gli spazi dal selector per formattarlo per Maven
+          SELECTOR=$(echo '${{ matrix.suite.selector }}' | tr -d '[:space:]')
+          
+          mvn -B -ntp ${{ matrix.suite.profile }} test \
+            -Dtest=$SELECTOR \
+            -DfailIfNoTests=true
+
+      - name: Upload Surefire Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: watchmanager-c4-${{ matrix.suite.id }}-reports-${{ github.sha }}
+          path: zookeeper-server/target/surefire-reports/
+          retention-days: 14
