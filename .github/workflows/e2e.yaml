@@ -19,7 +19,11 @@ name: End to End Tests
 
 on:
   push:
+    branches-ignore:
+      - 'experiment/**'
   pull_request:
+    branches-ignore:
+      - 'experiment/**'
 
 jobs:
   compatibility:
